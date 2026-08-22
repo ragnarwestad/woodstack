@@ -1,0 +1,122 @@
+import { useCallback, useEffect, useState } from 'react'
+import { Alert, Button, Divider, Group, Stack as MantineStack, Text, Title } from '@mantine/core'
+import type { ClimateNormals } from '../storage/schema'
+import { addReading, getStack } from '../storage/stacksRepo'
+import { getNormals } from '../climate/normalsCache'
+import { estimateWindow, simulate } from '../model/simulate'
+import { DRY_ENOUGH_MOISTURE, formatWindow } from '../model/units'
+import { SPECIES } from '../model/species'
+import { DryingCurveChart } from './DryingCurveChart'
+import { LogReadingForm } from './LogReadingForm'
+
+const CURVE_MONTHS = 30
+
+/** The outcome of one normals request, tagged with the request it answers.
+ *  Anything older than the current request still reads as loading, so a
+ *  retry cannot flash the previous answer on its way past. */
+type NormalsResult = { key: string; normals: ClimateNormals | null }
+
+type Props = {
+  stackId: string
+  onBack: () => void
+  getNormalsFn?: (latitude: number, longitude: number) => Promise<ClimateNormals>
+}
+
+export function StackDetail({ stackId, onBack, getNormalsFn = getNormals }: Props) {
+  const [stack, setStack] = useState(() => getStack(stackId))
+  const [result, setResult] = useState<NormalsResult | null>(null)
+  const [attempt, setAttempt] = useState(0)
+
+  const latitude = stack?.location.latitude
+  const longitude = stack?.location.longitude
+  const requestKey = `${latitude},${longitude},${attempt}`
+
+  useEffect(() => {
+    if (latitude === undefined || longitude === undefined) return
+
+    let cancelled = false
+    getNormalsFn(latitude, longitude)
+      .then((normals) => {
+        if (!cancelled) setResult({ key: requestKey, normals })
+      })
+      .catch(() => {
+        if (!cancelled) setResult({ key: requestKey, normals: null })
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [getNormalsFn, latitude, longitude, requestKey])
+
+  // A stack imported offline has no normals yet. Rather than leave the window
+  // blank until someone thinks to reload, try again the moment there is a
+  // network.
+  const retry = useCallback(() => setAttempt((value) => value + 1), [])
+  useEffect(() => {
+    window.addEventListener('online', retry)
+    return () => window.removeEventListener('online', retry)
+  }, [retry])
+
+  if (!stack) {
+    return (
+      <MantineStack gap="md">
+        <Text>Finner ikke denne stabelen.</Text>
+        <Group>
+          <Button variant="default" onClick={onBack}>
+            Tilbake
+          </Button>
+        </Group>
+      </MantineStack>
+    )
+  }
+
+  function log(reading: { date: string; moisture: number }) {
+    const updated = addReading(stackId, reading)
+    if (updated) setStack(updated)
+  }
+
+  const normals = result?.key === requestKey ? result.normals : null
+  const loading = result?.key !== requestKey
+  const dryWindow = normals ? estimateWindow(stack, normals) : null
+  const points = normals ? simulate(stack, normals, { months: CURVE_MONTHS }) : []
+
+  return (
+    <MantineStack gap="md">
+      <Group>
+        <Button variant="default" onClick={onBack}>
+          Tilbake
+        </Button>
+      </Group>
+
+      <Title order={2}>{stack.name}</Title>
+      <Text c="dimmed">
+        {SPECIES[stack.species].label} · stablet {stack.stackedDate} · {stack.location.name}
+      </Text>
+
+      {loading && <Text>Henter klimadata for stedet …</Text>}
+
+      {!loading && !normals && (
+        <Alert color="yellow">
+          Ingen nett, så klimadataene for {stack.location.name} mangler ennå. Vi prøver igjen med en gang du er på nett.
+        </Alert>
+      )}
+
+      {dryWindow && (
+        <>
+          <Text data-testid="window-text" fw={600}>
+            Klar mellom {formatWindow(dryWindow)}
+          </Text>
+          <DryingCurveChart
+            points={points}
+            readings={stack.readings}
+            threshold={DRY_ENOUGH_MOISTURE}
+            window={dryWindow}
+          />
+        </>
+      )}
+
+      <Divider />
+      <LogReadingForm onLog={log} />
+    </MantineStack>
+  )
+}
