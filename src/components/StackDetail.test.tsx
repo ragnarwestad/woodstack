@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { fireEvent, screen, waitFor } from '@testing-library/react'
+import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { StackDetail } from './StackDetail'
 import { renderWithMantine } from '../test/render'
 import { OSLO_NORMALS, makeStack } from '../test/fixtures'
@@ -124,6 +124,99 @@ describe('StackDetail', () => {
     )
     fireEvent.click(screen.getByRole('button', { name: /tilbake/i }))
     expect(onBack).toHaveBeenCalled()
+  })
+
+  it('shows what has been logged against the stack, in one list', async () => {
+    saveStacks([
+      makeStack({
+        id: 'a',
+        readings: [{ id: 'r1', date: '2026-10-15', moisture: 28 }],
+        volumeEntries: [{ id: 'v1', date: '2026-04-15', kind: 'addition', amount: 2, unit: 'favn' }],
+      }),
+    ])
+    renderWithMantine(
+      <StackDetail stackId="a" onBack={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+    )
+    await waitFor(() => screen.getByText(/klar mellom/i))
+
+    expect(screen.getAllByTestId('entry-row')).toHaveLength(2)
+  })
+
+  it('deletes the stack and goes back to the list once the visitor confirms', async () => {
+    const onBack = vi.fn()
+    renderWithMantine(
+      <StackDetail stackId="a" onBack={onBack} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+    )
+    await waitFor(() => screen.getByText(/klar mellom/i))
+
+    fireEvent.click(screen.getByRole('button', { name: /^slett stabelen$/i }))
+    fireEvent.click(screen.getByRole('button', { name: /^ja, slett stabelen$/i }))
+
+    expect(getStack('a')).toBeUndefined()
+    expect(onBack).toHaveBeenCalled()
+  })
+
+  it('keeps the stack when the visitor backs out of deleting it', async () => {
+    const onBack = vi.fn()
+    renderWithMantine(
+      <StackDetail stackId="a" onBack={onBack} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+    )
+    await waitFor(() => screen.getByText(/klar mellom/i))
+
+    fireEvent.click(screen.getByRole('button', { name: /^slett stabelen$/i }))
+    fireEvent.click(screen.getAllByRole('button', { name: /^avbryt$/i })[0])
+
+    expect(getStack('a')).toBeDefined()
+    expect(onBack).not.toHaveBeenCalled()
+    expect(screen.getByRole('button', { name: /^slett stabelen$/i })).toBeInTheDocument()
+  })
+
+  it('deletes one reading and leaves the rest of the stack alone', async () => {
+    saveStacks([
+      makeStack({
+        id: 'a',
+        readings: [
+          { id: 'r1', date: '2026-10-15', moisture: 28 },
+          { id: 'r2', date: '2026-12-01', moisture: 24 },
+        ],
+        volumeEntries: [{ id: 'v1', date: '2026-04-15', kind: 'addition', amount: 2, unit: 'favn' }],
+      }),
+    ])
+    renderWithMantine(
+      <StackDetail stackId="a" onBack={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+    )
+    await waitFor(() => screen.getByText(/klar mellom/i))
+
+    const row = screen.getAllByTestId('entry-row')[1]
+    fireEvent.click(within(row).getByRole('button', { name: /^slett$/i }))
+    fireEvent.click(within(row).getByRole('button', { name: /^ja, slett$/i }))
+
+    await waitFor(() => expect(screen.getAllByTestId('entry-row')).toHaveLength(2))
+    expect(getStack('a')?.readings.map((r) => r.id)).toEqual(['r2'])
+    expect(getStack('a')?.volumeEntries).toHaveLength(1)
+  })
+
+  it('works the running total out again when a volume entry is deleted', async () => {
+    saveStacks([
+      makeStack({
+        id: 'a',
+        volumeEntries: [
+          { id: 'v1', date: '2026-04-15', kind: 'addition', amount: 2, unit: 'fastKubikk' },
+          { id: 'v2', date: '2026-05-20', kind: 'addition', amount: 1, unit: 'fastKubikk' },
+        ],
+      }),
+    ])
+    renderWithMantine(
+      <StackDetail stackId="a" onBack={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+    )
+    await waitFor(() => expect(screen.getByText(/igjen nå: 3 m³ fast/i)).toBeInTheDocument())
+
+    const row = screen.getAllByTestId('entry-row')[1]
+    fireEvent.click(within(row).getByRole('button', { name: /^slett$/i }))
+    fireEvent.click(within(row).getByRole('button', { name: /^ja, slett$/i }))
+
+    await waitFor(() => expect(screen.getByText(/igjen nå: 2 m³ fast/i)).toBeInTheDocument())
+    expect(getStack('a')?.volumeEntries?.map((entry) => entry.id)).toEqual(['v1'])
   })
 
   it('says so when the stack is gone', () => {

@@ -92,6 +92,21 @@ export function addReading(stackId: string, reading: Omit<Reading, 'id'>): Stack
   return updated
 }
 
+/** Take a reading back out. Removal only filters — unlike `addReading` it
+ *  needs no re-sort, since what is left was already in date order. */
+export function removeReading(stackId: string, readingId: string): Stack | undefined {
+  const stacks = loadStacks()
+  const target = stacks.find((stack) => stack.id === stackId)
+  if (!target) return undefined
+
+  const updated: Stack = {
+    ...target,
+    readings: target.readings.filter((reading) => reading.id !== readingId),
+  }
+  saveStacks(stacks.map((stack) => (stack.id === stackId ? updated : stack)))
+  return updated
+}
+
 /** Append a movement of wood in or out, keeping the ledger in date order the
  *  same way readings are kept. A stack stored before the ledger existed has no
  *  `volumeEntries` at all, and gets one here rather than being rejected. */
@@ -105,6 +120,22 @@ export function addVolumeEntry(stackId: string, entry: Omit<VolumeEntry, 'id'>):
     volumeEntries: [...(target.volumeEntries ?? []), { ...entry, id: newId() }].sort((a, b) =>
       a.date.localeCompare(b.date),
     ),
+  }
+  saveStacks(stacks.map((stack) => (stack.id === stackId ? updated : stack)))
+  return updated
+}
+
+/** Take a movement back out of the ledger. A stack from before the ledger
+ *  existed comes back with an empty one rather than none at all — the same
+ *  answer `addVolumeEntry` gives it. */
+export function removeVolumeEntry(stackId: string, entryId: string): Stack | undefined {
+  const stacks = loadStacks()
+  const target = stacks.find((stack) => stack.id === stackId)
+  if (!target) return undefined
+
+  const updated: Stack = {
+    ...target,
+    volumeEntries: (target.volumeEntries ?? []).filter((entry) => entry.id !== entryId),
   }
   saveStacks(stacks.map((stack) => (stack.id === stackId ? updated : stack)))
   return updated

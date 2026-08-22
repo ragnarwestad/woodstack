@@ -19,6 +19,16 @@ export const nb = {
     'Ingen nett, så klimadataene for {place} mangler ennå. Vi prøver igjen med en gang du er på nett.',
   'stackDetail.volumeCurrent': 'Igjen nå: {volume}',
   'stackDetail.volumeNone': 'Ingen ved lagt inn ennå.',
+  'stackDetail.delete': 'Slett stabelen',
+  'stackDetail.deleteConfirm': 'Ja, slett stabelen',
+  'stackDetail.deleteCancel': 'Avbryt',
+
+  'entryList.heading': 'Det som er lagt inn',
+  'entryList.empty': 'Ingenting lagt inn ennå.',
+  'entryList.volumeDetail': '{kind}: {amount} {unit}',
+  'entryList.delete': 'Slett',
+  'entryList.deleteConfirm': 'Ja, slett',
+  'entryList.deleteCancel': 'Avbryt',
 
   'addStack.heading': 'Ny vedstabel',
   'addStack.name': 'Navn på stabelen',

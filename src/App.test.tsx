@@ -44,6 +44,20 @@ describe('App', () => {
     await waitFor(() => expect(window.location.hash).toBe(''))
   })
 
+  it('takes a deleted stack off the list it came from', async () => {
+    saveStacks([makeStack({ id: 'a', name: 'Bjørk ved veggen' }), makeStack({ id: 'b', name: 'Grana bak låven' })])
+    renderWithMantine(<App />)
+
+    fireEvent.click(screen.getByRole('button', { name: /bjørk ved veggen/i }))
+    await waitFor(() => expect(screen.getByRole('button', { name: /^slett stabelen$/i })).toBeInTheDocument())
+
+    fireEvent.click(screen.getByRole('button', { name: /^slett stabelen$/i }))
+    fireEvent.click(screen.getByRole('button', { name: /^ja, slett stabelen$/i }))
+
+    await waitFor(() => expect(screen.getByText('Grana bak låven')).toBeInTheDocument())
+    expect(screen.queryByText('Bjørk ved veggen')).not.toBeInTheDocument()
+  })
+
   it('imports an #i= link on load and lands on the list', async () => {
     window.location.hash = `#i=${exportState([makeStack({ id: 'a', name: 'Importert stabel' })])}`
     renderWithMantine(<App />)

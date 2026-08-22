@@ -20,6 +20,16 @@ export const en: Record<TranslationKey, string> = {
     'No network, so the climate data for {place} is still missing. We will try again the moment you are online.',
   'stackDetail.volumeCurrent': 'Left now: {volume}',
   'stackDetail.volumeNone': 'No wood logged yet.',
+  'stackDetail.delete': 'Delete this woodpile',
+  'stackDetail.deleteConfirm': 'Yes, delete the woodpile',
+  'stackDetail.deleteCancel': 'Cancel',
+
+  'entryList.heading': 'What has been logged',
+  'entryList.empty': 'Nothing logged yet.',
+  'entryList.volumeDetail': '{kind}: {amount} {unit}',
+  'entryList.delete': 'Delete',
+  'entryList.deleteConfirm': 'Yes, delete',
+  'entryList.deleteCancel': 'Cancel',
 
   'addStack.heading': 'New woodpile',
   'addStack.name': 'Name of the woodpile',

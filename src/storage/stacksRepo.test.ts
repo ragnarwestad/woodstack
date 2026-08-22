@@ -5,7 +5,9 @@ import {
   addVolumeEntry,
   getStack,
   loadStacks,
+  removeReading,
   removeStack,
+  removeVolumeEntry,
   replaceStacks,
   saveStacks,
 } from './stacksRepo'
@@ -206,5 +208,124 @@ describe('replaceStacks', () => {
     saveStacks([makeStack({ id: 'a' })])
     replaceStacks([makeStack({ id: 'x' }), makeStack({ id: 'y' })])
     expect(loadStacks().map((s) => s.id)).toEqual(['x', 'y'])
+  })
+})
+
+describe('removeReading', () => {
+  it('removes only the named reading', () => {
+    saveStacks([
+      makeStack({
+        id: 'a',
+        readings: [
+          { id: 'r1', date: '2026-10-15', moisture: 28 },
+          { id: 'r2', date: '2026-12-01', moisture: 24 },
+        ],
+      }),
+    ])
+
+    removeReading('a', 'r1')
+
+    expect(getStack('a')?.readings.map((r) => r.id)).toEqual(['r2'])
+  })
+
+  it('leaves the other stacks and the ledger alone', () => {
+    saveStacks([
+      makeStack({
+        id: 'a',
+        readings: [{ id: 'r1', date: '2026-10-15', moisture: 28 }],
+        volumeEntries: [{ id: 'v1', date: '2026-04-15', kind: 'addition', amount: 1, unit: 'favn' }],
+      }),
+      makeStack({ id: 'b', readings: [{ id: 'r9', date: '2026-10-15', moisture: 30 }] }),
+    ])
+
+    removeReading('a', 'r1')
+
+    expect(getStack('a')?.volumeEntries).toHaveLength(1)
+    expect(getStack('b')?.readings.map((r) => r.id)).toEqual(['r9'])
+  })
+
+  it('does nothing for an unknown stack', () => {
+    saveStacks([makeStack({ id: 'a', readings: [{ id: 'r1', date: '2026-10-15', moisture: 28 }] })])
+
+    expect(removeReading('nope', 'r1')).toBeUndefined()
+    expect(getStack('a')?.readings).toHaveLength(1)
+  })
+
+  it('does nothing for an unknown reading', () => {
+    saveStacks([makeStack({ id: 'a', readings: [{ id: 'r1', date: '2026-10-15', moisture: 28 }] })])
+
+    expect(removeReading('a', 'nope')?.readings).toHaveLength(1)
+    expect(getStack('a')?.readings).toHaveLength(1)
+  })
+})
+
+describe('removeVolumeEntry', () => {
+  it('removes only the named entry', () => {
+    saveStacks([
+      makeStack({
+        id: 'a',
+        volumeEntries: [
+          { id: 'v1', date: '2026-04-15', kind: 'addition', amount: 2, unit: 'favn' },
+          { id: 'v2', date: '2027-01-10', kind: 'withdrawal', amount: 1, unit: 'storsekk' },
+        ],
+      }),
+    ])
+
+    removeVolumeEntry('a', 'v2')
+
+    expect(getStack('a')?.volumeEntries?.map((entry) => entry.id)).toEqual(['v1'])
+  })
+
+  it('leaves the readings and the other stacks alone', () => {
+    saveStacks([
+      makeStack({
+        id: 'a',
+        readings: [{ id: 'r1', date: '2026-10-15', moisture: 28 }],
+        volumeEntries: [{ id: 'v1', date: '2026-04-15', kind: 'addition', amount: 2, unit: 'favn' }],
+      }),
+      makeStack({
+        id: 'b',
+        volumeEntries: [{ id: 'v9', date: '2026-04-15', kind: 'addition', amount: 1, unit: 'favn' }],
+      }),
+    ])
+
+    removeVolumeEntry('a', 'v1')
+
+    expect(getStack('a')?.readings).toHaveLength(1)
+    expect(getStack('b')?.volumeEntries?.map((entry) => entry.id)).toEqual(['v9'])
+  })
+
+  it('changes what is left over once the entry is gone', () => {
+    saveStacks([
+      makeStack({
+        id: 'a',
+        volumeEntries: [
+          { id: 'v1', date: '2026-04-15', kind: 'addition', amount: 2, unit: 'fastKubikk' },
+          { id: 'v2', date: '2027-01-10', kind: 'withdrawal', amount: 1, unit: 'fastKubikk' },
+        ],
+      }),
+    ])
+
+    const updated = removeVolumeEntry('a', 'v2')
+
+    expect(currentSolidLiters(updated?.volumeEntries)).toBe(2000)
+  })
+
+  it('does nothing for an unknown stack', () => {
+    saveStacks([
+      makeStack({
+        id: 'a',
+        volumeEntries: [{ id: 'v1', date: '2026-04-15', kind: 'addition', amount: 2, unit: 'favn' }],
+      }),
+    ])
+
+    expect(removeVolumeEntry('nope', 'v1')).toBeUndefined()
+    expect(getStack('a')?.volumeEntries).toHaveLength(1)
+  })
+
+  it('handles a stack stored before the ledger existed', () => {
+    saveStacks([makeStack({ id: 'a', volumeEntries: undefined })])
+
+    expect(removeVolumeEntry('a', 'v1')?.volumeEntries).toEqual([])
   })
 })

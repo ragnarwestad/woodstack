@@ -1,13 +1,22 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Alert, Button, Divider, Group, Stack as MantineStack, Text, Title } from '@mantine/core'
 import type { ClimateNormals, VolumeEntry } from '../storage/schema'
-import { addReading, addVolumeEntry, getStack } from '../storage/stacksRepo'
+import {
+  addReading,
+  addVolumeEntry,
+  getStack,
+  removeReading,
+  removeStack,
+  removeVolumeEntry,
+} from '../storage/stacksRepo'
 import { getNormals } from '../climate/normalsCache'
 import { estimateWindow, simulate } from '../model/simulate'
 import { DRY_ENOUGH_MOISTURE, formatWindow } from '../model/units'
 import { currentSolidLiters, formatVolume } from '../model/volume'
 import { useTranslation } from '../i18n/useTranslation'
+import { ConfirmButton } from './ConfirmButton'
 import { DryingCurveChart } from './DryingCurveChart'
+import { EntryList } from './EntryList'
 import { LogReadingForm } from './LogReadingForm'
 import { VolumeEntryForm } from './VolumeEntryForm'
 
@@ -84,6 +93,21 @@ export function StackDetail({ stackId, onBack, getNormalsFn = getNormals }: Prop
     if (updated) setStack(updated)
   }
 
+  function deleteStack() {
+    removeStack(stackId)
+    onBack()
+  }
+
+  function deleteReading(readingId: string) {
+    const updated = removeReading(stackId, readingId)
+    if (updated) setStack(updated)
+  }
+
+  function deleteVolumeEntry(entryId: string) {
+    const updated = removeVolumeEntry(stackId, entryId)
+    if (updated) setStack(updated)
+  }
+
   // A stack nobody has measured has no ledger at all, and that is not the same
   // as one that has been emptied — the text says which.
   const tracked = (stack.volumeEntries?.length ?? 0) > 0
@@ -142,6 +166,24 @@ export function StackDetail({ stackId, onBack, getNormalsFn = getNormals }: Prop
 
       <Divider />
       <LogReadingForm onLog={log} />
+
+      <Divider />
+      <EntryList
+        readings={stack.readings}
+        volumeEntries={stack.volumeEntries ?? []}
+        onDeleteReading={deleteReading}
+        onDeleteVolumeEntry={deleteVolumeEntry}
+      />
+
+      <Divider />
+      <Group>
+        <ConfirmButton
+          label={t('stackDetail.delete')}
+          confirmLabel={t('stackDetail.deleteConfirm')}
+          cancelLabel={t('stackDetail.deleteCancel')}
+          onConfirm={deleteStack}
+        />
+      </Group>
     </MantineStack>
   )
 }
