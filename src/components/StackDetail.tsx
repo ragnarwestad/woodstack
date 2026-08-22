@@ -1,13 +1,15 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Alert, Button, Divider, Group, Stack as MantineStack, Text, Title } from '@mantine/core'
-import type { ClimateNormals } from '../storage/schema'
-import { addReading, getStack } from '../storage/stacksRepo'
+import type { ClimateNormals, VolumeEntry } from '../storage/schema'
+import { addReading, addVolumeEntry, getStack } from '../storage/stacksRepo'
 import { getNormals } from '../climate/normalsCache'
 import { estimateWindow, simulate } from '../model/simulate'
 import { DRY_ENOUGH_MOISTURE, formatWindow } from '../model/units'
+import { currentSolidLiters, formatVolume } from '../model/volume'
 import { useTranslation } from '../i18n/useTranslation'
 import { DryingCurveChart } from './DryingCurveChart'
 import { LogReadingForm } from './LogReadingForm'
+import { VolumeEntryForm } from './VolumeEntryForm'
 
 const CURVE_MONTHS = 30
 
@@ -77,6 +79,15 @@ export function StackDetail({ stackId, onBack, getNormalsFn = getNormals }: Prop
     if (updated) setStack(updated)
   }
 
+  function logVolume(entry: Omit<VolumeEntry, 'id'>) {
+    const updated = addVolumeEntry(stackId, entry)
+    if (updated) setStack(updated)
+  }
+
+  // A stack nobody has measured has no ledger at all, and that is not the same
+  // as one that has been emptied — the text says which.
+  const tracked = (stack.volumeEntries?.length ?? 0) > 0
+
   const normals = result?.key === requestKey ? result.normals : null
   const loading = result?.key !== requestKey
   const dryWindow = normals ? estimateWindow(stack, normals) : null
@@ -118,6 +129,16 @@ export function StackDetail({ stackId, onBack, getNormalsFn = getNormals }: Prop
           />
         </>
       )}
+
+      <Divider />
+      <Text fw={600}>
+        {tracked
+          ? t('stackDetail.volumeCurrent', {
+              volume: formatVolume(currentSolidLiters(stack.volumeEntries), translator),
+            })
+          : t('stackDetail.volumeNone')}
+      </Text>
+      <VolumeEntryForm onLog={logVolume} />
 
       <Divider />
       <LogReadingForm onLog={log} />

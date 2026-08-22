@@ -3,7 +3,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { StackDetail } from './StackDetail'
 import { renderWithMantine } from '../test/render'
 import { OSLO_NORMALS, makeStack } from '../test/fixtures'
-import { saveStacks } from '../storage/stacksRepo'
+import { getStack, saveStacks } from '../storage/stacksRepo'
 import { ENGLISH_TEST_LANGUAGE, setTestLanguage } from '../test/language'
 
 beforeEach(() => {
@@ -55,6 +55,66 @@ describe('StackDetail', () => {
     fireEvent.click(screen.getByRole('button', { name: /lagre måling/i }))
 
     await waitFor(() => expect(screen.getByTestId('window-text').textContent).not.toBe(before))
+  })
+
+  it('says the volume is not tracked yet rather than showing a bare zero', async () => {
+    renderWithMantine(
+      <StackDetail stackId="a" onBack={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+    )
+    await waitFor(() => screen.getByText(/klar mellom/i))
+    expect(screen.getByText(/ingen ved lagt inn ennå/i)).toBeInTheDocument()
+    expect(screen.queryByText(/igjen nå/i)).not.toBeInTheDocument()
+  })
+
+  it('shows what is left in fast kubikkmeter, whatever units the ledger was logged in', async () => {
+    saveStacks([
+      makeStack({
+        id: 'a',
+        volumeEntries: [
+          { id: 'v1', date: '2026-04-15', kind: 'addition', amount: 2, unit: 'favn' },
+          { id: 'v2', date: '2027-01-10', kind: 'withdrawal', amount: 1, unit: 'storsekk' },
+        ],
+      }),
+    ])
+    renderWithMantine(
+      <StackDetail stackId="a" onBack={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+    )
+
+    // 2 favn = 3300 solid litres, less one storsekk at 500 = 2800.
+    await waitFor(() => expect(screen.getByText(/igjen nå: 2,8 m³ fast/i)).toBeInTheDocument())
+  })
+
+  it('shows zero, not a negative number, when more was taken out than was ever logged in', async () => {
+    saveStacks([
+      makeStack({
+        id: 'a',
+        volumeEntries: [
+          { id: 'v1', date: '2026-04-15', kind: 'addition', amount: 1, unit: 'storsekk' },
+          { id: 'v2', date: '2027-01-10', kind: 'withdrawal', amount: 2, unit: 'storsekk' },
+        ],
+      }),
+    ])
+    renderWithMantine(
+      <StackDetail stackId="a" onBack={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+    )
+
+    await waitFor(() => expect(screen.getByText(/igjen nå: 0 m³ fast/i)).toBeInTheDocument())
+    // The ledger itself is untouched — the clamp is a display decision only.
+    expect(getStack('a')?.volumeEntries).toHaveLength(2)
+  })
+
+  it('adds a logged entry to the running total', async () => {
+    renderWithMantine(
+      <StackDetail stackId="a" onBack={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+    )
+    await waitFor(() => screen.getByText(/klar mellom/i))
+
+    fireEvent.change(screen.getByLabelText(/mengde/i), { target: { value: '1' } })
+    fireEvent.change(screen.getByLabelText(/enhet/i), { target: { value: 'favn' } })
+    fireEvent.click(screen.getByRole('button', { name: /lagre mengde/i }))
+
+    await waitFor(() => expect(screen.getByText(/igjen nå: 1,65 m³ fast/i)).toBeInTheDocument())
+    expect(getStack('a')?.volumeEntries).toHaveLength(1)
   })
 
   it('goes back to the list', () => {

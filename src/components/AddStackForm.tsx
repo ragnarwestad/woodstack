@@ -10,7 +10,18 @@ import {
   TextInput,
   UnstyledButton,
 } from '@mantine/core'
-import { COVERS, EXPOSURES, SPLIT_SIZES, type Cover, type Exposure, type NewStack, type Species, type SplitSize } from '../storage/schema'
+import {
+  COVERS,
+  EXPOSURES,
+  SPLIT_SIZES,
+  VOLUME_UNITS,
+  type Cover,
+  type Exposure,
+  type NewStack,
+  type Species,
+  type SplitSize,
+  type VolumeUnit,
+} from '../storage/schema'
 import { SPECIES_IDS } from '../model/species'
 import { geocode, type GeocodeResult } from '../climate/openMeteo'
 import { useTranslation } from '../i18n/useTranslation'
@@ -33,6 +44,8 @@ export function AddStackForm({ onAdd, onCancel, geocodeFn = (query) => geocode(q
   const [splitSize, setSplitSize] = useState<SplitSize>('medium')
   const [cover, setCover] = useState<Cover>('roof')
   const [exposure, setExposure] = useState<Exposure>('normal')
+  const [volumeAmount, setVolumeAmount] = useState('')
+  const [volumeUnit, setVolumeUnit] = useState<VolumeUnit>('favn')
 
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<GeocodeResult[] | null>(null)
@@ -55,6 +68,14 @@ export function AddStackForm({ onAdd, onCancel, geocodeFn = (query) => geocode(q
       setError(t('addStack.pickPlace'))
       return
     }
+    // The opening amount is optional, and an empty field is not a zero entry:
+    // left blank, the stack simply starts with no ledger at all.
+    const amount = Number(volumeAmount)
+    const initialVolume =
+      volumeAmount.trim() !== '' && Number.isFinite(amount) && amount > 0
+        ? { amount, unit: volumeUnit }
+        : undefined
+
     onAdd({
       name: name.trim() || t(`species.${species}`),
       species,
@@ -63,6 +84,7 @@ export function AddStackForm({ onAdd, onCancel, geocodeFn = (query) => geocode(q
       cover,
       exposure,
       location: { name: place.name, latitude: place.latitude, longitude: place.longitude },
+      ...(initialVolume ? { initialVolume } : {}),
     })
   }
 
@@ -105,6 +127,21 @@ export function AddStackForm({ onAdd, onCancel, geocodeFn = (query) => geocode(q
         value={exposure}
         onChange={(event) => setExposure(event.currentTarget.value as Exposure)}
         data={EXPOSURES.map((value) => ({ value, label: t(`exposure.${value}`) }))}
+      />
+
+      <TextInput
+        type="number"
+        label={t('addStack.volumeAmount')}
+        description={t('addStack.volumeAmountDescription')}
+        value={volumeAmount}
+        onChange={(event) => setVolumeAmount(event.currentTarget.value)}
+      />
+
+      <NativeSelect
+        label={t('addStack.volumeUnit')}
+        value={volumeUnit}
+        onChange={(event) => setVolumeUnit(event.currentTarget.value as VolumeUnit)}
+        data={VOLUME_UNITS.map((value) => ({ value, label: t(`volume.unit.${value}`) }))}
       />
 
       <Group align="flex-end" gap="xs">

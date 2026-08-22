@@ -17,6 +17,8 @@ export const nb = {
   'stackDetail.meta': '{species} · stablet {date} · {place}',
   'stackDetail.offline':
     'Ingen nett, så klimadataene for {place} mangler ennå. Vi prøver igjen med en gang du er på nett.',
+  'stackDetail.volumeCurrent': 'Igjen nå: {volume}',
+  'stackDetail.volumeNone': 'Ingen ved lagt inn ennå.',
 
   'addStack.heading': 'Ny vedstabel',
   'addStack.name': 'Navn på stabelen',
@@ -25,6 +27,9 @@ export const nb = {
   'addStack.splitSize': 'Hvor grovt er den kløyvd?',
   'addStack.cover': 'Står den under tak?',
   'addStack.exposure': 'Sol og vind der den står',
+  'addStack.volumeAmount': 'Hvor mye ved la du i stabelen?',
+  'addStack.volumeAmountDescription': 'Valgfritt – du kan legge inn mengder senere også.',
+  'addStack.volumeUnit': 'Enhet',
   'addStack.place': 'Sted',
   'addStack.placeDescription': 'Brukes bare til å hente klimanormaler – én gang, og så aldri mer.',
   'addStack.search': 'Søk',
@@ -41,6 +46,14 @@ export const nb = {
   'logReading.dateLabel': 'Målt dato',
   'logReading.rangeError': 'Fuktigheten må være mellom {min} og {max} %.',
   'logReading.save': 'Lagre måling',
+
+  'volumeEntry.heading': 'Har du lagt inn eller tatt ut ved?',
+  'volumeEntry.kindLabel': 'Hva gjorde du?',
+  'volumeEntry.amountLabel': 'Mengde',
+  'volumeEntry.unitLabel': 'Enhet',
+  'volumeEntry.dateLabel': 'Dato',
+  'volumeEntry.amountError': 'Mengden må være et tall større enn 0.',
+  'volumeEntry.save': 'Lagre mengde',
 
   'exportImport.explanation':
     'Alt ligger bare i denne nettleseren. Safari sletter det etter 7 dager uten besøk – ta vare på lenken, så har du stablene igjen.',
@@ -75,6 +88,18 @@ export const nb = {
   'exposure.sheltered': 'Lite sol og vind',
   'exposure.normal': 'Vanlig',
   'exposure.exposed': 'Mye sol og vind',
+
+  'volume.kind.addition': 'La inn ved',
+  'volume.kind.withdrawal': 'Tok ut ved',
+
+  'volume.unit.fastKubikk': 'Fast kubikkmeter',
+  'volume.unit.stablet': 'Stablet kubikkmeter',
+  'volume.unit.losKubikk': 'Løs kubikkmeter',
+  'volume.unit.favn': 'Favn (2,4 m³ stablet)',
+  'volume.unit.storsekk': 'Storsekk (1000 liter)',
+  'volume.unit.sekk40': 'Sekk (40 liter)',
+  'volume.unit.sekk60': 'Sekk (60 liter)',
+  'volume.unitShort.fastKubikk': 'm³ fast',
 
   'units.moistureBasis': 'tørrvekt',
   'units.monthPart.beginning': 'begynnelsen',

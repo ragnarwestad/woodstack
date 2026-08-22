@@ -10,12 +10,29 @@ const stacks = [
       { id: 'r2', date: '2026-12-01', moisture: 24 },
     ],
   }),
-  makeStack({ id: 'b', name: 'Granstabelen', species: 'gran', cover: 'none' }),
+  makeStack({
+    id: 'b',
+    name: 'Granstabelen',
+    species: 'gran',
+    cover: 'none',
+    volumeEntries: [
+      { id: 'v1', date: '2026-04-15', kind: 'addition', amount: 2, unit: 'favn' },
+      { id: 'v2', date: '2027-01-10', kind: 'withdrawal', amount: 3, unit: 'sekk60' },
+    ],
+  }),
 ]
 
 describe('export and import', () => {
   it('round-trips exactly', () => {
     expect(importState(exportState(stacks))).toEqual(stacks)
+  })
+
+  it('carries the volume ledger through the link unchanged', () => {
+    const imported = importState(exportState(stacks))
+    expect(imported[1].volumeEntries).toEqual(stacks[1].volumeEntries)
+    // The stack written before the ledger existed keeps its shape too: no
+    // `volumeEntries` invented for it on the way through.
+    expect(imported[0].volumeEntries).toBeUndefined()
   })
 
   it('produces a payload that is safe in a URL fragment', () => {

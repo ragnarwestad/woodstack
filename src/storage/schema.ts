@@ -39,6 +39,28 @@ export type Reading = {
   moisture: number
 }
 
+/** The units firewood is actually traded in here. `fastKubikk` is solid wood
+ *  with no air in it; everything else is a stack, a pile or a sack, so a
+ *  declared litre of it is only partly wood. `sekk40`/`sekk60` are the two
+ *  sack sizes in Norsk Standard NS 4414. */
+export const VOLUME_UNITS = ['fastKubikk', 'stablet', 'losKubikk', 'favn', 'storsekk', 'sekk40', 'sekk60'] as const
+export type VolumeUnit = (typeof VOLUME_UNITS)[number]
+
+export const VOLUME_ENTRY_KINDS = ['addition', 'withdrawal'] as const
+export type VolumeEntryKind = (typeof VOLUME_ENTRY_KINDS)[number]
+
+/** One movement of wood in or out of a stack. A ledger rather than a single
+ *  number, because "how much is left" is the question a woodpile gets asked in
+ *  February, and that needs the withdrawals too. */
+export type VolumeEntry = {
+  id: string
+  /** ISO calendar date, `YYYY-MM-DD`. */
+  date: string
+  kind: VolumeEntryKind
+  amount: number
+  unit: VolumeUnit
+}
+
 export type Stack = {
   id: string
   name: string
@@ -50,11 +72,21 @@ export type Stack = {
   exposure: Exposure
   location: StackLocation
   readings: Reading[]
+  /** Absent on a stack written before this field existed — that reads as "no
+   *  volume logged", never as zero. Optional rather than a `SCHEMA_VERSION`
+   *  bump: the version guard in `stacksRepo.ts` returns an empty list for any
+   *  version it does not recognise, so bumping it would delete every stored
+   *  stack instead of migrating it. */
+  volumeEntries?: VolumeEntry[]
 }
 
 /** Everything needed to create a stack; the id and the empty reading list are
- *  the repository's business. */
-export type NewStack = Omit<Stack, 'id' | 'readings'>
+ *  the repository's business. `initialVolume` is the amount already stacked
+ *  when the visitor first writes the stack down; the repository turns it into
+ *  the ledger's first entry rather than storing it as a field of its own. */
+export type NewStack = Omit<Stack, 'id' | 'readings' | 'volumeEntries'> & {
+  initialVolume?: { amount: number; unit: VolumeUnit }
+}
 
 export type MonthlyNormal = {
   /** Mean daily air temperature, °C. */

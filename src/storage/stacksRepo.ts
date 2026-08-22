@@ -1,5 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
-import { SCHEMA_VERSION, type AppState, type NewStack, type Reading, type Stack } from './schema'
+import {
+  SCHEMA_VERSION,
+  type AppState,
+  type NewStack,
+  type Reading,
+  type Stack,
+  type VolumeEntry,
+} from './schema'
 
 /** The visitor's stacks, in their own browser and nowhere else.
  *
@@ -42,8 +49,21 @@ export function getStack(id: string): Stack | undefined {
   return loadStacks().find((stack) => stack.id === id)
 }
 
+/** `initialVolume` is destructured out rather than spread along: it belongs to
+ *  `NewStack`, not to `Stack`, and TypeScript's excess-property check does not
+ *  fire through a spread — so spreading `input` would leave the field sitting
+ *  on the stored object and travelling in every share link. What it holds
+ *  becomes the ledger's first entry instead. */
 export function addStack(input: NewStack): Stack {
-  const created: Stack = { ...input, id: newId(), readings: [] }
+  const { initialVolume, ...rest } = input
+  const created: Stack = {
+    ...rest,
+    id: newId(),
+    readings: [],
+    volumeEntries: initialVolume
+      ? [{ id: newId(), date: rest.stackedDate, kind: 'addition', ...initialVolume }]
+      : [],
+  }
   saveStacks([...loadStacks(), created])
   return created
 }
@@ -67,6 +87,24 @@ export function addReading(stackId: string, reading: Omit<Reading, 'id'>): Stack
   const updated: Stack = {
     ...target,
     readings: [...target.readings, { ...reading, id: newId() }].sort((a, b) => a.date.localeCompare(b.date)),
+  }
+  saveStacks(stacks.map((stack) => (stack.id === stackId ? updated : stack)))
+  return updated
+}
+
+/** Append a movement of wood in or out, keeping the ledger in date order the
+ *  same way readings are kept. A stack stored before the ledger existed has no
+ *  `volumeEntries` at all, and gets one here rather than being rejected. */
+export function addVolumeEntry(stackId: string, entry: Omit<VolumeEntry, 'id'>): Stack | undefined {
+  const stacks = loadStacks()
+  const target = stacks.find((stack) => stack.id === stackId)
+  if (!target) return undefined
+
+  const updated: Stack = {
+    ...target,
+    volumeEntries: [...(target.volumeEntries ?? []), { ...entry, id: newId() }].sort((a, b) =>
+      a.date.localeCompare(b.date),
+    ),
   }
   saveStacks(stacks.map((stack) => (stack.id === stackId ? updated : stack)))
   return updated

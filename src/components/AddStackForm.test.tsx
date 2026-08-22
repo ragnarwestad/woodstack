@@ -65,6 +65,33 @@ describe('AddStackForm', () => {
     })
   })
 
+  it('hands over an opening amount as the ledger the stack starts with', async () => {
+    const onAdd = vi.fn()
+    renderWithMantine(<AddStackForm onAdd={onAdd} onCancel={vi.fn()} geocodeFn={geocodeFn} />)
+
+    fill(/navn/i, 'Bjørk ved veggen')
+    fill(/hvor mye ved/i, '2')
+    fill(/enhet/i, 'favn')
+    await pickOslo()
+    fireEvent.click(screen.getByRole('button', { name: /lagre/i }))
+
+    expect(onAdd).toHaveBeenCalledWith(
+      expect.objectContaining({ initialVolume: { amount: 2, unit: 'favn' } }),
+    )
+  })
+
+  it('leaves the opening amount out entirely when it was not filled in', async () => {
+    const onAdd = vi.fn()
+    renderWithMantine(<AddStackForm onAdd={onAdd} onCancel={vi.fn()} geocodeFn={geocodeFn} />)
+
+    fill(/navn/i, 'Bjørk ved veggen')
+    await pickOslo()
+    fireEvent.click(screen.getByRole('button', { name: /lagre/i }))
+
+    expect(onAdd).toHaveBeenCalledTimes(1)
+    expect(onAdd.mock.calls[0][0]).not.toHaveProperty('initialVolume')
+  })
+
   it('says so when the place search finds nothing', async () => {
     renderWithMantine(<AddStackForm onAdd={vi.fn()} onCancel={vi.fn()} geocodeFn={vi.fn().mockResolvedValue([])} />)
     fill(/sted/i, 'Xyzzy')
@@ -83,6 +110,7 @@ describe('AddStackForm in English', () => {
     expect(screen.getByLabelText(/species/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/how coarsely is it split/i)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /^save$/i })).toBeInTheDocument()
+    expect(screen.getByLabelText(/how much wood/i)).toBeInTheDocument()
     expect(screen.queryByText(/treslag/i)).not.toBeInTheDocument()
   })
 

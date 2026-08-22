@@ -1,6 +1,17 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { addReading, addStack, getStack, loadStacks, removeStack, replaceStacks, saveStacks } from './stacksRepo'
+import {
+  addReading,
+  addStack,
+  addVolumeEntry,
+  getStack,
+  loadStacks,
+  removeStack,
+  replaceStacks,
+  saveStacks,
+} from './stacksRepo'
 import { makeStack } from '../test/fixtures'
+import { SCHEMA_VERSION } from './schema'
+import { currentSolidLiters } from '../model/volume'
 
 beforeEach(() => {
   localStorage.clear()
@@ -19,6 +30,21 @@ describe('loadStacks', () => {
   it('ignores a payload written by a newer schema version', () => {
     localStorage.setItem('woodstack.state.v1', JSON.stringify({ version: 99, stacks: [makeStack()] }))
     expect(loadStacks()).toEqual([])
+  })
+
+  it('reads a stack stored before the volume ledger existed, rather than dropping it', () => {
+    // The shape actually in visitors' browsers today: the current version, and
+    // stack objects with no `volumeEntries` key at all. An optional field has
+    // to load these untouched — a SCHEMA_VERSION bump would have emptied the
+    // list instead.
+    const oldShaped = makeStack({ id: 'a' })
+    expect('volumeEntries' in oldShaped).toBe(false)
+    localStorage.setItem('woodstack.state.v1', JSON.stringify({ version: SCHEMA_VERSION, stacks: [oldShaped] }))
+
+    const loaded = loadStacks()
+    expect(loaded).toHaveLength(1)
+    expect(loaded[0].id).toBe('a')
+    expect(currentSolidLiters(loaded[0].volumeEntries)).toBe(0)
   })
 })
 
@@ -52,6 +78,93 @@ describe('addStack', () => {
       location: { name: 'Oslo', latitude: 59.9, longitude: 10.8 },
     })
     expect(loadStacks()).toHaveLength(2)
+  })
+
+  it('turns an opening amount into the ledger\'s first entry, dated to the stacking day', () => {
+    const created = addStack({
+      name: 'Bjørk ved veggen',
+      species: 'bjork',
+      stackedDate: '2026-04-15',
+      splitSize: 'medium',
+      cover: 'roof',
+      exposure: 'normal',
+      location: { name: 'Oslo', latitude: 59.9, longitude: 10.8 },
+      initialVolume: { amount: 2, unit: 'favn' },
+    })
+
+    expect(created.volumeEntries).toHaveLength(1)
+    expect(created.volumeEntries?.[0]).toMatchObject({
+      date: '2026-04-15',
+      kind: 'addition',
+      amount: 2,
+      unit: 'favn',
+    })
+    expect(created.volumeEntries?.[0].id).toBeTruthy()
+    expect(currentSolidLiters(getStack(created.id)?.volumeEntries)).toBeCloseTo(3300, 6)
+  })
+
+  it('never lets `initialVolume` itself land on the stored stack', () => {
+    const created = addStack({
+      name: 'Bjørk ved veggen',
+      species: 'bjork',
+      stackedDate: '2026-04-15',
+      splitSize: 'medium',
+      cover: 'roof',
+      exposure: 'normal',
+      location: { name: 'Oslo', latitude: 59.9, longitude: 10.8 },
+      initialVolume: { amount: 2, unit: 'favn' },
+    })
+
+    // A plain spread of the input would leave this sitting on every stored
+    // stack and in every share link, and TypeScript would not say a word.
+    expect('initialVolume' in created).toBe(false)
+    expect('initialVolume' in (getStack(created.id) ?? {})).toBe(false)
+  })
+
+  it('leaves the ledger empty when no opening amount was given', () => {
+    const created = addStack({
+      name: 'Gran',
+      species: 'gran',
+      stackedDate: '2026-05-01',
+      splitSize: 'small',
+      cover: 'none',
+      exposure: 'exposed',
+      location: { name: 'Oslo', latitude: 59.9, longitude: 10.8 },
+    })
+    expect(created.volumeEntries).toEqual([])
+  })
+})
+
+describe('addVolumeEntry', () => {
+  it('appends the entry to that stack only', () => {
+    saveStacks([makeStack({ id: 'a' }), makeStack({ id: 'b', name: 'Gran' })])
+    addVolumeEntry('a', { date: '2026-10-15', kind: 'addition', amount: 1, unit: 'favn' })
+
+    expect(getStack('a')?.volumeEntries).toHaveLength(1)
+    expect(getStack('a')?.volumeEntries?.[0].amount).toBe(1)
+    expect(getStack('b')?.volumeEntries ?? []).toHaveLength(0)
+  })
+
+  it('starts a ledger on a stack stored before the field existed', () => {
+    const oldShaped = makeStack({ id: 'a' })
+    localStorage.setItem('woodstack.state.v1', JSON.stringify({ version: SCHEMA_VERSION, stacks: [oldShaped] }))
+
+    addVolumeEntry('a', { date: '2026-10-15', kind: 'addition', amount: 1, unit: 'storsekk' })
+    expect(currentSolidLiters(getStack('a')?.volumeEntries)).toBeCloseTo(500, 6)
+  })
+
+  it('keeps the ledger in date order', () => {
+    saveStacks([makeStack({ id: 'a' })])
+    addVolumeEntry('a', { date: '2027-01-10', kind: 'withdrawal', amount: 1, unit: 'sekk60' })
+    addVolumeEntry('a', { date: '2026-10-15', kind: 'addition', amount: 1, unit: 'favn' })
+
+    expect(getStack('a')?.volumeEntries?.map((entry) => entry.date)).toEqual(['2026-10-15', '2027-01-10'])
+  })
+
+  it('does nothing for an unknown stack', () => {
+    saveStacks([makeStack({ id: 'a' })])
+    expect(addVolumeEntry('nope', { date: '2026-10-15', kind: 'addition', amount: 1, unit: 'favn' })).toBeUndefined()
+    expect(getStack('a')?.volumeEntries ?? []).toHaveLength(0)
   })
 })
 
