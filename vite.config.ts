@@ -3,6 +3,8 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
+import { pwaIcons } from './src/pwaIcons.ts'
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
@@ -21,8 +23,7 @@ export default defineConfig({
         theme_color: '#8B4513',
         background_color: '#1A1512',
         display: 'standalone',
-        // Icons are added once there is a source image to generate them from:
-        // `pnpm dlx @vite-pwa/assets-generator`. See pnpm-workspace.yaml.
+        icons: pwaIcons,
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],

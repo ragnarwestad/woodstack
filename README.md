@@ -6,7 +6,8 @@
 - [How the estimate works](#how-the-estimate-works)
 - [Running it](#running-it)
 - [How it is built](#how-it-is-built)
-- [Not decided yet](#not-decided-yet)
+- [Where it is deployed](#where-it-is-deployed)
+- [The icon](#the-icon)
 
 ---
 
@@ -60,10 +61,33 @@ pnpm test           # unit tests, single run
 - **Vitest + happy-dom** for unit tests; components are tested against a DOM.
 - **oxlint** for linting (the Vite template's default).
 
-## Not decided yet
+## Where it is deployed
 
-- Where it is deployed, and therefore the `base` path in `vite.config.ts`,
-  which is still `/`.
-- An icon of its own. `public/favicon.svg` is still the Vite template's, and
-  the manifest has no icons. Generate them with
-  `pnpm dlx @vite-pwa/assets-generator` once there is a source image.
+Cloudflare Pages, built from the repository by Cloudflare's own git
+integration — which is why there is no GitHub Actions workflow here. It was
+picked over GitHub Pages for two reasons: it serves a private repository on
+the free tier, and it serves the app from the root, so `base` in
+`vite.config.ts` stays `/` and the manifest scope and icon paths can stay
+absolute. GitHub Pages would have needed `base: '/woodstack/'` and relative
+paths throughout.
+
+One step is left, and it can only be done outside the repository: connecting
+the Cloudflare dashboard to `ragnarwestad/woodstack`. Until that project
+exists there is no `pages.dev` address to write down, which is why
+`.aide/project.yaml` records the host but no `url` yet.
+
+## The icon
+
+`src/assets/icon-source.svg` is the mark: five split logs seen end-on, in the
+PWA manifest's own `theme_color` and `background_color`. `public/favicon.svg`
+is the same file, kept there because the generator writes its output next to
+the image it is given:
+
+```bash
+pnpm dlx @vite-pwa/assets-generator --preset minimal public/favicon.svg
+```
+
+That regenerates every PNG and `favicon.ico` in `public/` in place. The
+generator is a one-off CLI run rather than a dependency — `pnpm-workspace.yaml`
+says why. `src/pwaIcons.ts` lists the generated files for the PWA manifest, so
+changing the preset means changing that list too.
