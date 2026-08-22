@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Container, Divider, Stack, Text, Title } from '@mantine/core'
+import { Container, Divider, Stack } from '@mantine/core'
 import type { NewStack, Stack as WoodStack } from './storage/schema'
 import { readStackId, stackHash } from './storage/appState'
 import { addStack, replaceStacks, useStacks } from './storage/stacksRepo'
 import { getCachedNormals, getNormals } from './climate/normalsCache'
+import { AppHeader } from './components/AppHeader'
 import { StackList } from './components/StackList'
 import { StackDetail } from './components/StackDetail'
 import { AddStackForm } from './components/AddStackForm'
@@ -15,7 +16,7 @@ import { useTranslation } from './i18n/useTranslation'
  *  `location.hash` already does: `#s=<id>` opens a stack, and `#i=<payload>`
  *  is a share link that `useImportOnLoad` consumes and clears. */
 export function App() {
-  const { t, language } = useTranslation()
+  const { language } = useTranslation()
   const stacks = useStacks()
   const [selectedId, setSelectedId] = useState<string | null>(() => readStackId(window.location.hash))
   const [adding, setAdding] = useState(false)
@@ -59,10 +60,7 @@ export function App() {
   return (
     <Container size="sm" py="xl">
       <Stack gap="lg">
-        <Stack gap="xs">
-          <Title order={1}>Woodstack</Title>
-          <Text c="dimmed">{t('app.tagline')}</Text>
-        </Stack>
+        <AppHeader />
 
         <InstallPrompt />
 

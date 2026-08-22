@@ -4,6 +4,7 @@ import type { TranslationKey } from './nb'
  *  compile error rather than a blank on screen. */
 export const en: Record<TranslationKey, string> = {
   'app.tagline': 'When is the firewood dry enough to burn?',
+  'app.language': 'Language',
 
   'common.readyBetween': 'Ready between {window}',
   'common.loadingClimate': 'Fetching climate data for the location …',

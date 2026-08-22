@@ -3,6 +3,7 @@
  *  fails the build rather than the visitor. */
 export const nb = {
   'app.tagline': 'Når er veden tørr nok til å fyre med?',
+  'app.language': 'Språk',
 
   'common.readyBetween': 'Klar mellom {window}',
   'common.loadingClimate': 'Henter klimadata for stedet …',
