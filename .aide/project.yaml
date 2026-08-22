@@ -10,13 +10,7 @@ stack:
   database: none — stacks live in the visitor's own browser, never leave it
 docs:
   - README.md
-deployment:
-  host: Cloudflare Pages
-  build: pnpm build
-  output: dist
-  # url and preview: added once the Cloudflare dashboard project exists and
-  # has assigned its pages.dev address (or a custom domain) — see
-  # 03-deployment-and-icon/3-solution.md, risk 3.
 # Left out until they are real, rather than guessed:
+#   deployment — no host chosen yet; base in vite.config.ts is still '/'
 #   dependencies — Open-Meteo (climate normals) is planned, not yet called
 #   logging, statistics, reports — nothing set up

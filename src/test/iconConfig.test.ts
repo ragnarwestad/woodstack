@@ -30,39 +30,21 @@ describe('vite.config.ts', () => {
     expect(viteConfig).not.toMatch(/icons:\s*\[/)
   })
 
-  // Cloudflare Pages serves the app from the root, so the Vite default holds.
-  // GitHub Pages would have forced base: '/woodstack/' and relative paths
-  // throughout the manifest — see 3-solution.md § Approaches.
+  // No host is chosen yet, so nothing has asked for a base of its own.
+  // A host that serves from a subpath would force one — that is a decision
+  // for the spec that picks the host, not an assumption to bake in here.
   it('leaves base at the Vite default', () => {
     const base = viteConfig.match(/^\s*base:\s*(.+)$/m)
     if (base) expect(base[1]).toMatch(/^'\/',?$/)
   })
 })
 
-describe('.aide/project.yaml', () => {
-  const manifest = repoFile('.aide/project.yaml')
-
-  it('names Cloudflare Pages as the deployment host', () => {
-    expect(manifest).toMatch(/^deployment:\n(?:\s+.*\n)*?\s+host: Cloudflare Pages$/m)
-  })
-
-  it('no longer lists deployment among the keys left out as unknown', () => {
-    const leftOut = manifest.slice(manifest.indexOf('# Left out until they are real'))
-    expect(leftOut).not.toContain('deployment')
-  })
-})
-
 describe('README.md', () => {
   const readme = repoFile('README.md')
 
-  it('names the chosen host', () => {
-    expect(readme).toContain('Cloudflare Pages')
-  })
-
-  it.each([
-    "Where it is deployed, and therefore the `base` path in `vite.config.ts`,\n  which is still `/`.",
-    "An icon of its own. `public/favicon.svg` is still the Vite template's, and\n  the manifest has no icons.",
-  ])('no longer states %j as undecided', (sentence) => {
-    expect(readme).not.toContain(sentence)
+  it('no longer calls the icon undecided', () => {
+    expect(readme).not.toContain(
+      "An icon of its own. `public/favicon.svg` is still the Vite template's, and\n  the manifest has no icons.",
+    )
   })
 })
