@@ -1,0 +1,14 @@
+# pnpm settings. From pnpm 10 these are no longer read from the "pnpm" field
+# in package.json.
+#
+# Only esbuild may run a build script on install — Vite is built on it, and
+# pnpm otherwise aborts `pnpm build` over the ignored script. Everything else
+# has to manage without, so a new dependency cannot run code on the machine
+# merely by being installed.
+#
+# The PWA icon generator (@vite-pwa/assets-generator) is deliberately NOT a
+# dependency: it pulls in sharp, which wants a build script of its own, and it
+# is a one-off CLI run. Generate icons with `pnpm dlx @vite-pwa/assets-generator`
+# when there is a source image to generate them from.
+onlyBuiltDependencies:
+  - esbuild

@@ -1,0 +1,16 @@
+# .aide/project.yaml — the project's identity card.
+# TEAM knowledge, committed to git. All keys optional: leave out what
+# is unknown rather than guessing. Links over prose.
+name: woodstack
+description: Estimates when a firewood stack is dry enough to burn — browser-local, installable, no account
+generated: 2026-08-22
+stack:
+  frontend: TypeScript/Vite + React 19 + Mantine, installable PWA (vite-plugin-pwa)
+  backend: none — static build, everything runs in the browser
+  database: none — stacks live in the visitor's own browser, never leave it
+docs:
+  - README.md
+# Left out until they are real, rather than guessed:
+#   deployment  — no host chosen yet; base in vite.config.ts is still '/'
+#   dependencies — Open-Meteo (climate normals) is planned, not yet called
+#   logging, statistics, reports — nothing set up

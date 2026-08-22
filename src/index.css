@@ -1,0 +1,5 @@
+/* Mantine brings its own reset and theming; this file holds only what the
+   document itself needs. */
+body {
+  margin: 0;
+}
