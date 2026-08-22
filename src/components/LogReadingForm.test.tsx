@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { fireEvent, screen } from '@testing-library/react'
 import { LogReadingForm } from './LogReadingForm'
 import { renderWithMantine } from '../test/render'
+import { ENGLISH_TEST_LANGUAGE, setTestLanguage } from '../test/language'
 
 describe('LogReadingForm', () => {
   it('names the moisture basis on the input, so the number is never bare', () => {
@@ -30,5 +31,30 @@ describe('LogReadingForm', () => {
 
     expect(onLog).not.toHaveBeenCalled()
     expect(screen.getByText(/mellom 5 og 200/i)).toBeInTheDocument()
+  })
+})
+
+describe('LogReadingForm in English', () => {
+  it('translates the fields and names the basis in English', () => {
+    setTestLanguage(ENGLISH_TEST_LANGUAGE)
+    renderWithMantine(<LogReadingForm onLog={vi.fn()} />)
+
+    expect(screen.getByText(/have you measured the woodpile/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/moisture/i)).toBeInTheDocument()
+    expect(screen.getByText(/dry basis/i)).toBeInTheDocument()
+    expect(screen.queryByText(/tørrvekt/i)).not.toBeInTheDocument()
+  })
+
+  it('keeps both bounds inside the translated range error', () => {
+    setTestLanguage(ENGLISH_TEST_LANGUAGE)
+    renderWithMantine(<LogReadingForm onLog={vi.fn()} />)
+
+    fireEvent.change(screen.getByLabelText(/moisture/i), { target: { value: '400' } })
+    fireEvent.click(screen.getByRole('button', { name: /save reading/i }))
+
+    const error = screen.getByText(/between/i)
+    expect(error).toHaveTextContent('5')
+    expect(error).toHaveTextContent('200')
+    expect(error).not.toHaveTextContent('{')
   })
 })

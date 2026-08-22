@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { AddStackForm } from './AddStackForm'
 import { renderWithMantine } from '../test/render'
+import { ENGLISH_TEST_LANGUAGE, setTestLanguage } from '../test/language'
 
 const geocodeFn = vi.fn().mockResolvedValue([
   { name: 'Oslo', latitude: 59.91, longitude: 10.75, country: 'Norge', admin1: 'Oslo' },
@@ -69,5 +70,38 @@ describe('AddStackForm', () => {
     fill(/sted/i, 'Xyzzy')
     fireEvent.click(screen.getByRole('button', { name: /søk/i }))
     await waitFor(() => expect(screen.getByText(/fant ingen steder/i)).toBeInTheDocument())
+  })
+})
+
+describe('AddStackForm in English', () => {
+  it('labels every field in English when the browser does not speak Norwegian', () => {
+    setTestLanguage(ENGLISH_TEST_LANGUAGE)
+    renderWithMantine(<AddStackForm onAdd={vi.fn()} onCancel={vi.fn()} geocodeFn={geocodeFn} />)
+
+    expect(screen.getByText('New woodpile')).toBeInTheDocument()
+    expect(screen.getByLabelText(/name of the woodpile/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/species/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/how coarsely is it split/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^save$/i })).toBeInTheDocument()
+    expect(screen.queryByText(/treslag/i)).not.toBeInTheDocument()
+  })
+
+  it('names the species in English in the select and in the default stack name', async () => {
+    setTestLanguage(ENGLISH_TEST_LANGUAGE)
+    const onAdd = vi.fn()
+    renderWithMantine(<AddStackForm onAdd={onAdd} onCancel={vi.fn()} geocodeFn={geocodeFn} />)
+
+    const species = screen.getByLabelText(/species/i)
+    expect(species).toHaveTextContent('Birch')
+    expect(species).toHaveTextContent('Spruce')
+    expect(species).not.toHaveTextContent('Bjørk')
+
+    fill(/location/i, 'Oslo')
+    fireEvent.click(screen.getByRole('button', { name: /^search$/i }))
+    await waitFor(() => screen.getByRole('button', { name: /Oslo/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Oslo/ }))
+    fireEvent.click(screen.getByRole('button', { name: /^save$/i }))
+
+    expect(onAdd).toHaveBeenCalledWith(expect.objectContaining({ name: 'Birch', species: 'bjork' }))
   })
 })

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { act, fireEvent, screen } from '@testing-library/react'
 import { InstallPrompt } from './InstallPrompt'
 import { renderWithMantine } from '../test/render'
+import { ENGLISH_TEST_LANGUAGE, setTestLanguage } from '../test/language'
 
 /** The event Chromium fires and iOS never does. */
 function fireInstallPrompt() {
@@ -47,5 +48,17 @@ describe('InstallPrompt', () => {
     renderWithMantine(<InstallPrompt standalone={false} ios />)
     fireEvent.click(screen.getByRole('button', { name: /lukk/i }))
     expect(screen.queryByText(/hjem-skjermen/i)).not.toBeInTheDocument()
+  })
+})
+
+describe('InstallPrompt in English', () => {
+  it('asks to be installed, and says why, in English', () => {
+    setTestLanguage(ENGLISH_TEST_LANGUAGE)
+    renderWithMantine(<InstallPrompt standalone={false} ios />)
+
+    expect(screen.getByText(/add woodstack to your home screen/i)).toBeInTheDocument()
+    expect(screen.getByText(/7 days without a visit/i)).toBeInTheDocument()
+    expect(screen.getByText(/add to home screen/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^close$/i })).toBeInTheDocument()
   })
 })

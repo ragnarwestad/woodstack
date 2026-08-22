@@ -4,6 +4,7 @@ import { ExportImport, useImportOnLoad } from './ExportImport'
 import { renderWithMantine } from '../test/render'
 import { makeStack } from '../test/fixtures'
 import { exportState } from '../storage/appState'
+import { ENGLISH_TEST_LANGUAGE, setTestLanguage } from '../test/language'
 
 const stacks = [makeStack({ id: 'a' })]
 
@@ -63,5 +64,16 @@ describe('useImportOnLoad', () => {
 
     expect(onImport).not.toHaveBeenCalled()
     expect(window.location.hash).not.toContain('i=')
+  })
+})
+
+describe('ExportImport in English', () => {
+  it('explains the storage and labels the copy button in English', () => {
+    setTestLanguage(ENGLISH_TEST_LANGUAGE)
+    renderWithMantine(<ExportImport stacks={stacks} copyFn={vi.fn()} />)
+
+    expect(screen.getByText(/safari deletes it after 7 days/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /copy my link/i })).toBeInTheDocument()
+    expect(screen.queryByText(/nettleseren/i)).not.toBeInTheDocument()
   })
 })

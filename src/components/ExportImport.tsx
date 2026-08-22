@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Button, Group, Stack as MantineStack, Text } from '@mantine/core'
 import type { Stack } from '../storage/schema'
 import { buildShareLink, importState, readImportPayload } from '../storage/appState'
+import { useTranslation } from '../i18n/useTranslation'
 
 /** The only backup this app has. Everything is in the visitor's own browser,
  *  so the link is the way to move it to another device — or to get it back
@@ -13,13 +14,13 @@ type Props = {
 }
 
 export function ExportImport({ stacks, copyFn = (text) => navigator.clipboard.writeText(text) }: Props) {
+  const { t } = useTranslation()
   const [copied, setCopied] = useState(false)
 
   return (
     <MantineStack gap="xs">
       <Text size="sm" c="dimmed">
-        Alt ligger bare i denne nettleseren. Safari sletter det etter 7 dager uten besøk – ta vare på lenken, så har du
-        stablene igjen.
+        {t('exportImport.explanation')}
       </Text>
       <Group>
         <Button
@@ -28,9 +29,9 @@ export function ExportImport({ stacks, copyFn = (text) => navigator.clipboard.wr
             void Promise.resolve(copyFn(buildShareLink(stacks, window.location.href))).then(() => setCopied(true))
           }}
         >
-          Kopier lenken min
+          {t('exportImport.copy')}
         </Button>
-        {copied && <Text size="sm">Kopiert.</Text>}
+        {copied && <Text size="sm">{t('exportImport.copied')}</Text>}
       </Group>
     </MantineStack>
   )

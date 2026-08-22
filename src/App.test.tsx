@@ -6,6 +6,7 @@ import { OSLO_NORMALS, makeStack } from './test/fixtures'
 import { saveStacks } from './storage/stacksRepo'
 import { writeCachedNormals } from './climate/normalsCache'
 import { exportState } from './storage/appState'
+import { ENGLISH_TEST_LANGUAGE, setTestLanguage } from './test/language'
 
 beforeEach(() => {
   localStorage.clear()
@@ -48,5 +49,24 @@ describe('App', () => {
     renderWithMantine(<App />)
     await waitFor(() => expect(screen.getByText('Importert stabel')).toBeInTheDocument())
     expect(window.location.hash).not.toContain('i=')
+  })
+})
+
+describe('App in English', () => {
+  it('keeps the brand name but translates the tagline and the screen under it', () => {
+    setTestLanguage(ENGLISH_TEST_LANGUAGE)
+    saveStacks([makeStack({ id: 'a', name: 'Bjørk ved veggen' })])
+    renderWithMantine(<App />)
+
+    expect(screen.getByRole('heading', { name: 'Woodstack' })).toBeInTheDocument()
+    expect(screen.getByText(/when is the firewood dry enough to burn/i)).toBeInTheDocument()
+    expect(screen.getByText('My woodpiles')).toBeInTheDocument()
+    expect(screen.queryByText(/vedstablene mine/i)).not.toBeInTheDocument()
+  })
+
+  it('tells the browser which language the page ended up in', () => {
+    setTestLanguage(ENGLISH_TEST_LANGUAGE)
+    renderWithMantine(<App />)
+    expect(document.documentElement.lang).toBe('en')
   })
 })

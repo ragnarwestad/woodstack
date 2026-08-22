@@ -4,11 +4,10 @@ import { dryingRate, temperatureFactor } from './dryingRate'
 import { makeStack } from '../test/fixtures'
 
 describe('SPECIES', () => {
-  it('has an entry per species id, with a label, green moisture and a base rate', () => {
+  it('has an entry per species id, with green moisture and a base rate', () => {
     for (const id of SPECIES_IDS) {
       const info = SPECIES[id]
       expect(info.id).toBe(id)
-      expect(info.label.length).toBeGreaterThan(0)
       expect(info.greenMoisture).toBeGreaterThan(40)
       expect(info.baseRate).toBeGreaterThan(0)
     }
