@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Alert, Button, Group, Stack as MantineStack, Text, TextInput } from '@mantine/core'
-import { MOISTURE_BASIS_LABEL } from '../model/units'
+import { useTranslation } from '../i18n/useTranslation'
 
 /** A meter reading is worth more than any refinement of the species table,
  *  so entering one is two fields and a button. */
@@ -13,6 +13,7 @@ type Props = {
 }
 
 export function LogReadingForm({ onLog }: Props) {
+  const { t } = useTranslation()
   const [moisture, setMoisture] = useState('')
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10))
   const [error, setError] = useState<string | null>(null)
@@ -20,7 +21,7 @@ export function LogReadingForm({ onLog }: Props) {
   function submit() {
     const value = Number(moisture)
     if (!Number.isFinite(value) || value < MIN_MOISTURE || value > MAX_MOISTURE) {
-      setError(`Fuktigheten må være mellom ${MIN_MOISTURE} og ${MAX_MOISTURE} %.`)
+      setError(t('logReading.rangeError', { min: MIN_MOISTURE, max: MAX_MOISTURE }))
       return
     }
     setError(null)
@@ -30,19 +31,19 @@ export function LogReadingForm({ onLog }: Props) {
 
   return (
     <MantineStack gap="sm">
-      <Text fw={600}>Har du målt stabelen?</Text>
+      <Text fw={600}>{t('logReading.heading')}</Text>
 
       <TextInput
         type="number"
-        label="Fuktighet"
-        description={`Prosent av ${MOISTURE_BASIS_LABEL} – tallet måleren viser`}
+        label={t('logReading.moistureLabel')}
+        description={t('logReading.moistureDescription', { basis: t('units.moistureBasis') })}
         value={moisture}
         onChange={(event) => setMoisture(event.currentTarget.value)}
       />
 
       <TextInput
         type="date"
-        label="Målt dato"
+        label={t('logReading.dateLabel')}
         value={date}
         onChange={(event) => setDate(event.currentTarget.value)}
       />
@@ -50,7 +51,7 @@ export function LogReadingForm({ onLog }: Props) {
       {error && <Alert color="red">{error}</Alert>}
 
       <Group>
-        <Button onClick={submit}>Lagre måling</Button>
+        <Button onClick={submit}>{t('logReading.save')}</Button>
       </Group>
     </MantineStack>
   )

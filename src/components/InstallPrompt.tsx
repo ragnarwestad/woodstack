@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Alert, Button, Group, Stack as MantineStack, Text } from '@mantine/core'
+import { useTranslation } from '../i18n/useTranslation'
 
 /** Safari throws away a site's storage after seven days without a visit — and
  *  a firewood app is visited every few months, which is exactly the pattern
@@ -9,8 +10,6 @@ import { Alert, Button, Group, Stack as MantineStack, Text } from '@mantine/core
  *  iOS never fires `beforeinstallprompt`, so waiting for that event there
  *  would show iOS visitors nothing at all. They get the static instruction
  *  instead. */
-
-const EVICTION_COPY = 'Safari sletter alt appen har lagret etter 7 dager uten besøk. Installerte apper slipper unna.'
 
 type InstallEvent = Event & { prompt?: () => Promise<unknown> }
 
@@ -29,6 +28,7 @@ function isIos(): boolean {
 }
 
 export function InstallPrompt({ standalone = isStandalone(), ios = isIos() }: Props) {
+  const { t } = useTranslation()
   const [installEvent, setInstallEvent] = useState<InstallEvent | null>(null)
   const [dismissed, setDismissed] = useState(false)
 
@@ -50,10 +50,10 @@ export function InstallPrompt({ standalone = isStandalone(), ios = isIos() }: Pr
   return (
     <Alert color="orange">
       <MantineStack gap="xs">
-        <Text fw={600}>Legg Woodstack på hjem-skjermen</Text>
-        <Text size="sm">{EVICTION_COPY}</Text>
+        <Text fw={600}>{t('install.heading')}</Text>
+        <Text size="sm">{t('install.eviction')}</Text>
         {ios ? (
-          <Text size="sm">Trykk Del-knappen i Safari og velg «Legg til på Hjem-skjerm».</Text>
+          <Text size="sm">{t('install.ios')}</Text>
         ) : null}
         <Group>
           {!ios && installEvent?.prompt && (
@@ -63,11 +63,11 @@ export function InstallPrompt({ standalone = isStandalone(), ios = isIos() }: Pr
                 setDismissed(true)
               }}
             >
-              Installer
+              {t('install.install')}
             </Button>
           )}
           <Button variant="subtle" onClick={() => setDismissed(true)}>
-            Lukk
+            {t('install.close')}
           </Button>
         </Group>
       </MantineStack>

@@ -4,6 +4,7 @@ import { StackDetail } from './StackDetail'
 import { renderWithMantine } from '../test/render'
 import { OSLO_NORMALS, makeStack } from '../test/fixtures'
 import { saveStacks } from '../storage/stacksRepo'
+import { ENGLISH_TEST_LANGUAGE, setTestLanguage } from '../test/language'
 
 beforeEach(() => {
   localStorage.clear()
@@ -71,5 +72,28 @@ describe('StackDetail', () => {
       <StackDetail stackId="nope" onBack={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
     )
     expect(screen.getByText(/finner ikke/i)).toBeInTheDocument()
+  })
+})
+
+describe('StackDetail in English', () => {
+  it('translates the detail chrome and the species in the heading line', async () => {
+    setTestLanguage(ENGLISH_TEST_LANGUAGE)
+    renderWithMantine(
+      <StackDetail stackId="a" onBack={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+    )
+
+    await waitFor(() => expect(screen.getByText(/ready between/i)).toBeInTheDocument())
+    expect(screen.getByRole('button', { name: /^back$/i })).toBeInTheDocument()
+    expect(screen.getByText(/^Birch · stacked 2026-04-15 · Oslo$/)).toBeInTheDocument()
+    expect(screen.queryByText(/bjørk ·/i)).not.toBeInTheDocument()
+  })
+
+  it('says the stack is gone in English', () => {
+    setTestLanguage(ENGLISH_TEST_LANGUAGE)
+    localStorage.clear()
+    renderWithMantine(
+      <StackDetail stackId="nope" onBack={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+    )
+    expect(screen.getByText(/cannot find this woodpile/i)).toBeInTheDocument()
   })
 })

@@ -11,26 +11,9 @@ import {
   UnstyledButton,
 } from '@mantine/core'
 import { COVERS, EXPOSURES, SPLIT_SIZES, type Cover, type Exposure, type NewStack, type Species, type SplitSize } from '../storage/schema'
-import { SPECIES, SPECIES_IDS } from '../model/species'
+import { SPECIES_IDS } from '../model/species'
 import { geocode, type GeocodeResult } from '../climate/openMeteo'
-
-const SPLIT_LABELS: Record<SplitSize, string> = {
-  small: 'Fint kløyvd',
-  medium: 'Middels',
-  large: 'Grovt kløyvd',
-}
-
-const COVER_LABELS: Record<Cover, string> = {
-  none: 'Nei, den står åpent',
-  roof: 'Ja, tak over og åpne sider',
-  shed: 'Ja, i vedskjul',
-}
-
-const EXPOSURE_LABELS: Record<Exposure, string> = {
-  sheltered: 'Lite sol og vind',
-  normal: 'Vanlig',
-  exposed: 'Mye sol og vind',
-}
+import { useTranslation } from '../i18n/useTranslation'
 
 function today(): string {
   return new Date().toISOString().slice(0, 10)
@@ -43,6 +26,7 @@ type Props = {
 }
 
 export function AddStackForm({ onAdd, onCancel, geocodeFn = (query) => geocode(query) }: Props) {
+  const { t } = useTranslation()
   const [name, setName] = useState('')
   const [species, setSpecies] = useState<Species>('bjork')
   const [stackedDate, setStackedDate] = useState(today)
@@ -62,17 +46,17 @@ export function AddStackForm({ onAdd, onCancel, geocodeFn = (query) => geocode(q
       setResults(await geocodeFn(query))
     } catch {
       setResults([])
-      setError('Stedssøket svarte ikke. Prøv igjen når du har nett.')
+      setError(t('addStack.searchFailed'))
     }
   }
 
   function submit() {
     if (!place) {
-      setError('Velg et sted, så vet vi hvilket klima stabelen står i.')
+      setError(t('addStack.pickPlace'))
       return
     }
     onAdd({
-      name: name.trim() || SPECIES[species].label,
+      name: name.trim() || t(`species.${species}`),
       species,
       stackedDate,
       splitSize,
@@ -84,62 +68,62 @@ export function AddStackForm({ onAdd, onCancel, geocodeFn = (query) => geocode(q
 
   return (
     <MantineStack gap="md">
-      <Text fw={600}>Ny vedstabel</Text>
+      <Text fw={600}>{t('addStack.heading')}</Text>
 
-      <TextInput label="Navn på stabelen" value={name} onChange={(event) => setName(event.currentTarget.value)} />
+      <TextInput label={t('addStack.name')} value={name} onChange={(event) => setName(event.currentTarget.value)} />
 
       <NativeSelect
-        label="Treslag"
+        label={t('addStack.species')}
         value={species}
         onChange={(event) => setSpecies(event.currentTarget.value as Species)}
-        data={SPECIES_IDS.map((id) => ({ value: id, label: SPECIES[id].label }))}
+        data={SPECIES_IDS.map((id) => ({ value: id, label: t(`species.${id}`) }))}
       />
 
       <TextInput
         type="date"
-        label="Stablet dato"
+        label={t('addStack.stackedDate')}
         value={stackedDate}
         onChange={(event) => setStackedDate(event.currentTarget.value)}
       />
 
       <NativeSelect
-        label="Hvor grovt er den kløyvd?"
+        label={t('addStack.splitSize')}
         value={splitSize}
         onChange={(event) => setSplitSize(event.currentTarget.value as SplitSize)}
-        data={SPLIT_SIZES.map((value) => ({ value, label: SPLIT_LABELS[value] }))}
+        data={SPLIT_SIZES.map((value) => ({ value, label: t(`splitSize.${value}`) }))}
       />
 
       <NativeSelect
-        label="Står den under tak?"
+        label={t('addStack.cover')}
         value={cover}
         onChange={(event) => setCover(event.currentTarget.value as Cover)}
-        data={COVERS.map((value) => ({ value, label: COVER_LABELS[value] }))}
+        data={COVERS.map((value) => ({ value, label: t(`cover.${value}`) }))}
       />
 
       <NativeSelect
-        label="Sol og vind der den står"
+        label={t('addStack.exposure')}
         value={exposure}
         onChange={(event) => setExposure(event.currentTarget.value as Exposure)}
-        data={EXPOSURES.map((value) => ({ value, label: EXPOSURE_LABELS[value] }))}
+        data={EXPOSURES.map((value) => ({ value, label: t(`exposure.${value}`) }))}
       />
 
       <Group align="flex-end" gap="xs">
         <TextInput
-          label="Sted"
-          description="Brukes bare til å hente klimanormaler – én gang, og så aldri mer."
+          label={t('addStack.place')}
+          description={t('addStack.placeDescription')}
           value={query}
           onChange={(event) => setQuery(event.currentTarget.value)}
           style={{ flex: 1 }}
         />
         <Button variant="default" onClick={search}>
-          Søk
+          {t('addStack.search')}
         </Button>
       </Group>
 
       {place ? (
-        <Text size="sm">Valgt sted: {placeLabel(place)}</Text>
+        <Text size="sm">{t('addStack.chosenPlace', { place: placeLabel(place) })}</Text>
       ) : (
-        results?.length === 0 && <Text size="sm">Fant ingen steder som heter det.</Text>
+        results?.length === 0 && <Text size="sm">{t('addStack.noPlaces')}</Text>
       )}
 
       {!place &&
@@ -160,9 +144,9 @@ export function AddStackForm({ onAdd, onCancel, geocodeFn = (query) => geocode(q
       {error && <Alert color="red">{error}</Alert>}
 
       <Group>
-        <Button onClick={submit}>Lagre</Button>
+        <Button onClick={submit}>{t('addStack.save')}</Button>
         <Button variant="subtle" onClick={onCancel}>
-          Avbryt
+          {t('addStack.cancel')}
         </Button>
       </Group>
     </MantineStack>

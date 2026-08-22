@@ -2,7 +2,7 @@ import { Button, Group, Paper, Stack as MantineStack, Text, UnstyledButton } fro
 import type { ClimateNormals, Stack } from '../storage/schema'
 import { estimateWindow, windowProgress } from '../model/simulate'
 import { formatWindow } from '../model/units'
-import { SPECIES } from '../model/species'
+import { useTranslation, type Translator } from '../i18n/useTranslation'
 import { ProgressRing } from './ProgressRing'
 
 type Props = {
@@ -16,15 +16,18 @@ type Props = {
 }
 
 export function StackList({ stacks, normalsFor, onSelect, onAdd, today = new Date() }: Props) {
+  const translator = useTranslation()
+  const { t } = translator
+
   return (
     <MantineStack gap="md">
       <Group justify="space-between">
-        <Text fw={600}>Vedstablene mine</Text>
-        <Button onClick={onAdd}>Ny stabel</Button>
+        <Text fw={600}>{t('stackList.heading')}</Text>
+        <Button onClick={onAdd}>{t('stackList.add')}</Button>
       </Group>
 
       {stacks.length === 0 ? (
-        <Text c="dimmed">Ingen vedstabler ennå. Legg inn den første, så regner vi ut når den er tørr.</Text>
+        <Text c="dimmed">{t('stackList.empty')}</Text>
       ) : (
         stacks.map((stack) => (
           <StackRow
@@ -33,6 +36,7 @@ export function StackList({ stacks, normalsFor, onSelect, onAdd, today = new Dat
             normals={normalsFor(stack)}
             today={today}
             onSelect={() => onSelect(stack.id)}
+            translator={translator}
           />
         ))
       )}
@@ -45,12 +49,15 @@ function StackRow({
   normals,
   today,
   onSelect,
+  translator,
 }: {
   stack: Stack
   normals: ClimateNormals | null
   today: Date
   onSelect: () => void
+  translator: Translator
 }) {
+  const { t } = translator
   const window = normals ? estimateWindow(stack, normals) : null
 
   return (
@@ -61,13 +68,13 @@ function StackRow({
           <MantineStack gap={2}>
             <Text fw={600}>{stack.name}</Text>
             <Text size="sm" c="dimmed">
-              {SPECIES[stack.species].label}
+              {t(`species.${stack.species}`)}
             </Text>
             {window ? (
-              <Text size="sm">Klar mellom {formatWindow(window)}</Text>
+              <Text size="sm">{t('common.readyBetween', { window: formatWindow(window, translator) })}</Text>
             ) : (
               <Text size="sm" c="dimmed">
-                Henter klimadata for stedet …
+                {t('common.loadingClimate')}
               </Text>
             )}
           </MantineStack>

@@ -5,8 +5,6 @@ export type { Species }
 
 export type SpeciesInfo = {
   id: Species
-  /** Norwegian name, as it is shown in the UI. */
-  label: string
   /** Moisture of freshly felled wood, dry basis %. */
   greenMoisture: number
   /** Drying-rate constant per month at reference conditions: medium split,
@@ -25,11 +23,11 @@ export type SpeciesInfo = {
  *  in `simulate.ts`) and why logging one reading is worth more than any
  *  refinement of this table. */
 export const SPECIES: Record<Species, SpeciesInfo> = {
-  bjork: { id: 'bjork', label: 'Bjørk', greenMoisture: 75, baseRate: 0.38 },
-  or: { id: 'or', label: 'Or', greenMoisture: 95, baseRate: 0.45 },
-  osp: { id: 'osp', label: 'Osp', greenMoisture: 100, baseRate: 0.48 },
-  furu: { id: 'furu', label: 'Furu', greenMoisture: 100, baseRate: 0.42 },
-  gran: { id: 'gran', label: 'Gran', greenMoisture: 120, baseRate: 0.5 },
-  eik: { id: 'eik', label: 'Eik', greenMoisture: 75, baseRate: 0.22 },
-  bok: { id: 'bok', label: 'Bøk', greenMoisture: 78, baseRate: 0.28 },
+  bjork: { id: 'bjork', greenMoisture: 75, baseRate: 0.38 },
+  or: { id: 'or', greenMoisture: 95, baseRate: 0.45 },
+  osp: { id: 'osp', greenMoisture: 100, baseRate: 0.48 },
+  furu: { id: 'furu', greenMoisture: 100, baseRate: 0.42 },
+  gran: { id: 'gran', greenMoisture: 120, baseRate: 0.5 },
+  eik: { id: 'eik', greenMoisture: 75, baseRate: 0.22 },
+  bok: { id: 'bok', greenMoisture: 78, baseRate: 0.28 },
 }

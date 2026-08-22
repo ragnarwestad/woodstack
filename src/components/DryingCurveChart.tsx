@@ -2,6 +2,7 @@ import type { DryWindow, Reading } from '../storage/schema'
 import type { SimulationPoint } from '../model/simulate'
 import { parseDate } from '../model/simulate'
 import { formatMoisture } from '../model/units'
+import { useTranslation } from '../i18n/useTranslation'
 
 /** The one chart this app needs, drawn by hand: the projected curve, the
  *  dry-enough line, the ready-window as a band, and whatever the visitor has
@@ -20,8 +21,11 @@ type Props = {
 }
 
 export function DryingCurveChart({ points, readings, threshold, window }: Props) {
+  const translator = useTranslation()
+  const { t } = translator
+
   if (points.length === 0) {
-    return <svg width={WIDTH} height={HEIGHT} role="img" aria-label="Tørkekurve uten data" />
+    return <svg width={WIDTH} height={HEIGHT} role="img" aria-label={t('chart.emptyLabel')} />
   }
 
   const times = points.map((point) => point.date.getTime())
@@ -46,7 +50,7 @@ export function DryingCurveChart({ points, readings, threshold, window }: Props)
       width="100%"
       viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
       role="img"
-      aria-label={`Tørkekurve: hvor tørr veden blir over tid, med grensen på ${formatMoisture(threshold)}`}
+      aria-label={t('chart.label', { threshold: formatMoisture(threshold, translator) })}
     >
       <rect
         x={bandStart}
@@ -65,7 +69,7 @@ export function DryingCurveChart({ points, readings, threshold, window }: Props)
         strokeDasharray="4 3"
       />
       <text x={PADDING.left} y={y(threshold) - 4} fontSize="10" fill="currentColor">
-        {formatMoisture(threshold)}
+        {formatMoisture(threshold, translator)}
       </text>
 
       <polyline points={curve} fill="none" stroke="var(--mantine-color-orange-filled)" strokeWidth="2" />

@@ -9,16 +9,25 @@ import { StackDetail } from './components/StackDetail'
 import { AddStackForm } from './components/AddStackForm'
 import { InstallPrompt } from './components/InstallPrompt'
 import { ExportImport, useImportOnLoad } from './components/ExportImport'
+import { useTranslation } from './i18n/useTranslation'
 
 /** Two screens and one hash. A router would be a dependency for something
  *  `location.hash` already does: `#s=<id>` opens a stack, and `#i=<payload>`
  *  is a share link that `useImportOnLoad` consumes and clears. */
 export function App() {
+  const { t, language } = useTranslation()
   const stacks = useStacks()
   const [selectedId, setSelectedId] = useState<string | null>(() => readStackId(window.location.hash))
   const [adding, setAdding] = useState(false)
 
   useImportOnLoad(useCallback((imported: WoodStack[]) => replaceStacks(imported), []))
+
+  // `index.html` ships `lang="nb"` for what a crawler or screen reader sees
+  // before React mounts; this is the one place that can say which language
+  // the visitor actually got.
+  useEffect(() => {
+    document.documentElement.lang = language
+  }, [language])
 
   useEffect(() => {
     function sync() {
@@ -52,7 +61,7 @@ export function App() {
       <Stack gap="lg">
         <Stack gap="xs">
           <Title order={1}>Woodstack</Title>
-          <Text c="dimmed">Når er veden tørr nok til å fyre med?</Text>
+          <Text c="dimmed">{t('app.tagline')}</Text>
         </Stack>
 
         <InstallPrompt />

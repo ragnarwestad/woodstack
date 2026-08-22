@@ -5,7 +5,7 @@ import { addReading, getStack } from '../storage/stacksRepo'
 import { getNormals } from '../climate/normalsCache'
 import { estimateWindow, simulate } from '../model/simulate'
 import { DRY_ENOUGH_MOISTURE, formatWindow } from '../model/units'
-import { SPECIES } from '../model/species'
+import { useTranslation } from '../i18n/useTranslation'
 import { DryingCurveChart } from './DryingCurveChart'
 import { LogReadingForm } from './LogReadingForm'
 
@@ -23,6 +23,8 @@ type Props = {
 }
 
 export function StackDetail({ stackId, onBack, getNormalsFn = getNormals }: Props) {
+  const translator = useTranslation()
+  const { t } = translator
   const [stack, setStack] = useState(() => getStack(stackId))
   const [result, setResult] = useState<NormalsResult | null>(null)
   const [attempt, setAttempt] = useState(0)
@@ -60,10 +62,10 @@ export function StackDetail({ stackId, onBack, getNormalsFn = getNormals }: Prop
   if (!stack) {
     return (
       <MantineStack gap="md">
-        <Text>Finner ikke denne stabelen.</Text>
+        <Text>{t('stackDetail.notFound')}</Text>
         <Group>
           <Button variant="default" onClick={onBack}>
-            Tilbake
+            {t('common.back')}
           </Button>
         </Group>
       </MantineStack>
@@ -84,27 +86,29 @@ export function StackDetail({ stackId, onBack, getNormalsFn = getNormals }: Prop
     <MantineStack gap="md">
       <Group>
         <Button variant="default" onClick={onBack}>
-          Tilbake
+          {t('common.back')}
         </Button>
       </Group>
 
       <Title order={2}>{stack.name}</Title>
       <Text c="dimmed">
-        {SPECIES[stack.species].label} · stablet {stack.stackedDate} · {stack.location.name}
+        {t('stackDetail.meta', {
+          species: t(`species.${stack.species}`),
+          date: stack.stackedDate,
+          place: stack.location.name,
+        })}
       </Text>
 
-      {loading && <Text>Henter klimadata for stedet …</Text>}
+      {loading && <Text>{t('common.loadingClimate')}</Text>}
 
       {!loading && !normals && (
-        <Alert color="yellow">
-          Ingen nett, så klimadataene for {stack.location.name} mangler ennå. Vi prøver igjen med en gang du er på nett.
-        </Alert>
+        <Alert color="yellow">{t('stackDetail.offline', { place: stack.location.name })}</Alert>
       )}
 
       {dryWindow && (
         <>
           <Text data-testid="window-text" fw={600}>
-            Klar mellom {formatWindow(dryWindow)}
+            {t('common.readyBetween', { window: formatWindow(dryWindow, translator) })}
           </Text>
           <DryingCurveChart
             points={points}

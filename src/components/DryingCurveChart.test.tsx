@@ -5,6 +5,7 @@ import { renderWithMantine } from '../test/render'
 import { OSLO_NORMALS, makeStack } from '../test/fixtures'
 import { estimateWindow, simulate } from '../model/simulate'
 import { DRY_ENOUGH_MOISTURE } from '../model/units'
+import { ENGLISH_TEST_LANGUAGE, setTestLanguage } from '../test/language'
 
 const stack = makeStack()
 const points = simulate(stack, OSLO_NORMALS, { months: 24 })
@@ -49,5 +50,19 @@ describe('DryingCurveChart', () => {
       <DryingCurveChart points={[]} readings={[]} threshold={DRY_ENOUGH_MOISTURE} window={window} />,
     )
     expect(container.querySelectorAll('polyline')).toHaveLength(0)
+  })
+})
+
+describe('DryingCurveChart in English', () => {
+  it('describes itself to a screen reader in English, basis included', () => {
+    setTestLanguage(ENGLISH_TEST_LANGUAGE)
+    renderWithMantine(
+      <DryingCurveChart points={points} readings={readings} threshold={DRY_ENOUGH_MOISTURE} window={window} />,
+    )
+
+    expect(screen.getByRole('img', { name: /drying curve/i })).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: /dry basis/i })).toBeInTheDocument()
+    expect(screen.getByText(/dry basis/i)).toBeInTheDocument()
+    expect(screen.queryByRole('img', { name: /tørkekurve/i })).not.toBeInTheDocument()
   })
 })
