@@ -1,14 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { fireEvent, screen, waitFor, within } from '@testing-library/react'
+import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { StackDetail } from './StackDetail'
 import { renderWithMantine } from '../test/render'
-import { OSLO_NORMALS, makeStack } from '../test/fixtures'
+import { OSLO_NORMALS, actualWeather, makeStack } from '../test/fixtures'
 import { getStack, saveStacks } from '../storage/stacksRepo'
 import { ENGLISH_TEST_LANGUAGE, setTestLanguage } from '../test/language'
 
 beforeEach(() => {
   localStorage.clear()
   saveStacks([makeStack({ id: 'a', name: 'Bjørk ved veggen' })])
+  // The screen fetches this year's weather by itself unless a test injects
+  // it. Nothing in a unit test may reach the network, so the default path
+  // hits a refusal here rather than open-meteo.com.
+  vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('no network in tests')))
 })
 
 describe('StackDetail', () => {
@@ -18,6 +22,64 @@ describe('StackDetail', () => {
     )
     await waitFor(() => expect(screen.getByText(/klar mellom/i)).toBeInTheDocument())
     expect(screen.getByRole('img', { name: /tørkekurve/i })).toBeInTheDocument()
+  })
+
+  /** The correction is an extra, never a precondition: with no actual
+   *  weather the screen is exactly what it was before this existed. */
+  it('shows the plain normals window, and no caption, when there is no actual weather', async () => {
+    renderWithMantine(
+      <StackDetail
+        stackId="a"
+        onBack={vi.fn()}
+        onEdit={vi.fn()}
+        getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)}
+        getActualWeatherFn={vi.fn().mockResolvedValue(null)}
+      />,
+    )
+    await waitFor(() => expect(screen.getByText(/klar mellom/i)).toBeInTheDocument())
+    const uncorrected = screen.getByTestId('window-text').textContent
+
+    cleanup()
+    renderWithMantine(
+      <StackDetail
+        stackId="a"
+        onBack={vi.fn()}
+        onEdit={vi.fn()}
+        getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)}
+      />,
+    )
+    await waitFor(() => expect(screen.getByText(/klar mellom/i)).toBeInTheDocument())
+
+    expect(screen.getByTestId('window-text').textContent).toBe(uncorrected)
+    expect(screen.queryByTestId('correction-caption')).not.toBeInTheDocument()
+  })
+
+  it('says which way a corrected window moved, rather than moving it silently', async () => {
+    renderWithMantine(
+      <StackDetail
+        stackId="a"
+        onBack={vi.fn()}
+        onEdit={vi.fn()}
+        getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)}
+        getActualWeatherFn={vi.fn().mockResolvedValue(actualWeather(2026, 24, 45))}
+      />,
+    )
+    await waitFor(() => expect(screen.getByTestId('correction-caption')).toBeInTheDocument())
+    expect(screen.getByTestId('correction-caption')).toHaveTextContent(/foran normalt/i)
+  })
+
+  it('says the stack is behind normal when the year has been cold and wet', async () => {
+    renderWithMantine(
+      <StackDetail
+        stackId="a"
+        onBack={vi.fn()}
+        onEdit={vi.fn()}
+        getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)}
+        getActualWeatherFn={vi.fn().mockResolvedValue(actualWeather(2026, 2, 95))}
+      />,
+    )
+    await waitFor(() => expect(screen.getByTestId('correction-caption')).toBeInTheDocument())
+    expect(screen.getByTestId('correction-caption')).toHaveTextContent(/bak normalt/i)
   })
 
   it('shows an explicit fetching state before the climate data arrives', () => {

@@ -9,7 +9,7 @@ import {
   Text,
   Title,
 } from '@mantine/core'
-import type { ClimateNormals, VolumeEntry } from '../storage/schema'
+import type { ActualWeather, ClimateNormals, VolumeEntry } from '../storage/schema'
 import {
   addReading,
   addVolumeEntry,
@@ -19,6 +19,7 @@ import {
   removeVolumeEntry,
 } from '../storage/stacksRepo'
 import { getNormals } from '../climate/normalsCache'
+import { getActualWeather } from '../climate/actualWeatherCache'
 import { estimateWindow, simulate } from '../model/simulate'
 import { DRY_ENOUGH_MOISTURE, formatWindow } from '../model/units'
 import { currentSolidLiters, formatVolume } from '../model/volume'
@@ -36,18 +37,31 @@ const CURVE_MONTHS = 30
  *  retry cannot flash the previous answer on its way past. */
 type NormalsResult = { key: string; normals: ClimateNormals | null }
 
+/** The same, for this year's weather. It is a correction, not a
+ *  precondition: `null` here means the screen shows the plain normals
+ *  window, never a blank one. */
+type ActualResult = { key: string; actual: ActualWeather | null }
+
 type Props = {
   stackId: string
   onBack: () => void
   onEdit: () => void
   getNormalsFn?: (latitude: number, longitude: number) => Promise<ClimateNormals>
+  getActualWeatherFn?: (latitude: number, longitude: number) => Promise<ActualWeather | null>
 }
 
-export function StackDetail({ stackId, onBack, onEdit, getNormalsFn = getNormals }: Props) {
+export function StackDetail({
+  stackId,
+  onBack,
+  onEdit,
+  getNormalsFn = getNormals,
+  getActualWeatherFn = getActualWeather,
+}: Props) {
   const translator = useTranslation()
   const { t } = translator
   const [stack, setStack] = useState(() => getStack(stackId))
   const [result, setResult] = useState<NormalsResult | null>(null)
+  const [actualResult, setActualResult] = useState<ActualResult | null>(null)
   const [attempt, setAttempt] = useState(0)
 
   const latitude = stack?.location.latitude
@@ -70,6 +84,26 @@ export function StackDetail({ stackId, onBack, onEdit, getNormalsFn = getNormals
       cancelled = true
     }
   }, [getNormalsFn, latitude, longitude, requestKey])
+
+  // A second request, on its own: this year's weather is a correction on top
+  // of the normals, so it must never hold up the window or take it down with
+  // it when it fails.
+  useEffect(() => {
+    if (latitude === undefined || longitude === undefined) return
+
+    let cancelled = false
+    getActualWeatherFn(latitude, longitude)
+      .then((actual) => {
+        if (!cancelled) setActualResult({ key: requestKey, actual })
+      })
+      .catch(() => {
+        if (!cancelled) setActualResult({ key: requestKey, actual: null })
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [getActualWeatherFn, latitude, longitude, requestKey])
 
   // A stack imported offline has no normals yet. Rather than leave the window
   // blank until someone thinks to reload, try again the moment there is a
@@ -123,9 +157,18 @@ export function StackDetail({ stackId, onBack, onEdit, getNormalsFn = getNormals
   const tracked = (stack.volumeEntries?.length ?? 0) > 0
 
   const normals = result?.key === requestKey ? result.normals : null
+  const actual = (actualResult?.key === requestKey ? actualResult.actual : null) ?? undefined
   const loading = result?.key !== requestKey
-  const dryWindow = normals ? estimateWindow(stack, normals) : null
-  const points = normals ? simulate(stack, normals, { months: CURVE_MONTHS }) : []
+  const dryWindow = normals ? estimateWindow(stack, normals, actual) : null
+  const points = normals ? simulate(stack, normals, { months: CURVE_MONTHS }, actual) : []
+
+  // Which way the correction moved the window, or nothing at all when it did
+  // not move it. A window that quietly shifts between visits, for reasons
+  // never stated, costs more trust than the correction buys.
+  const uncorrected = normals && actual ? estimateWindow(stack, normals) : null
+  const shift =
+    dryWindow && uncorrected ? dryWindow.earliest.getTime() - uncorrected.earliest.getTime() : 0
+  const correction = shift === 0 ? null : shift < 0 ? 'earlier' : 'later'
 
   return (
     <MantineStack gap="md">
@@ -176,6 +219,15 @@ export function StackDetail({ stackId, onBack, onEdit, getNormalsFn = getNormals
           <Text data-testid="window-text" fw={600}>
             {t('common.readyBetween', { window: formatWindow(dryWindow, translator) })}
           </Text>
+          {correction && (
+            <Text size="sm" c="dimmed" data-testid="correction-caption">
+              {t(
+                correction === 'earlier'
+                  ? 'stackDetail.correctedEarlier'
+                  : 'stackDetail.correctedLater',
+              )}
+            </Text>
+          )}
           <DryingCurveChart
             points={points}
             readings={stack.readings}

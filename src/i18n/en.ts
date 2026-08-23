@@ -24,6 +24,8 @@ export const en: Record<TranslationKey, string> = {
   'stackDetail.meta': '{species} · stacked {date} · {place}',
   'stackDetail.offline':
     'No network, so the climate data for {place} is still missing. We will try again the moment you are online.',
+  'stackDetail.correctedEarlier': 'Adjusted for this year’s weather — a little ahead of normal',
+  'stackDetail.correctedLater': 'Adjusted for this year’s weather — a little behind normal',
   'stackDetail.volumeCurrent': 'Left now: {volume}',
   'stackDetail.tabVolume': 'In/out',
   'stackDetail.tabReading': 'Reading',

@@ -1,4 +1,4 @@
-import type { ClimateNormals, Stack } from '../storage/schema'
+import type { ActualWeather, ClimateNormals, Stack } from '../storage/schema'
 
 /** Monthly normals shaped like eastern Norway: cold, damp winters and a
  *  short, mild summer. Index 0 is January. Used by every test that needs a
@@ -31,6 +31,26 @@ export function constantNormals(temperature: number, humidity: number): ClimateN
     longitude: 0,
     fetchedAt: '2026-08-22T00:00:00.000Z',
     monthly: Array.from({ length: 12 }, () => ({ temperature, humidity })),
+  }
+}
+
+/** This year's actual weather, the same value in every elapsed month, so a
+ *  test can say "warmer and drier than normal" in one line. Months from
+ *  `elapsed` onwards are `null`: they have not happened yet. */
+export function actualWeather(
+  year: number,
+  temperature: number,
+  humidity: number,
+  elapsed = 12,
+): ActualWeather {
+  return {
+    latitude: 59.9,
+    longitude: 10.8,
+    year,
+    fetchedAt: `${year}-08-22T00:00:00.000Z`,
+    monthly: Array.from({ length: 12 }, (_, month) =>
+      month < elapsed ? { temperature, humidity } : null,
+    ),
   }
 }
 

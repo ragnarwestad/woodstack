@@ -23,6 +23,8 @@ export const nb = {
   'stackDetail.meta': '{species} · stablet {date} · {place}',
   'stackDetail.offline':
     'Ingen nett, så klimadataene for {place} mangler ennå. Vi prøver igjen med en gang du er på nett.',
+  'stackDetail.correctedEarlier': 'Justert etter årets vær — stabelen ligger litt foran normalt',
+  'stackDetail.correctedLater': 'Justert etter årets vær — stabelen ligger litt bak normalt',
   'stackDetail.volumeCurrent': 'Igjen nå: {volume}',
   'stackDetail.tabVolume': 'Inn/ut',
   'stackDetail.tabReading': 'Måling',

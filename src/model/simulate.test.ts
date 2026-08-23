@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { emc } from './emc'
 import { effectiveRate, estimateWindow, refitRate, simulate, windowProgress } from './simulate'
 import { DRY_ENOUGH_MOISTURE } from './units'
-import { OSLO_NORMALS, constantNormals, makeStack } from '../test/fixtures'
+import { OSLO_NORMALS, actualWeather, constantNormals, makeStack } from '../test/fixtures'
 
 describe('simulate', () => {
   it('approaches equilibrium: strictly falling, never below the EMC', () => {
@@ -51,6 +51,39 @@ describe('estimateWindow', () => {
     const oak = estimateWindow(makeStack({ species: 'eik' }), OSLO_NORMALS)
     const spruce = estimateWindow(makeStack({ species: 'gran' }), OSLO_NORMALS)
     expect(oak.earliest.getTime()).toBeGreaterThan(spruce.earliest.getTime())
+  })
+})
+
+describe('estimateWindow with this year\'s actual weather', () => {
+  it('moves the window earlier when the year has been warmer and drier than normal', () => {
+    const stack = makeStack({ stackedDate: '2026-04-15' })
+    const normal = estimateWindow(stack, OSLO_NORMALS)
+    const corrected = estimateWindow(stack, OSLO_NORMALS, actualWeather(2026, 24, 45))
+
+    expect(corrected.earliest.getTime()).toBeLessThan(normal.earliest.getTime())
+  })
+
+  it('moves the window later when the year has been colder and wetter than normal', () => {
+    const stack = makeStack({ stackedDate: '2026-04-15' })
+    const normal = estimateWindow(stack, OSLO_NORMALS)
+    const corrected = estimateWindow(stack, OSLO_NORMALS, actualWeather(2026, 2, 95))
+
+    expect(corrected.earliest.getTime()).toBeGreaterThan(normal.earliest.getTime())
+  })
+})
+
+/** The projection walks up to ten years forward, but `actual` describes one
+ *  calendar year. Without the year gate, this year's summer would be re-applied
+ *  to every future summer the curve passes through. */
+describe('simulate outside the year the actual weather belongs to', () => {
+  it('ignores actual weather from a year the projection never touches', () => {
+    const stack = makeStack({ stackedDate: '2027-04-15' })
+    const withActual = simulate(stack, OSLO_NORMALS, { months: 12 }, actualWeather(2026, 30, 10))
+    const withoutActual = simulate(stack, OSLO_NORMALS, { months: 12 })
+
+    expect(withActual.map((point) => point.moisture)).toEqual(
+      withoutActual.map((point) => point.moisture),
+    )
   })
 })
 

@@ -1,4 +1,4 @@
-import type { ClimateNormals, DryWindow, Reading, Stack } from '../storage/schema'
+import type { ActualWeather, ClimateNormals, DryWindow, Reading, Stack } from '../storage/schema'
 import { emc } from './emc'
 import { dryingRate, temperatureFactor } from './dryingRate'
 import { SPECIES } from './species'
@@ -48,6 +48,25 @@ export function addMonths(date: Date, count: number): Date {
 
 const AVERAGE_MONTH_MS = (365.2425 / 12) * 24 * 60 * 60 * 1000
 
+/** What the climate was in the month `date` falls in: this year's actual
+ *  weather where it is known, the normals otherwise.
+ *
+ *  `actual` covers one calendar year, while `normals.monthly` is a year-less
+ *  twelve-month cycle. The year check is what keeps a projection that runs
+ *  into next year from re-living this summer every summer. */
+function monthFor(
+  date: Date,
+  normals: ClimateNormals,
+  actual?: ActualWeather,
+): { temperature: number; humidity: number } {
+  const month = date.getUTCMonth()
+  if (actual && actual.year === date.getUTCFullYear()) {
+    const known = actual.monthly[month]
+    if (known) return known
+  }
+  return normals.monthly[month]
+}
+
 /** One approach-to-equilibrium step over `dt` months of the given month's
  *  climate: `emc + (moisture - emc) * exp(-k * dt)`. */
 function step(moisture: number, normal: { temperature: number; humidity: number }, rate: number, dt: number): number {
@@ -63,6 +82,7 @@ function project(
   rate: number,
   from: SimulationPoint,
   to: Date,
+  actual?: ActualWeather,
 ): number {
   let current = from.date
   let moisture = from.moisture
@@ -71,7 +91,7 @@ function project(
     const wholeMonth = addMonths(current, 1)
     const next = wholeMonth.getTime() < to.getTime() ? wholeMonth : to
     const dt = (next.getTime() - current.getTime()) / AVERAGE_MONTH_MS
-    moisture = step(moisture, normals.monthly[current.getUTCMonth()], rate, dt)
+    moisture = step(moisture, monthFor(current, normals, actual), rate, dt)
     current = next
   }
 
@@ -136,7 +156,12 @@ export function refitRate(stack: Stack, reading: Reading, normals: ClimateNormal
 }
 
 /** Monthly projection from the stacked date, for the drying curve. */
-export function simulate(stack: Stack, normals: ClimateNormals, options: SimulateOptions = {}): SimulationPoint[] {
+export function simulate(
+  stack: Stack,
+  normals: ClimateNormals,
+  options: SimulateOptions = {},
+  actual?: ActualWeather,
+): SimulationPoint[] {
   const months = options.months ?? DEFAULT_MONTHS
   const rate = options.rate ?? effectiveRate(stack, normals)
   const stacked = parseDate(stack.stackedDate)
@@ -149,8 +174,8 @@ export function simulate(stack: Stack, normals: ClimateNormals, options: Simulat
       date,
       moisture:
         date.getTime() <= start.date.getTime()
-          ? projectBackFromGreen(stack, normals, rate, date)
-          : project(normals, rate, start, date),
+          ? projectBackFromGreen(stack, normals, rate, date, actual)
+          : project(normals, rate, start, date, actual),
     })
   }
   return points
@@ -158,10 +183,16 @@ export function simulate(stack: Stack, normals: ClimateNormals, options: Simulat
 
 /** Before the newest reading, the curve is still the green-moisture
  *  projection — the reading only anchors everything after it. */
-function projectBackFromGreen(stack: Stack, normals: ClimateNormals, rate: number, to: Date): number {
+function projectBackFromGreen(
+  stack: Stack,
+  normals: ClimateNormals,
+  rate: number,
+  to: Date,
+  actual?: ActualWeather,
+): number {
   const stacked = parseDate(stack.stackedDate)
   const green = { date: stacked, moisture: SPECIES[stack.species].greenMoisture }
-  return project(normals, rate, green, to)
+  return project(normals, rate, green, to, actual)
 }
 
 /** How wide the band around the fitted rate is. */
@@ -171,14 +202,19 @@ function rateUncertainty(stack: Stack): number {
 
 /** The first date the projection crosses the dry-enough threshold, with the
  *  crossing month interpolated so the answer is not quantised to the 15th. */
-function crossingDate(stack: Stack, normals: ClimateNormals, rate: number): Date {
+function crossingDate(
+  stack: Stack,
+  normals: ClimateNormals,
+  rate: number,
+  actual?: ActualWeather,
+): Date {
   const start = startingPoint(stack)
   if (start.moisture <= DRY_ENOUGH_MOISTURE) return start.date
 
   let previous = start
   for (let i = 1; i <= HORIZON_MONTHS; i++) {
     const date = addMonths(start.date, i)
-    const moisture = project(normals, rate, start, date)
+    const moisture = project(normals, rate, start, date, actual)
     if (moisture <= DRY_ENOUGH_MOISTURE) {
       const share = (previous.moisture - DRY_ENOUGH_MOISTURE) / (previous.moisture - moisture)
       const span = date.getTime() - previous.date.getTime()
@@ -192,12 +228,16 @@ function crossingDate(stack: Stack, normals: ClimateNormals, rate: number): Date
 /** When the stack is dry enough to burn — as a window, never a date. A single
  *  date is a promise the model cannot keep, and the first visitor who checks
  *  it with a meter and finds it wrong is lost. */
-export function estimateWindow(stack: Stack, normals: ClimateNormals): DryWindow {
+export function estimateWindow(
+  stack: Stack,
+  normals: ClimateNormals,
+  actual?: ActualWeather,
+): DryWindow {
   const rate = effectiveRate(stack, normals)
   const spread = rateUncertainty(stack)
   return {
-    earliest: crossingDate(stack, normals, rate * (1 + spread)),
-    latest: crossingDate(stack, normals, rate * (1 - spread)),
+    earliest: crossingDate(stack, normals, rate * (1 + spread), actual),
+    latest: crossingDate(stack, normals, rate * (1 - spread), actual),
   }
 }
 

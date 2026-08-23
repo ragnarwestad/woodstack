@@ -107,6 +107,22 @@ export type ClimateNormals = {
   fetchedAt: string
 }
 
+/** This year's actual weather, reduced the same way as `ClimateNormals` but
+ *  scoped to one calendar year and only as far as it has actually happened.
+ *  A `null` month is one not yet elapsed, or not yet fetched — never a zero.
+ *  `year` is what gates every use of this against `ClimateNormals`' year-less
+ *  monthly cycle, so a projection that runs into next year falls back to the
+ *  normals rather than re-living this summer (see `model/simulate.ts`). */
+export type ActualWeather = {
+  latitude: number
+  longitude: number
+  year: number
+  /** Twelve entries, index 0 is January; `null` where there is no data. */
+  monthly: (MonthlyNormal | null)[]
+  /** ISO timestamp of the fetch. Unlike normals, this goes stale daily. */
+  fetchedAt: string
+}
+
 /** The window a stack is expected to become dry enough to burn in. Two dates,
  *  never one: a single date is a promise the model cannot keep. */
 export type DryWindow = {
