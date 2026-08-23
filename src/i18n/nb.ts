@@ -14,6 +14,8 @@ export const nb = {
   'common.back': 'Tilbake',
   'common.ok': 'Ok',
   'common.cancel': 'Avbryt',
+  'common.storageFull':
+    'Nettleseren har ikke plass til mer, så ingenting ble lagret. Prøv å fjerne bildet, eller slett en stabel du ikke trenger.',
 
   'stackList.heading': 'Vedstablene mine',
   'stackList.add': 'Ny stabel',
@@ -36,6 +38,13 @@ export const nb = {
   'entryList.volumeDetail': '{kind}: {amount} {unit}',
   'entryList.delete': 'Fjern',
   'entryList.deleteQuestion': 'Slette denne føringen? Det kan ikke angres.',
+
+  'photo.label': 'Bilde av stabelen',
+  'photo.description': 'Valgfritt. Ta bildet med kameraet, eller velg et du har fra før.',
+  'photo.placeholder': 'Ta eller velg et bilde',
+  'photo.remove': 'Fjern bildet',
+  'photo.alt': 'Bilde av vedstabelen',
+  'photo.failed': 'Fikk ikke lest bildet. Prøv et annet.',
 
   'addStack.heading': 'Ny vedstabel',
   'addStack.name': 'Navn på stabelen',

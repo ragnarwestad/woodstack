@@ -15,6 +15,8 @@ export const en: Record<TranslationKey, string> = {
   'common.back': 'Back',
   'common.ok': 'OK',
   'common.cancel': 'Cancel',
+  'common.storageFull':
+    'The browser has no room left, so nothing was saved. Try removing the photo, or delete a woodpile you no longer need.',
 
   'stackList.heading': 'My woodpiles',
   'stackList.add': 'New woodpile',
@@ -37,6 +39,13 @@ export const en: Record<TranslationKey, string> = {
   'entryList.volumeDetail': '{kind}: {amount} {unit}',
   'entryList.delete': 'Remove',
   'entryList.deleteQuestion': 'Delete this entry? This cannot be undone.',
+
+  'photo.label': 'Photo of the woodpile',
+  'photo.description': 'Optional. Take it with the camera, or pick one you already have.',
+  'photo.placeholder': 'Take or choose a photo',
+  'photo.remove': 'Remove the photo',
+  'photo.alt': 'Photo of the woodpile',
+  'photo.failed': 'Could not read that photo. Try another one.',
 
   'addStack.heading': 'New woodpile',
   'addStack.name': 'Name of the woodpile',

@@ -91,6 +91,13 @@ export type Stack = {
    *  version it does not recognise, so bumping it would delete every stored
    *  stack instead of migrating it. */
   volumeEntries?: VolumeEntry[]
+  /** One photo of the stack, as a resized JPEG data URL — absent when none has
+   *  been taken, never an empty string. Optional for the same reason
+   *  `volumeEntries` is: a `SCHEMA_VERSION` bump would empty every stored
+   *  browser instead of migrating it. Resized before it is stored, because
+   *  everything here shares one ~5 MB `localStorage` quota and travels whole in
+   *  every share link. */
+  photo?: string
 }
 
 /** Everything needed to create a stack; the id and the empty reading list are

@@ -67,6 +67,20 @@ describe('StackDetail', () => {
     await waitFor(() => expect(screen.getByTestId('window-text').textContent).not.toBe(before))
   })
 
+  it('shows the photo of the stack that is open, and none when it has no photo', async () => {
+    renderWithMantine(
+      <StackDetail stackId="a" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+    )
+    await waitFor(() => screen.getByText(/klar mellom/i))
+    expect(screen.queryByAltText(/bilde av vedstabelen/i)).not.toBeInTheDocument()
+
+    saveStacks([makeStack({ id: 'b', name: 'Bak fjøset', photo: 'data:image/jpeg;base64,big' })])
+    renderWithMantine(
+      <StackDetail stackId="b" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+    )
+    expect(screen.getByAltText(/bilde av vedstabelen/i)).toHaveAttribute('src', 'data:image/jpeg;base64,big')
+  })
+
   it('says the volume is not tracked yet rather than showing a bare zero', async () => {
     renderWithMantine(
       <StackDetail stackId="a" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
