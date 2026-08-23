@@ -73,7 +73,7 @@ export function ExplainButton({ title, body, size = 20 }: Props) {
             boxShadow: 'var(--mantine-shadow-md)',
           },
           header: { backgroundColor: 'light-dark(#3A1A38, #2A1226)', color: 'var(--mantine-color-white)' },
-          title: { fontFamily: 'Bungee, sans-serif', fontWeight: 400, fontSize: 12, textTransform: 'uppercase' },
+          title: { fontWeight: 700, fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.08em' },
           close: { border: '1.5px solid currentColor', borderRadius: 999, color: 'var(--mantine-color-white)' },
         }}
         transitionProps={{ duration: 0 }}

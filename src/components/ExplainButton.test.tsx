@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { fireEvent, screen, within } from '@testing-library/react'
 import { ExplainButton, ExplainedLabel } from './ExplainButton'
 import { renderWithMantine } from '../test/render'
+import { assertNoBungeeBelow16 } from '../test/fontRules'
 
 const TITLE = 'Hvorfor et vindu, ikke én dato?'
 const BODY = 'Været så langt fram kan ikke forutsies dag for dag.'
@@ -24,6 +25,16 @@ describe('ExplainButton', () => {
   it('is a button that names what it explains', () => {
     renderMark()
     expect(screen.getByRole('button', { name: TITLE })).toBeInTheDocument()
+  })
+
+  /** The dialog title sat at 12 px in Bungee. It is written into a
+   *  `styles={{ ... }}` object, so it reaches the rendered tree and is
+   *  checked there. */
+  it('sets nothing in Bungee below 16 px', () => {
+    renderMark()
+    fireEvent.click(screen.getByRole('button', { name: TITLE }))
+
+    assertNoBungeeBelow16(document.body)
   })
 
   it('answers in a dialog when the mark is pressed', () => {

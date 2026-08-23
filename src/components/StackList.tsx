@@ -43,18 +43,20 @@ export function StackList({
   return (
     <MantineStack gap="md">
       <Group justify="space-between">
-        {/* Bungee here and on the button: both are short labels nobody wrote,
-            which is the whole of the rule for where the display face goes. */}
-        <Text ff="Bungee, sans-serif" fw={400} fz={15} tt="uppercase">
+        {/* Bungee stays only at 16 px and up, where the face was drawn to
+            work. Below it the poster feeling comes from Outfit 700 in
+            capitals with tracking instead. */}
+        <Text fw={700} fz={14} tt="uppercase" style={{ letterSpacing: '0.08em' }}>
           {t('stackList.heading')}
         </Text>
         <Button
           onClick={onAdd}
           radius={999}
           className="ws-pressable"
-          ff="Bungee, sans-serif"
-          fz={12}
+          fw={700}
+          fz={13}
           tt="uppercase"
+          style={{ letterSpacing: '0.08em' }}
         >
           {t('stackList.add')}
         </Button>
@@ -131,8 +133,8 @@ function StackRow({
               {/* Not Bungee. It draws capitals only, so "Test Stabel, søsteren
                   til Fredrik" came out shouting — and a stack's name is the
                   visitor's own words, often a whole sentence. Bungee stays
-                  where the design put it and where it belongs: the wordmark,
-                  headings, buttons and tabs, all of them short. */}
+                  where it is set at 16 px or more: the wordmark, the headings
+                  and the three result lines. */}
               <Text fw={600} size="md" lh={1.25}>
                 {stack.name}
               </Text>

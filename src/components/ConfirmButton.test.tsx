@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { fireEvent, screen, within } from '@testing-library/react'
 import { ConfirmButton } from './ConfirmButton'
 import { renderWithMantine } from '../test/render'
+import { assertNoBungeeBelow16 } from '../test/fontRules'
 
 function renderButton(onConfirm = vi.fn()) {
   renderWithMantine(
@@ -31,6 +32,16 @@ describe('ConfirmButton', () => {
     expect(screen.getByRole('button', { name: 'Ja, slett' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Avbryt' })).toBeInTheDocument()
     expect(onConfirm).not.toHaveBeenCalled()
+  })
+
+  /** The dialog title sat at 12 px in Bungee. It is written into a
+   *  `styles={{ ... }}` object, so it reaches the rendered tree and is
+   *  checked there. */
+  it('sets nothing in Bungee below 16 px', () => {
+    renderButton()
+    fireEvent.click(screen.getByRole('button', { name: 'Slett' }))
+
+    assertNoBungeeBelow16(document.body)
   })
 
   it('acts only on the second click', () => {

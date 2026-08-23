@@ -24,8 +24,8 @@ describe('StackList', () => {
    *  badly — so the name asks for 400 and gets the drawn shapes. */
   /** Bungee draws capitals only, so it turned "Bjørk ved veggen" into a
    *  shout — and a stack's name is the visitor's own words, often a whole
-   *  sentence. Bungee keeps the wordmark, the headings, the buttons and the
-   *  tabs, all of which are short and none of which anyone wrote. */
+   *  sentence. Bungee keeps what is set at 16 px or more: the wordmark, the
+   *  headings and the three result lines. */
   it('sets stack names in the body face, not the display one', () => {
     renderWithMantine(<StackList stacks={[stacks[0]]} normalsFor={() => OSLO_NORMALS} onSelect={vi.fn()}
       onDelete={vi.fn()} onAdd={vi.fn()} />)

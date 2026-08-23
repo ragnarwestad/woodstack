@@ -74,10 +74,10 @@ export function ConfirmButton({ label, question, confirmLabel, cancelLabel, onCo
             color: 'var(--mantine-color-white)',
           },
           title: {
-            fontFamily: 'Bungee, sans-serif',
-            fontWeight: 400,
-            fontSize: 12,
+            fontWeight: 700,
+            fontSize: 13,
             textTransform: 'uppercase',
+            letterSpacing: '0.08em',
           },
           close: {
             border: '1.5px solid currentColor',

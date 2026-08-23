@@ -115,10 +115,11 @@ export function NeedCalculator({ stacks, onBack }: Props) {
       <Title order={2}>{t('need.title')}</Title>
 
       {/* The only tabs in the app whose labels are sentences. `.ws-tab` gives
-          them the same underline weight as the stack page's, but the Bungee
-          capitals that page's four short labels take would be shouting here —
-          so the face is Outfit and the text is allowed to wrap. That is why
-          this styling is per instance rather than in the class. */}
+          them the same underline weight as the stack page's, and both rows are
+          now Outfit in mixed case — what this row has always been, and what
+          the stack page's four short labels became when Bungee left every size
+          below 16 px. It keeps its own styling because a sentence needs to
+          wrap and to sit centred, which four short words do not. */}
       <Tabs
         value={mode}
         onChange={(value) => {
@@ -219,7 +220,17 @@ export function NeedCalculator({ stacks, onBack }: Props) {
       {error && <Alert color="red">{error}</Alert>}
 
       <Group>
-        <Button onClick={submit}>{t('need.submit')}</Button>
+        <Button
+          onClick={submit}
+          radius={999}
+          className="ws-pressable"
+          fw={700}
+          fz={13}
+          tt="uppercase"
+          style={{ letterSpacing: '0.08em' }}
+        >
+          {t('need.submit')}
+        </Button>
       </Group>
 
       {/* The answer the screen exists to give, so it takes the plum panel the

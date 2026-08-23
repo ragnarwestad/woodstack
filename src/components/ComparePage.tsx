@@ -134,7 +134,7 @@ function LotCard({ index, draft, onChange, result, resultUnit, isCheapest }: Lot
             `Group justify="space-between"`, and an overlay would land on the
             card's 2 px border. */}
         <Group justify="space-between" align="flex-start" wrap="nowrap">
-          <Title order={3} ff="Bungee, sans-serif" fz={14} tt="uppercase" style={{ letterSpacing: '0.12em' }}>
+          <Title order={3} ff="Outfit, sans-serif" fw={700} fz={13} tt="uppercase" style={{ letterSpacing: '0.08em' }}>
             {t('compare.lotHeading', { number: index + 1 })}
           </Title>
           {isCheapest && (

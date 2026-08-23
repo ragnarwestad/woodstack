@@ -5,6 +5,7 @@ import { renderWithMantine } from '../test/render'
 import { OSLO_NORMALS, actualWeather, makeStack } from '../test/fixtures'
 import { getStack, saveStacks } from '../storage/stacksRepo'
 import { ENGLISH_TEST_LANGUAGE, setTestLanguage } from '../test/language'
+import { assertNoBungeeBelow16 } from '../test/fontRules'
 
 beforeEach(() => {
   localStorage.clear()
@@ -228,6 +229,50 @@ describe('StackDetail', () => {
     expect(document.querySelectorAll('hr')).toHaveLength(0)
     expect(screen.getByTestId('dashed-rule')).toBeInTheDocument()
     expect(screen.getByText('Ingen ved lagt inn ennå.')).toBeInTheDocument()
+  })
+
+  /** The 16 px floor, on the one screen that had the most below it: the
+   *  «Endre» button at 11, the volume line at 13 and the four tabs at 10.
+   *  Only the tabs write their size somewhere happy-dom keeps — the two
+   *  others are `fz` props, checked in `bungeeFloor.test.ts` instead. */
+  it('sets nothing in Bungee below 16 px', async () => {
+    renderWithMantine(
+      <StackDetail stackId="a" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+    )
+    await waitFor(() => screen.getByText(/klar mellom/i))
+
+    assertNoBungeeBelow16(document.body)
+  })
+
+  /** «Igjen nå: 3,2 m³ fast» has a lower-case unit in it, and capitals write
+   *  the cubic metre wrong. Asserted on the style rather than on the text,
+   *  because CSS `text-transform` never changes what the DOM node actually
+   *  holds — a `textContent` check would read the same before and after. */
+  it('leaves the volume line its own lower case, unit and all', async () => {
+    saveStacks([
+      makeStack({
+        id: 'a',
+        volumeEntries: [{ id: 'v1', date: '2026-04-15', kind: 'addition', amount: 2, unit: 'favn' }],
+      }),
+    ])
+    renderWithMantine(
+      <StackDetail stackId="a" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+    )
+
+    const line = await screen.findByText(/igjen nå: 3,2 m³ fast/i)
+    expect(line.getAttribute('style') ?? '').not.toContain('text-transform: uppercase')
+  })
+
+  /** Four capitalised words in a row at tab size are the same wall the Bungee
+   *  version was, so the labels keep the case `nb.ts` writes them in. */
+  it('leaves the tab labels in mixed case', async () => {
+    renderWithMantine(
+      <StackDetail stackId="a" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+    )
+    await waitFor(() => screen.getByText(/klar mellom/i))
+
+    const tab = screen.getByRole('tab', { name: /historikk/i })
+    expect(tab.getAttribute('style') ?? '').not.toContain('text-transform: uppercase')
   })
 
   it('says the volume is not tracked yet rather than showing a bare zero', async () => {

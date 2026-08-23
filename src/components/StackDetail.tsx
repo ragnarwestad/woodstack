@@ -205,10 +205,10 @@ export function StackDetail({
           onClick={onEdit}
           radius={999}
           className="ws-pressable"
-          ff="Bungee, sans-serif"
-          fz={11}
+          fw={700}
+          fz={12}
           tt="uppercase"
-          style={{ borderWidth: 2 }}
+          style={{ borderWidth: 2, letterSpacing: '0.08em' }}
         >
           {t('stackDetail.edit')}
         </Button>
@@ -288,15 +288,16 @@ export function StackDetail({
       <Group gap={8} wrap="nowrap" align="center">
         <div data-testid="dashed-rule" aria-hidden="true" style={{ flex: 1, height: 2, background: DASHED_RULE }} />
         {tracked ? (
-          // A label and a number, which is what the display face is for.
-          <Text ff="Bungee, sans-serif" fw={400} fz={13} tt="uppercase">
+          // A label and a number — but «Igjen nå: 3,2 m³ fast» has a
+          // lower-case unit in it, and capitals write the cubic metre wrong.
+          <Text fw={700} fz={13}>
             {t('stackDetail.volumeCurrent', {
               volume: formatVolume(currentSolidLiters(stack.volumeEntries), translator),
             })}
           </Text>
         ) : (
-          // A sentence, which it is not: Bungee has no lower case and this one
-          // is read rather than scanned.
+          // A sentence rather than a label and a number, so it is read rather
+          // than scanned — and carries the lighter of the two weights.
           <Text fw={600} fz={13}>
             {t('stackDetail.volumeNone')}
           </Text>
@@ -312,7 +313,7 @@ export function StackDetail({
         onChange={setChip}
         color="orange"
         classNames={{ tab: 'ws-tab' }}
-        styles={{ tab: { fontFamily: 'Bungee, sans-serif', fontSize: 10, textTransform: 'uppercase', padding: '9px 6px' } }}
+        styles={{ tab: { fontWeight: 700, fontSize: 13, letterSpacing: '0.02em', padding: '9px 6px' } }}
       >
         {/* `grow`: the four labels are of roughly equal length, so an even
             split gives each one its own cell and its underline meets the rule

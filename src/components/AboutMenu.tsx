@@ -109,7 +109,7 @@ export function AboutMenu() {
             boxShadow: 'var(--mantine-shadow-md)',
           },
           header: { backgroundColor: 'light-dark(#3A1A38, #2A1226)', color: 'var(--mantine-color-white)' },
-          title: { fontFamily: 'Bungee, sans-serif', fontWeight: 400, fontSize: 12, textTransform: 'uppercase' },
+          title: { fontWeight: 700, fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.08em' },
           close: { border: '1.5px solid currentColor', borderRadius: 999, color: 'var(--mantine-color-white)' },
         }}
         transitionProps={{ duration: 0 }}
@@ -123,7 +123,7 @@ export function AboutMenu() {
           keepMounted={false}
           color="orange"
           classNames={{ tab: 'ws-tab' }}
-          styles={{ tab: { fontFamily: 'Bungee, sans-serif', fontSize: 10, textTransform: 'uppercase', padding: '9px 6px' } }}
+          styles={{ tab: { fontWeight: 700, fontSize: 13, letterSpacing: '0.02em', padding: '9px 6px' } }}
         >
           {/* No `grow` here, unlike the stack page: «Slik regner vi» is three
               times the width of «Om», so an even split hands one label a lake

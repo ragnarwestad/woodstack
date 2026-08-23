@@ -6,6 +6,7 @@ import { SERVICE_NAME } from '../climate/openMeteo'
 import { nb } from '../i18n/nb'
 import { en } from '../i18n/en'
 import { AboutMenu } from './AboutMenu'
+import { assertNoBungeeBelow16 } from '../test/fontRules'
 
 /** The version is baked in at build time and differs on every checkout, so the
  *  test checks its SHAPE — a commit date and a short SHA, or the «dev» the
@@ -76,6 +77,26 @@ describe('AboutMenu', () => {
 
     fireEvent.click(within(dialog).getByRole('tab', { name: nb['about.tabInfo'] }))
     expect(within(dialog).getByText(VERSION)).toBeInTheDocument()
+  })
+
+  /** The dialog title sat at 12 px in Bungee and the three tabs at 10 — both
+   *  written into `styles={{ ... }}` objects, which is the form happy-dom
+   *  keeps, so the rendered tree is where they are checked. */
+  it('sets nothing in Bungee below 16 px', () => {
+    renderWithMantine(<AboutMenu />)
+    openDialog()
+
+    assertNoBungeeBelow16(document.body)
+  })
+
+  /** «Slik regner vi» is a sentence, and three shouted labels in a row are
+   *  the same wall the Bungee version was. */
+  it('leaves the tab labels in mixed case', () => {
+    renderWithMantine(<AboutMenu />)
+    const dialog = openDialog()
+
+    const tab = within(dialog).getByRole('tab', { name: nb['about.tabHow'] })
+    expect(tab.getAttribute('style') ?? '').not.toContain('text-transform: uppercase')
   })
 
   it('closes again on Escape', () => {
