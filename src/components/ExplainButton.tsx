@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ActionIcon, Group, Input, Modal, Text } from '@mantine/core'
+import { Group, Input, Modal, Text, UnstyledButton } from '@mantine/core'
 
 /** A «?» next to a number or a field, for the explanation that used to sit
  *  under it until it was thrown away for taking up room. Nothing to read past
@@ -18,23 +18,42 @@ import { ActionIcon, Group, Input, Modal, Text } from '@mantine/core'
 type Props = {
   title: string
   body: string
+  /** How far across the mark is drawn. 20 next to a field label, 22 in a line
+   *  of text, 24 on the plum panel — the three places the design puts it. */
+  size?: number
 }
 
-export function ExplainButton({ title, body }: Props) {
+export function ExplainButton({ title, body, size = 20 }: Props) {
   const [opened, setOpened] = useState(false)
 
   return (
     <>
-      <ActionIcon
-        variant="subtle"
-        color="gray"
-        radius="xl"
-        size="sm"
+      {/* An outline circle rather than Mantine's subtle `ActionIcon`, which
+          has no fill and no edge and so disappears on cream. The border takes
+          the surrounding text's own colour at 60 %, which is what makes the
+          same mark work on the cream page and on the plum panel without
+          knowing which one it is standing on. The "?" stays in the body face:
+          Bungee's question mark is too heavy at this size. */}
+      <UnstyledButton
         aria-label={title}
         onClick={() => setOpened(true)}
+        style={{
+          width: size,
+          height: size,
+          flex: 'none',
+          borderRadius: 999,
+          border: '1.5px solid color-mix(in srgb, currentColor 60%, transparent)',
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontWeight: 700,
+          fontSize: Math.round(size * 0.55),
+          lineHeight: 1,
+          color: 'inherit',
+        }}
       >
         ?
-      </ActionIcon>
+      </UnstyledButton>
 
       <Modal
         opened={opened}
@@ -42,6 +61,21 @@ export function ExplainButton({ title, body }: Props) {
         title={title}
         centered
         size="sm"
+        radius="lg"
+        // The dialog shape this and `AboutMenu` share: a plum title bar over a
+        // cream body, a 2 px border and a hard shadow. Written out in each
+        // rather than wrapped in a component of its own — `ConfirmButton` is
+        // deliberately the odd one out, and a shared wrapper with an exception
+        // in it explains less than two plain copies.
+        styles={{
+          content: {
+            border: '2px solid var(--mantine-color-default-border)',
+            boxShadow: 'var(--mantine-shadow-md)',
+          },
+          header: { backgroundColor: 'light-dark(#3A1A38, #2A1226)', color: 'var(--mantine-color-white)' },
+          title: { fontFamily: 'Bungee, sans-serif', fontWeight: 400, fontSize: 12, textTransform: 'uppercase' },
+          close: { border: '1.5px solid currentColor', borderRadius: 999, color: 'var(--mantine-color-white)' },
+        }}
         transitionProps={{ duration: 0 }}
       >
         <Text size="sm">{body}</Text>
@@ -50,7 +84,7 @@ export function ExplainButton({ title, body }: Props) {
   )
 }
 
-type LabelProps = Props & {
+type LabelProps = Omit<Props, 'size'> & {
   /** The `id` of the field this labels. */
   htmlFor: string
   label: string

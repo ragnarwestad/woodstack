@@ -38,11 +38,13 @@ describe('DryingCurveChart', () => {
     expect(container.querySelectorAll('polyline')).toHaveLength(2)
   })
 
-  it('draws one point per logged reading', () => {
+  /** Two circles per reading, not one: a plum disc with an ochre pupil, so a
+   *  measured point reads as a marker rather than as a dot on the curve. */
+  it('draws one two-circle marker per logged reading', () => {
     const { container } = renderWithMantine(
       <DryingCurveChart points={points} readings={readings} threshold={DRY_ENOUGH_MOISTURE} window={window} />,
     )
-    expect(container.querySelectorAll('circle')).toHaveLength(2)
+    expect(container.querySelectorAll('circle')).toHaveLength(4)
   })
 
   it('labels the threshold line with the moisture basis', () => {

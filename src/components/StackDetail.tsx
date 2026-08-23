@@ -2,10 +2,10 @@ import { useCallback, useEffect, useState } from 'react'
 import {
   Alert,
   Button,
-  Divider,
   Group,
   Image,
   Stack as MantineStack,
+  Paper,
   Tabs,
   Text,
   Title,
@@ -34,6 +34,20 @@ import { NotifyPrompt } from './NotifyPrompt'
 import { VolumeEntryForm } from './VolumeEntryForm'
 
 const CURVE_MONTHS = 30
+
+/** The plum panel: flat, shadowless, cream text. It holds what the app is
+ *  telling you, where a cream card with a hard shadow holds what you act on.
+ *  Nothing in this app is both. */
+const PLUM_PANEL = 'light-dark(#3A1A38, #2A1226)'
+
+/** The species and meta line, the same small tracked capitals as in the list:
+ *  berry on cream, ochre on plum night. */
+const META_LINE = 'light-dark(var(--mantine-color-grape-6), var(--mantine-color-yellow-6))'
+
+/** The rule that fills the space to the left of a short label. Two pixels
+ *  tall, drawn rather than bordered, so the dashes stay the same length
+ *  whatever the label beside it is. */
+const DASHED_RULE = 'repeating-linear-gradient(90deg, var(--mantine-color-default-border) 0 6px, transparent 6px 12px)'
 
 /** The outcome of one normals request, tagged with the request it answers.
  *  Anything older than the current request still reads as loading, so a
@@ -181,7 +195,16 @@ export function StackDetail({
           does not need a line of its own. */}
       <Group justify="space-between" align="center" wrap="nowrap">
         <BackLink onClick={onBack} />
-        <Button variant="default" onClick={onEdit}>
+        <Button
+          variant="default"
+          onClick={onEdit}
+          radius={999}
+          className="ws-pressable"
+          ff="Bungee, sans-serif"
+          fz={11}
+          tt="uppercase"
+          style={{ borderWidth: 2 }}
+        >
           {t('stackDetail.edit')}
         </Button>
       </Group>
@@ -192,7 +215,7 @@ export function StackDetail({
         {stack.name}
       </Title>
 
-      <Text c="dimmed">
+      <Text fz={12} fw={600} tt="uppercase" style={{ letterSpacing: '0.14em', color: META_LINE }}>
         {t('stackDetail.meta', {
           species: speciesLabel(stack, t),
           date: stack.stackedDate,
@@ -212,49 +235,81 @@ export function StackDetail({
 
       {dryWindow && (
         <>
-          {/* The mark sits beside the line, not inside it: `window-text` is the
-              window and nothing else. */}
-          <Group gap={4} wrap="nowrap">
-            <Text data-testid="window-text" fw={600}>
-              {t('common.readyBetween', { window: formatWindow(dryWindow, translator) })}
-            </Text>
-            <ExplainButton
-              title={t('explain.readyWindow.title')}
-              body={t('explain.readyWindow.body')}
+          {/* The answer the page exists to give, on the panel that holds what
+              the app is telling you. `common.readyBetween` is drawn whole: an
+              earlier draft split "Klar mellom" off as an eyebrow above the
+              dates, which mangles the sentence. */}
+          <Paper radius="lg" p="lg" style={{ backgroundColor: PLUM_PANEL, color: 'var(--mantine-color-white)' }}>
+            {/* The mark sits beside the line, not inside it: `window-text` is
+                the window and nothing else. */}
+            <Group gap={8} wrap="nowrap" align="flex-start" justify="space-between">
+              <Text data-testid="window-text" ff="Bungee, sans-serif" fw={400} fz={17} lh={1.25}>
+                {t('common.readyBetween', { window: formatWindow(dryWindow, translator) })}
+              </Text>
+              <ExplainButton
+                title={t('explain.readyWindow.title')}
+                body={t('explain.readyWindow.body')}
+                size={24}
+              />
+            </Group>
+            {correction && (
+              <Text fz={13} mt="xs" data-testid="correction-caption" style={{ opacity: 0.7 }}>
+                {t(
+                  correction === 'earlier'
+                    ? 'stackDetail.correctedEarlier'
+                    : 'stackDetail.correctedLater',
+                )}
+              </Text>
+            )}
+          </Paper>
+
+          {/* The chart is something you read off, so it gets the other kind of
+              container: a cream card with a hard shadow. */}
+          <Paper withBorder radius="lg" p="md" shadow="md" style={{ borderWidth: 2 }}>
+            <DryingCurveChart
+              points={points}
+              secondPoints={secondPoints}
+              readings={stack.readings}
+              threshold={DRY_ENOUGH_MOISTURE}
+              window={dryWindow}
             />
-          </Group>
-          {correction && (
-            <Text size="sm" c="dimmed" data-testid="correction-caption">
-              {t(
-                correction === 'earlier'
-                  ? 'stackDetail.correctedEarlier'
-                  : 'stackDetail.correctedLater',
-              )}
-            </Text>
-          )}
-          <DryingCurveChart
-            points={points}
-            secondPoints={secondPoints}
-            readings={stack.readings}
-            threshold={DRY_ENOUGH_MOISTURE}
-            window={dryWindow}
-          />
+          </Paper>
         </>
       )}
 
-      <Divider />
-      <Text fw={600}>
-        {tracked
-          ? t('stackDetail.volumeCurrent', {
+      {/* The rule runs into the label rather than across the page above it:
+          it separates and points at the same time, which a full-width divider
+          did not. */}
+      <Group gap={8} wrap="nowrap" align="center">
+        <div data-testid="dashed-rule" aria-hidden="true" style={{ flex: 1, height: 2, background: DASHED_RULE }} />
+        {tracked ? (
+          // A label and a number, which is what the display face is for.
+          <Text ff="Bungee, sans-serif" fw={400} fz={13} tt="uppercase">
+            {t('stackDetail.volumeCurrent', {
               volume: formatVolume(currentSolidLiters(stack.volumeEntries), translator),
-            })
-          : t('stackDetail.volumeNone')}
-      </Text>
+            })}
+          </Text>
+        ) : (
+          // A sentence, which it is not: Bungee has no lower case and this one
+          // is read rather than scanned.
+          <Text fw={600} fz={13}>
+            {t('stackDetail.volumeNone')}
+          </Text>
+        )}
+        <ExplainButton title={t('explain.volumeUnits.title')} body={t('explain.volumeUnits.body')} />
+      </Group>
       {/* Two jobs on one stack — booking wood in or out, and noting a meter
           reading — and nobody does both in the same visit. Tabs put them at
           the same place instead of one below the other. Panels stay mounted,
           so a half-typed entry survives a glance at the other tab. */}
-      <Tabs defaultValue="volume">
+      <Tabs
+        defaultValue="volume"
+        variant="pills"
+        color="orange"
+        radius={999}
+        classNames={{ tab: 'ws-tab' }}
+        styles={{ tab: { fontFamily: 'Bungee, sans-serif', fontSize: 10, textTransform: 'uppercase', padding: '7px 12px' } }}
+      >
         <Tabs.List>
           <Tabs.Tab value="volume">{t('stackDetail.tabVolume')}</Tabs.Tab>
           <Tabs.Tab value="reading">{t('stackDetail.tabReading')}</Tabs.Tab>

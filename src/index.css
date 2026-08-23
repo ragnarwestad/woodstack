@@ -14,3 +14,44 @@
 body {
   margin: 0;
 }
+
+/* The hard shadow, and the press state that comes with it.
+   Both live here rather than on each component: `:active` and a media query
+   are the two things a React `style` prop cannot express, and the app has no
+   CSS-module convention to follow. `-card` is the heavier pair — 4 px under a
+   card, 3 px under a control — and on a press the element moves the shadow's
+   own distance and the shadow drops to nothing, so it reads as a switch being
+   pushed in rather than as an animation. Hence no duration, and nothing at all
+   for a visitor who has asked for less motion. */
+.ws-pressable {
+  box-shadow: var(--mantine-shadow-sm);
+}
+
+.ws-pressable-card {
+  box-shadow: var(--mantine-shadow-md);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .ws-pressable:active {
+    transform: translate(3px, 3px);
+    box-shadow: 0 0 0 var(--mantine-color-default-border);
+  }
+
+  .ws-pressable-card:active {
+    transform: translate(4px, 4px);
+    box-shadow: 0 0 0 var(--mantine-color-default-border);
+  }
+}
+
+/* Pill tabs, on the stack page and in the About dialog. The inactive border
+   and the active fill are a `data-` attribute apart, which no `style` prop can
+   see — hence a class. The active pill takes the page's own colour for its
+   text so it reads as a chip cut out of the background, not as a button. */
+.ws-tab {
+  border: 1.5px solid var(--mantine-color-default-border);
+}
+
+.ws-tab[data-active] {
+  border-color: transparent;
+  color: var(--mantine-color-body);
+}

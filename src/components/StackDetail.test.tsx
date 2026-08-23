@@ -188,6 +188,20 @@ describe('StackDetail', () => {
     expect(screen.queryByRole('tab', { name: /^bilde$/i })).not.toBeInTheDocument()
   })
 
+  /** The rule replaces the divider; it does not join it. A stray `<hr>` is
+   *  how the old separator survives a restyle unnoticed — and the volume line
+   *  itself has to stay one readable sentence, not an eyebrow and a number. */
+  it('rules off the volume line with the dashed rule, not a divider', async () => {
+    renderWithMantine(
+      <StackDetail stackId="a" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+    )
+    await waitFor(() => screen.getByText(/klar mellom/i))
+
+    expect(document.querySelectorAll('hr')).toHaveLength(0)
+    expect(screen.getByTestId('dashed-rule')).toBeInTheDocument()
+    expect(screen.getByText('Ingen ved lagt inn ennå.')).toBeInTheDocument()
+  })
+
   it('says the volume is not tracked yet rather than showing a bare zero', async () => {
     renderWithMantine(
       <StackDetail stackId="a" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,

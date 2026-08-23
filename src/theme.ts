@@ -76,6 +76,14 @@ export const theme: MantineThemeOverride = createTheme({
     },
   },
   radius: { sm: '8px', md: '12px', lg: '20px' },
+  /** Hard offsets, no blur: `sm` under a control, `md` under a card. Blur
+   *  belongs to the browser's own furniture, not to a poster.
+   *  `--mantine-color-default-border` is already bark on the cream theme and a
+   *  lighter plum on the dark one, so one value comes out right in both. */
+  shadows: {
+    sm: '3px 3px 0 var(--mantine-color-default-border)',
+    md: '4px 4px 0 var(--mantine-color-default-border)',
+  },
   // No `components` block and no `defaultRadius`. The design bundle also draws
   // pill-shaped buttons and tabs and rounded cards, and setting them here would
   // reshape every Button, Tabs and SegmentedControl in the app as a side effect

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { fireEvent, screen, within } from '@testing-library/react'
 import { ExplainButton, ExplainedLabel } from './ExplainButton'
 import { renderWithMantine } from '../test/render'
@@ -32,6 +32,24 @@ describe('ExplainButton', () => {
 
     const dialog = screen.getByRole('dialog')
     expect(within(dialog).getByText(BODY)).toBeInTheDocument()
+  })
+
+  /** The mark sits inside three forms, and a `<button>` with no `type` is a
+   *  submit button. Asking what a unit means would then save the entry — the
+   *  quietest possible failure, and one an element swap reintroduces for
+   *  free. */
+  it('asks rather than submits the form it stands in', () => {
+    const onSubmit = vi.fn((event: React.FormEvent) => event.preventDefault())
+    renderWithMantine(
+      <form onSubmit={onSubmit}>
+        <ExplainButton title={TITLE} body={BODY} />
+      </form>,
+    )
+
+    const mark = screen.getByRole('button', { name: TITLE })
+    expect(mark).toHaveAttribute('type', 'button')
+    fireEvent.click(mark)
+    expect(onSubmit).not.toHaveBeenCalled()
   })
 
   /** No pointer needed to get back out: Escape closes it, the way every other

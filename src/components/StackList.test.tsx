@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { fireEvent, screen, within } from '@testing-library/react'
 import { StackList } from './StackList'
-import { estimateWindow } from '../model/simulate'
+import { dryingProgress, estimateWindow } from '../model/simulate'
 import { renderWithMantine } from '../test/render'
 import { OSLO_NORMALS, makeStack } from '../test/fixtures'
 import { ENGLISH_TEST_LANGUAGE, setTestLanguage } from '../test/language'
@@ -89,6 +89,26 @@ describe('StackList', () => {
       onDelete={vi.fn()} onAdd={vi.fn()} today={today} />)
 
     expect(screen.queryByText('0 %')).not.toBeInTheDocument()
+  })
+
+  /** The one state worth seeing across a room. It reads the same number the
+   *  ring already has, so the card and the ring can never disagree — and 99 %
+   *  is not ready, however close it looks. */
+  it('marks a row ready only once the wood is all the way dry', () => {
+    const stack = makeStack({ id: 'a', name: 'Bjørk ved veggen' })
+    const almost = new Date('2027-01-01T00:00:00Z')
+    const dry = new Date('2027-06-01T00:00:00Z')
+    expect(dryingProgress(stack, OSLO_NORMALS, almost)).toBeLessThan(100)
+    expect(dryingProgress(stack, OSLO_NORMALS, dry)).toBe(100)
+
+    const notYet = renderWithMantine(<StackList stacks={[stack]} normalsFor={() => OSLO_NORMALS} onSelect={vi.fn()}
+      onDelete={vi.fn()} onAdd={vi.fn()} today={almost} />)
+    expect(screen.getByText('Bjørk ved veggen').closest('[data-ready]')).toBeNull()
+    notYet.unmount()
+
+    renderWithMantine(<StackList stacks={[stack]} normalsFor={() => OSLO_NORMALS} onSelect={vi.fn()}
+      onDelete={vi.fn()} onAdd={vi.fn()} today={dry} />)
+    expect(screen.getByText('Bjørk ved veggen').closest('[data-ready]')).toHaveAttribute('data-ready', 'true')
   })
 
   it('invites the first stack when there are none', () => {

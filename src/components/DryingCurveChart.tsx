@@ -68,7 +68,9 @@ export function DryingCurveChart({ points, secondPoints, readings, threshold, wi
         y={PADDING.top}
         width={Math.max(bandEnd - bandStart, 1)}
         height={HEIGHT - PADDING.top - PADDING.bottom}
-        fill="var(--mantine-color-teal-light)"
+        rx={6}
+        fill="var(--mantine-color-yellow-6)"
+        opacity={0.35}
       />
 
       <line
@@ -77,13 +79,27 @@ export function DryingCurveChart({ points, secondPoints, readings, threshold, wi
         y1={y(threshold)}
         y2={y(threshold)}
         stroke="var(--mantine-color-teal-filled)"
-        strokeDasharray="4 3"
+        strokeWidth="1.5"
+        strokeDasharray="5 4"
       />
-      <text x={PADDING.left} y={y(threshold) - 4} fontSize="10" fill="currentColor">
+      <text
+        x={PADDING.left}
+        y={y(threshold) - 4}
+        fontSize="10"
+        fontWeight="600"
+        fill="var(--mantine-color-teal-filled)"
+      >
         {formatMoisture(threshold, translator)}
       </text>
 
-      <polyline points={curve} fill="none" stroke="var(--mantine-color-orange-filled)" strokeWidth="2" />
+      <polyline
+        points={curve}
+        fill="none"
+        stroke="var(--mantine-color-orange-filled)"
+        strokeWidth="3.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
 
       {secondCurve && (
         <polyline
@@ -95,20 +111,30 @@ export function DryingCurveChart({ points, secondPoints, readings, threshold, wi
         />
       )}
 
-      {readings.map((reading) => (
-        <circle
-          key={reading.id}
-          cx={x(clamp(parseDate(reading.date).getTime(), minTime, maxTime))}
-          cy={y(reading.moisture)}
-          r="4"
-          fill="var(--mantine-color-blue-filled)"
-        />
-      ))}
+      {/* A disc with a pupil, not a dot: two circles read as a marker somebody
+          placed, where one reads as a bump in the curve. */}
+      {readings.map((reading) => {
+        const cx = x(clamp(parseDate(reading.date).getTime(), minTime, maxTime))
+        const cy = y(reading.moisture)
+        return (
+          <g key={reading.id}>
+            <circle cx={cx} cy={cy} r="5" fill="light-dark(#3A1A38, #2A1226)" />
+            <circle cx={cx} cy={cy} r="2" fill="var(--mantine-color-yellow-6)" />
+          </g>
+        )
+      })}
 
-      <text x={PADDING.left} y={HEIGHT - 6} fontSize="10" fill="currentColor">
+      <text x={PADDING.left} y={HEIGHT - 6} fontSize="10" fontWeight="600" fill="var(--mantine-color-dimmed)">
         {formatMonthLabel(points[0].date)}
       </text>
-      <text x={WIDTH - PADDING.right} y={HEIGHT - 6} fontSize="10" textAnchor="end" fill="currentColor">
+      <text
+        x={WIDTH - PADDING.right}
+        y={HEIGHT - 6}
+        fontSize="10"
+        fontWeight="600"
+        textAnchor="end"
+        fill="var(--mantine-color-dimmed)"
+      >
         {formatMonthLabel(points[points.length - 1].date)}
       </text>
     </svg>

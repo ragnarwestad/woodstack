@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ActionIcon, Menu, Modal, Tabs, Text } from '@mantine/core'
+import { Group, Menu, Modal, Tabs, Text, UnstyledButton } from '@mantine/core'
 import { useTranslation } from '../i18n/useTranslation'
 
 /** Three dots, drawn here rather than pulled from an icon library. It is the
@@ -38,11 +38,32 @@ export function AboutMenu() {
     <>
       <Menu position="bottom-end" transitionProps={{ duration: 0 }}>
         <Menu.Target>
-          <ActionIcon variant="subtle" color="gray" aria-label={t('about.menuLabel')}>
+          {/* The same outline circle as the «?», a size up. Mantine's subtle
+              `ActionIcon` has neither fill nor edge, so it vanished on cream. */}
+          <UnstyledButton
+            aria-label={t('about.menuLabel')}
+            style={{
+              width: 30,
+              height: 30,
+              flex: 'none',
+              borderRadius: 999,
+              border: '1.5px solid color-mix(in srgb, currentColor 60%, transparent)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'inherit',
+            }}
+          >
             <ThreeDots />
-          </ActionIcon>
+          </UnstyledButton>
         </Menu.Target>
-        <Menu.Dropdown>
+        <Menu.Dropdown
+          style={{
+            borderRadius: 12,
+            borderWidth: 2,
+            boxShadow: 'var(--mantine-shadow-sm)',
+          }}
+        >
           <Menu.Item onClick={() => setOpened(true)}>{t('about.menuItem')}</Menu.Item>
         </Menu.Dropdown>
       </Menu>
@@ -53,13 +74,34 @@ export function AboutMenu() {
         title={t('about.title')}
         centered
         size="md"
+        radius="lg"
+        // The same dialog shape as `ExplainButton`'s, written out here too —
+        // see the note there for why the two are copies rather than one shared
+        // wrapper.
+        styles={{
+          content: {
+            border: '2px solid var(--mantine-color-default-border)',
+            boxShadow: 'var(--mantine-shadow-md)',
+          },
+          header: { backgroundColor: 'light-dark(#3A1A38, #2A1226)', color: 'var(--mantine-color-white)' },
+          title: { fontFamily: 'Bungee, sans-serif', fontWeight: 400, fontSize: 12, textTransform: 'uppercase' },
+          close: { border: '1.5px solid currentColor', borderRadius: 999, color: 'var(--mantine-color-white)' },
+        }}
         transitionProps={{ duration: 0 }}
       >
         {/* `keepMounted={false}`: these panels hold nothing but text, so there
             is no half-finished entry to preserve, and a phone reading the
             dialog aloud should not have to walk past two tabs it did not
             open. */}
-        <Tabs defaultValue="what" keepMounted={false}>
+        <Tabs
+          defaultValue="what"
+          keepMounted={false}
+          variant="pills"
+          color="orange"
+          radius={999}
+          classNames={{ tab: 'ws-tab' }}
+          styles={{ tab: { fontFamily: 'Bungee, sans-serif', fontSize: 10, textTransform: 'uppercase', padding: '7px 12px' } }}
+        >
           <Tabs.List>
             <Tabs.Tab value="what">{t('about.tabWhat')}</Tabs.Tab>
             <Tabs.Tab value="how">{t('about.tabHow')}</Tabs.Tab>
@@ -87,9 +129,22 @@ export function AboutMenu() {
           </Tabs.Panel>
         </Tabs>
 
-        <Text size="xs" c="dimmed" mt="md">
-          {t('about.version', { value: __APP_VERSION__ })}
-        </Text>
+        {/* The same dashed rule as the volume line on the stack page: it runs
+            into the label rather than across the dialog above it. */}
+        <Group gap={8} wrap="nowrap" align="center" mt="md">
+          <div
+            aria-hidden="true"
+            style={{
+              flex: 1,
+              height: 2,
+              background:
+                'repeating-linear-gradient(90deg, var(--mantine-color-default-border) 0 6px, transparent 6px 12px)',
+            }}
+          />
+          <Text size="xs" c="dimmed">
+            {t('about.version', { value: __APP_VERSION__ })}
+          </Text>
+        </Group>
       </Modal>
     </>
   )

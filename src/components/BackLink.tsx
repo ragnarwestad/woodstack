@@ -10,7 +10,16 @@ export function BackLink({ onClick }: { onClick: () => void }) {
   const { t } = useTranslation()
 
   return (
-    <Anchor component="button" type="button" onClick={onClick} size="sm">
+    <Anchor
+      component="button"
+      type="button"
+      onClick={onClick}
+      fz={12}
+      fw={700}
+      tt="uppercase"
+      c="teal.6"
+      style={{ letterSpacing: '0.16em' }}
+    >
       ← {t('common.back')}
     </Anchor>
   )
