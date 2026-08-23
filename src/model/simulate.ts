@@ -266,14 +266,26 @@ export function hasEnteredWindow(window: DryWindow, today: Date): boolean {
   return today.getTime() >= window.earliest.getTime()
 }
 
-/** How far through the ready-window today is, 0-100. Before the window it is
- *  0, after it 100 — the ring can never read negative or over full. */
-export function windowProgress(window: DryWindow, today: Date): number {
-  const from = window.earliest.getTime()
-  const to = window.latest.getTime()
-  const now = today.getTime()
+function progressForComponent(stack: Stack, normals: ClimateNormals, today: Date, actual?: ActualWeather): number {
+  const green = SPECIES[stack.species].greenMoisture
+  const rate = effectiveRate(stack, normals)
+  const start = startingPoint(stack)
+  const current =
+    today.getTime() <= start.date.getTime()
+      ? projectBackFromGreen(stack, normals, rate, today, actual)
+      : project(normals, rate, start, today, actual)
+  return Math.min(Math.max(((green - current) / (green - DRY_ENOUGH_MOISTURE)) * 100, 0), 100)
+}
 
-  if (now <= from) return 0
-  if (now >= to) return 100
-  return ((now - from) / (to - from)) * 100
+/** How far the wood has dried, 0-100: from the species' green moisture down to
+ *  the dry-enough threshold. Unlike a reading of where today sits inside the
+ *  ready-window, this moves from day one — a stack put up in April already
+ *  shows real progress by August instead of reading zero until the window
+ *  opens.
+ *
+ *  A mixed pile takes its slower-drying component's number, the same caution
+ *  `estimateWindow` applies to the window: the ring should never read further
+ *  along than the wettest wood in the pile actually is. */
+export function dryingProgress(stack: Stack, normals: ClimateNormals, today: Date, actual?: ActualWeather): number {
+  return Math.min(...components(stack).map((component) => progressForComponent(component, normals, today, actual)))
 }

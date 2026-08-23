@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { fireEvent, screen, within } from '@testing-library/react'
 import { StackList } from './StackList'
+import { estimateWindow } from '../model/simulate'
 import { renderWithMantine } from '../test/render'
 import { OSLO_NORMALS, makeStack } from '../test/fixtures'
 import { ENGLISH_TEST_LANGUAGE, setTestLanguage } from '../test/language'
@@ -61,6 +62,19 @@ describe('StackList', () => {
     const photos = screen.getAllByAltText(/bilde av vedstabelen/i)
     expect(photos).toHaveLength(1)
     expect(photos[0]).toHaveAttribute('src', 'data:image/jpeg;base64,thumb')
+  })
+
+  /** The reported bug: the ring counted towards the ready-window, so a stack
+   *  put up in April read 0 % through a whole summer of real drying. */
+  it('shows a ring that has moved, months before the ready-window opens', () => {
+    const stack = makeStack({ id: 'a', name: 'Bjørk ved veggen', stackedDate: '2026-04-15' })
+    const today = new Date('2026-07-15T00:00:00Z')
+    expect(today.getTime()).toBeLessThan(estimateWindow(stack, OSLO_NORMALS).earliest.getTime())
+
+    renderWithMantine(<StackList stacks={[stack]} normalsFor={() => OSLO_NORMALS} onSelect={vi.fn()}
+      onDelete={vi.fn()} onAdd={vi.fn()} today={today} />)
+
+    expect(screen.queryByText('0 %')).not.toBeInTheDocument()
   })
 
   it('invites the first stack when there are none', () => {
