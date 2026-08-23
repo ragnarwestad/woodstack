@@ -47,9 +47,35 @@ export const en: Record<TranslationKey, string> = {
      do with a woodpile the visitor already owns. */
   'compare.menuItem': 'Compare two lots of firewood',
   'compare.title': 'Compare two lots of firewood',
-  'compare.pending':
-    'The arithmetic behind the comparison – kroner per kWh and kilos of dry wood – has not been built yet. The screen arrives as soon as it is.',
   'compare.resultUnitLabel': 'Unit in the answer',
+  'compare.intro':
+    'Enter the price, the amount and how dry the wood is for both lots. The app works out kroner per kWh, which is the number that decides which lot is cheaper.',
+  'compare.lotHeading': 'Lot {number}',
+  'compare.priceLabel': 'Price for the whole lot (kr)',
+  'compare.amountLabel': 'Amount',
+  'compare.unitLabel': 'Unit',
+  'compare.unitKg': 'Kilos',
+  'compare.speciesLabel': 'Species',
+  'compare.speciesNotNeeded': 'Not needed when the lot is sold by weight',
+  'compare.moistureLabel': 'How dry is the wood?',
+  'compare.moisture.nyfelt': 'Freshly felled – cut this year',
+  'compare.moisture.syretorket': 'Leaf-dried – felled in leaf and left lying',
+  'compare.moisture.ra': 'Raw – stacked, but not dry yet',
+  'compare.moisture.salgsved': 'Sale-ready – ready to burn',
+  'compare.moisture.ekstraTorr': 'Extra dry – kept indoors for a long time',
+  'compare.krPerKgDry': 'Kr per kg of sale-ready wood',
+  'compare.krPerKwh': 'Kr per kWh',
+  'compare.kgAt20Percent': 'Kg of sale-ready wood (20 % moisture)',
+  'compare.amountInUnit': 'Amount in {unit}',
+  'compare.awaitingLot': 'Enter a price and an amount, and the figures appear here.',
+  'compare.verdict': 'Lot {number} is {percent} % cheaper per kWh.',
+  'compare.verdictTie': 'The two lots cost the same per kWh.',
+  'explain.compareMoisture.title': 'Why do we ask how dry the wood is?',
+  'explain.compareMoisture.body':
+    'Water weighs, and water does not burn. Buying wood by weight means paying for the water too, and then spending heat boiling it off. That is why fresh wood sold by weight is a worse buy than the price per kilo suggests.\n\nWhen the wood is sold by volume – favn, cubic metre, sack – the moisture makes no difference to the sum: a favn is the same amount of wood whether it rained on it or not.',
+  'explain.comparePerKwh.title': 'Why kroner per kWh?',
+  'explain.comparePerKwh.body':
+    'The two lots usually come in different units, of different species and at different moisture. The kilowatt-hour is the one figure all of that converts into: how much heat the money actually buys.\n\nWe leave the stove efficiency out. It would make both lots equally worse, and so would not change which of them is cheaper.',
 
   /* "How much do I need?" — the calculator for an energy need or an offered
      lot, not a comparison of two. */

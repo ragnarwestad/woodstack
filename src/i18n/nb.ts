@@ -50,9 +50,35 @@ export const nb = {
      do with a woodpile the visitor already owns. */
   'compare.menuItem': 'Sammenlign to vedpartier',
   'compare.title': 'Sammenlign to vedpartier',
-  'compare.pending':
-    'Regnestykket bak sammenligningen – kroner per kWh og kilo tørr ved – er ikke bygd ennå. Skjermen kommer så snart det er på plass.',
   'compare.resultUnitLabel': 'Enhet i svaret',
+  'compare.intro':
+    'Legg inn pris, mengde og hvor tørr veden er for begge partiene. Appen regner om til kroner per kWh, som er tallet som avgjør hvilket parti som er billigst.',
+  'compare.lotHeading': 'Parti {number}',
+  'compare.priceLabel': 'Pris for hele partiet (kr)',
+  'compare.amountLabel': 'Mengde',
+  'compare.unitLabel': 'Enhet',
+  'compare.unitKg': 'Kilo',
+  'compare.speciesLabel': 'Treslag',
+  'compare.speciesNotNeeded': 'Trengs ikke når partiet selges etter vekt',
+  'compare.moistureLabel': 'Hvor tørr er veden?',
+  'compare.moisture.nyfelt': 'Nyfelt – felt nå i år',
+  'compare.moisture.syretorket': 'Syretørket – felt med lauv på og latt ligge',
+  'compare.moisture.ra': 'Rå ved – stablet, men ikke tørr ennå',
+  'compare.moisture.salgsved': 'Salgsved – klar til å fyre med',
+  'compare.moisture.ekstraTorr': 'Ekstra tørr – innendørs over lang tid',
+  'compare.krPerKgDry': 'Kr per kg salgsklar ved',
+  'compare.krPerKwh': 'Kr per kWh',
+  'compare.kgAt20Percent': 'Kg salgsklar ved (20 % fukt)',
+  'compare.amountInUnit': 'Mengde i {unit}',
+  'compare.awaitingLot': 'Fyll inn pris og mengde, så kommer tallene her.',
+  'compare.verdict': 'Parti {number} er {percent} % billigere per kWh.',
+  'compare.verdictTie': 'De to partiene koster like mye per kWh.',
+  'explain.compareMoisture.title': 'Hvorfor spør vi hvor tørr veden er?',
+  'explain.compareMoisture.body':
+    'Vann veier, og vann brenner ikke. Kjøper du ved etter vekt, betaler du for vannet også, og du må i tillegg bruke varme på å koke det bort. Derfor er fersk ved etter vekt et dårligere kjøp enn kiloprisen viser.\n\nSelges veden etter volum – favn, kubikkmeter, sekk – spiller fuktigheten ingen rolle for regnestykket: en favn er like mye ved uansett om det har regnet på den.',
+  'explain.comparePerKwh.title': 'Hvorfor kroner per kWh?',
+  'explain.comparePerKwh.body':
+    'De to partiene har som regel ulik enhet, ulikt treslag og ulik fuktighet. Kilowattimen er det ene tallet alt dette kan regnes om til: hvor mye varme du faktisk får igjen for pengene.\n\nVi regner uten virkningsgraden til ovnen. Den ville gjort begge partiene like mye dårligere, og dermed ikke endret hvilket av dem som er billigst.',
 
   /* "Hvor mye trenger jeg?" — kalkulatoren for et energibehov eller et
      tilbudt vedparti, ikke en sammenligning av to. */

@@ -111,6 +111,25 @@ describe('StackList', () => {
     expect(screen.getByText('Bjørk ved veggen').closest('[data-ready]')).toHaveAttribute('data-ready', 'true')
   })
 
+  /** Red on saturated teal is the pairing that reads as a mistake, and the
+   *  ready row is the only place in the app where a delete button lands on a
+   *  filled card. On the cream rows it stays red — that is the half of this
+   *  that a blanket change would have quietly broken. */
+  it('takes the ready card\'s colour for its delete button, and stays red elsewhere', () => {
+    const stack = makeStack({ id: 'a', name: 'Bjørk ved veggen' })
+    const almost = new Date('2027-01-01T00:00:00Z')
+    const dry = new Date('2027-06-01T00:00:00Z')
+
+    const notYet = renderWithMantine(<StackList stacks={[stack]} normalsFor={() => OSLO_NORMALS} onSelect={vi.fn()}
+      onDelete={vi.fn()} onAdd={vi.fn()} today={almost} />)
+    expect(screen.getByRole('button', { name: /slett/i }).getAttribute('style')).not.toContain('inherit')
+    notYet.unmount()
+
+    renderWithMantine(<StackList stacks={[stack]} normalsFor={() => OSLO_NORMALS} onSelect={vi.fn()}
+      onDelete={vi.fn()} onAdd={vi.fn()} today={dry} />)
+    expect(screen.getByRole('button', { name: /slett/i }).getAttribute('style')).toContain('color: inherit')
+  })
+
   it('invites the first stack when there are none', () => {
     renderWithMantine(<StackList stacks={[]} normalsFor={() => null} onSelect={vi.fn()}
       onDelete={vi.fn()} onAdd={vi.fn()} />)

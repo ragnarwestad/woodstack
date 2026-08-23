@@ -1,4 +1,4 @@
-import { VOLUME_UNITS, type VolumeUnit } from './schema'
+import { VOLUME_UNITS } from './schema'
 
 /** Which unit the app reads an answer back in — a favn, a loose cubic metre,
  *  a sack. Some people think in one, some in another, and the arithmetic is
@@ -15,8 +15,14 @@ import { VOLUME_UNITS, type VolumeUnit } from './schema'
  *  agree on the key and the fallback, so both import this. */
 export const RESULT_UNIT_STORAGE_KEY = 'woodstack.resultUnit'
 
-function isResultUnit(value: string | null): value is VolumeUnit {
-  return (VOLUME_UNITS as readonly string[]).includes(value ?? '')
+/** Narrower than `VolumeUnit`, and deliberately so: that type also carries
+ *  the retired `stablet`, which an old ledger entry may still be stored in but
+ *  which nobody may be shown as a choice. An answer is read back in a unit the
+ *  app offers. */
+export type ResultUnit = (typeof VOLUME_UNITS)[number]
+
+function isResultUnit(value: string | null): value is ResultUnit {
+  return VOLUME_UNITS.includes(value as ResultUnit)
 }
 
 /** Favn without a stored choice: it is the unit firewood is advertised in
@@ -24,7 +30,7 @@ function isResultUnit(value: string | null): value is VolumeUnit {
  *  in their head. An unrecognised stored value is treated as no choice at
  *  all — which is also what happens to a unit written by a later version of
  *  the app that this one does not know. */
-export function readResultUnitPreference(): VolumeUnit {
+export function readResultUnitPreference(): ResultUnit {
   let stored: string | null = null
   try {
     stored = localStorage.getItem(RESULT_UNIT_STORAGE_KEY)
@@ -36,7 +42,7 @@ export function readResultUnitPreference(): VolumeUnit {
 
 /** Best effort. Safari in a private window throws instead of storing, and a
  *  visitor who cannot be remembered should still get to switch for now. */
-export function writeResultUnitPreference(unit: VolumeUnit): void {
+export function writeResultUnitPreference(unit: ResultUnit): void {
   try {
     localStorage.setItem(RESULT_UNIT_STORAGE_KEY, unit)
   } catch {

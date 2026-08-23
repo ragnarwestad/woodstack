@@ -1,24 +1,39 @@
-import { describe, expect, it, vi } from 'vitest'
-import { fireEvent, screen } from '@testing-library/react'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { fireEvent, screen, within } from '@testing-library/react'
 import { renderWithMantine } from '../test/render'
 import { nb } from '../i18n/nb'
+import { RESULT_UNIT_STORAGE_KEY } from '../storage/resultUnitPreference'
 import { ComparePage } from './ComparePage'
 
-/** What this screen will be — two lots side by side, kroner per kWh for each
- *  and a line saying which one wins — waits on the price engine spec 18
- *  builds. Until that lands there is nothing to compute, so the tests here
- *  cover what the screen does today: it says so, and it gets out of the way.
- *  The species gating and the four per-lot figures (acceptance criteria 5 and
- *  6) have no test yet because there is no engine to assert them against. */
+/** Two lots side by side, four figures each, and one line saying which is the
+ *  better buy. The arithmetic itself is tested in `model/lot.test.ts` against
+ *  the spreadsheet; what is tested here is that the screen asks for the right
+ *  things and puts the right answers on screen. */
+
+beforeEach(() => {
+  localStorage.clear()
+})
+
+/** Fills in one lot. The unit goes in before the species, because changing the
+ *  unit is what decides whether the species field takes anything. */
+function fillLot(index: number, values: { price: string; amount: string; unit?: string; species?: string; moisture?: string }) {
+  const lot = within(screen.getByTestId(`lot-${index}`))
+
+  if (values.unit) fireEvent.change(lot.getByLabelText(nb['compare.unitLabel']), { target: { value: values.unit } })
+  if (values.species) fireEvent.change(lot.getByLabelText(nb['compare.speciesLabel']), { target: { value: values.species } })
+  if (values.moisture) fireEvent.change(lot.getByLabelText(nb['compare.moistureLabel']), { target: { value: values.moisture } })
+  fireEvent.change(lot.getByLabelText(nb['compare.priceLabel']), { target: { value: values.price } })
+  fireEvent.change(lot.getByLabelText(nb['compare.amountLabel']), { target: { value: values.amount } })
+}
+
+function figure(index: number, name: string): string {
+  return within(screen.getByTestId(`lot-${index}`)).getByTestId(name).textContent ?? ''
+}
+
 describe('ComparePage', () => {
   it('names itself, so the visitor knows which screen they landed on', () => {
     renderWithMantine(<ComparePage onBack={() => undefined} />)
     expect(screen.getByRole('heading', { name: nb['compare.title'] })).toBeInTheDocument()
-  })
-
-  it('says plainly that the comparison itself is not built yet', () => {
-    renderWithMantine(<ComparePage onBack={() => undefined} />)
-    expect(screen.getByText(nb['compare.pending'])).toBeInTheDocument()
   })
 
   it('goes back the same way every other screen does', () => {
@@ -27,5 +42,93 @@ describe('ComparePage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /tilbake/i }))
     expect(onBack).toHaveBeenCalledOnce()
+  })
+
+  /** Acceptance criterion 6. A favn of birch and a favn of spruce are nearly
+   *  twice apart in energy, so a volume lot has to say which wood it is; kilos
+   *  are already a weight and need no species. The field stays put either way
+   *  — a field that comes and goes moves everything under it, the same rule
+   *  `AddStackForm` states for its second-species picker. */
+  it('asks a lot sold by volume which wood it is, and a lot sold by weight not', () => {
+    renderWithMantine(<ComparePage onBack={() => undefined} />)
+
+    fillLot(0, { price: '2400', amount: '1', unit: 'favn' })
+    fillLot(1, { price: '3000', amount: '1000', unit: 'kg' })
+
+    const volumeSpecies = within(screen.getByTestId('lot-0')).getByLabelText(nb['compare.speciesLabel'])
+    const weightSpecies = within(screen.getByTestId('lot-1')).getByLabelText(nb['compare.speciesLabel'])
+
+    expect(volumeSpecies).toBeEnabled()
+    expect(weightSpecies).toBeDisabled()
+    expect(weightSpecies).toBeInTheDocument()
+  })
+
+  /** Acceptance criterion 5: all four figures the description asks for, not
+   *  only the headline one. 1 favn of birch is 1600 solid litres, 800 kg bone
+   *  dry, 960 kg at 20 % — so 2400 kroner is 2,50 per kilo. */
+  it('shows all four figures for each lot, not only the kilowatt-hour price', () => {
+    renderWithMantine(<ComparePage onBack={() => undefined} />)
+
+    fillLot(0, { price: '2400', amount: '1', unit: 'favn', species: 'bjork' })
+    fillLot(1, { price: '900', amount: '1', unit: 'losKubikk', species: 'gran' })
+
+    expect(figure(0, 'krPerKgDry')).toContain('2,50')
+    expect(figure(0, 'krPerKwh')).toContain('0,595')
+    expect(figure(0, 'kgAt20Percent')).toContain('960')
+    // Favn is the default result unit, and one favn is one favn.
+    expect(figure(0, 'amountInUnit')).toContain('1')
+
+    // 500 solid litres of spruce: 190 kg dry, 228 kg at 20 %.
+    expect(figure(1, 'kgAt20Percent')).toContain('228')
+    expect(figure(1, 'amountInUnit')).toContain('0,31')
+  })
+
+  it('restates both amounts in the unit chosen from the three-dot menu', () => {
+    localStorage.setItem(RESULT_UNIT_STORAGE_KEY, 'fastKubikk')
+    renderWithMantine(<ComparePage onBack={() => undefined} />)
+
+    fillLot(0, { price: '2400', amount: '1', unit: 'favn', species: 'bjork' })
+
+    expect(figure(0, 'amountInUnit')).toContain('1,6')
+  })
+
+  /** Kilos cannot be restated as favner without knowing which wood they are,
+   *  and a weight lot is never asked. A dash says so; a number would be made
+   *  up. */
+  it('leaves the restated amount blank for a lot sold by the kilo', () => {
+    renderWithMantine(<ComparePage onBack={() => undefined} />)
+
+    fillLot(0, { price: '3000', amount: '1000', unit: 'kg' })
+
+    expect(figure(0, 'amountInUnit')).toContain('–')
+  })
+
+  it('says which lot is cheaper and by how much, rather than leaving two columns to compare', () => {
+    renderWithMantine(<ComparePage onBack={() => undefined} />)
+
+    // Same wood, same amount, one of them half the price: 50 % cheaper.
+    fillLot(0, { price: '1200', amount: '1', unit: 'favn', species: 'bjork' })
+    fillLot(1, { price: '2400', amount: '1', unit: 'favn', species: 'bjork' })
+
+    const verdict = screen.getByTestId('verdict').textContent ?? ''
+    expect(verdict).toContain('1')
+    expect(verdict).toContain('50')
+  })
+
+  it('names no winner when the two cost the same', () => {
+    renderWithMantine(<ComparePage onBack={() => undefined} />)
+
+    fillLot(0, { price: '2400', amount: '1', unit: 'favn', species: 'bjork' })
+    fillLot(1, { price: '2400', amount: '1', unit: 'favn', species: 'bjork' })
+
+    expect(screen.getByTestId('verdict')).toHaveTextContent(nb['compare.verdictTie'])
+  })
+
+  it('waits for both lots before saying anything about which one wins', () => {
+    renderWithMantine(<ComparePage onBack={() => undefined} />)
+
+    fillLot(0, { price: '2400', amount: '1', unit: 'favn', species: 'bjork' })
+
+    expect(screen.queryByTestId('verdict')).not.toBeInTheDocument()
   })
 })

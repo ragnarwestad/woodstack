@@ -21,9 +21,16 @@ type Props = {
   confirmLabel: string
   cancelLabel: string
   onConfirm: () => void
+  /** The trigger stands on a filled card rather than on the page, so it takes
+   *  that card's foreground instead of red. A ready row is teal, and a red pill
+   *  on saturated green is the one pairing that reads as a mistake — the two
+   *  fight for the same edge and neither wins. Nothing is lost by dropping it:
+   *  the dialog behind the button is still berry, edge to edge, and that is
+   *  where the warning belongs. */
+  onFilled?: boolean
 }
 
-export function ConfirmButton({ label, question, confirmLabel, cancelLabel, onConfirm }: Props) {
+export function ConfirmButton({ label, question, confirmLabel, cancelLabel, onConfirm, onFilled }: Props) {
   const [asking, setAsking] = useState(false)
 
   return (
@@ -36,7 +43,12 @@ export function ConfirmButton({ label, question, confirmLabel, cancelLabel, onCo
         fw={700}
         tt="uppercase"
         onClick={() => setAsking(true)}
-        style={{ borderWidth: 1.5, letterSpacing: '0.1em', backgroundColor: 'transparent' }}
+        style={{
+          borderWidth: 1.5,
+          letterSpacing: '0.1em',
+          backgroundColor: 'transparent',
+          ...(onFilled && { color: 'inherit', borderColor: 'currentColor' }),
+        }}
       >
         {label}
       </Button>
