@@ -18,7 +18,7 @@ function pick(control: string, choice: RegExp) {
 function renderHeader() {
   return renderWithMantine(
     <LanguageProvider>
-      <AppHeader />
+      <AppHeader onHome={() => {}} />
     </LanguageProvider>,
   )
 }
@@ -84,7 +84,7 @@ describe('AppHeader', () => {
     }
     renderWithMantine(
       <LanguageProvider>
-        <AppHeader />
+        <AppHeader onHome={() => {}} />
         <Probe />
       </LanguageProvider>,
     )

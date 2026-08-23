@@ -4,6 +4,7 @@
 export const nb = {
   'app.slogan': 'Fred, kjærlighet og tørr ved',
   'app.tagline': 'Når er veden tørr nok til å fyre med?',
+  'app.home': 'Til forsiden',
   'app.language': 'Språk',
   'app.theme': 'Fargetema',
   'app.themeLight': 'Lys',

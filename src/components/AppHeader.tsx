@@ -1,4 +1,4 @@
-import { Group, Stack, Text, Title } from '@mantine/core'
+import { Anchor, Group, Stack, Text, Title } from '@mantine/core'
 // The header mark, not the app icon: the icon carries an opaque background
 // because a home-screen tile needs one, and on the page that reads as a dark
 // square beside the title in the light theme.
@@ -7,7 +7,15 @@ import { useTranslation } from '../i18n/useTranslation'
 import { AboutMenu } from './AboutMenu'
 import { LanguageControl, ThemeControl } from './ViewControls'
 
-export function AppHeader() {
+type Props = {
+  /** Back to the list, from wherever the visitor is. It has to come from
+   *  `App`: the add and edit screens are plain state there with no hash of
+   *  their own, so clearing the URL alone would leave the visitor sitting on
+   *  a form. */
+  onHome: () => void
+}
+
+export function AppHeader({ onHome }: Props) {
   const { t } = useTranslation()
 
 
@@ -38,7 +46,25 @@ export function AppHeader() {
       style={{ zIndex: 2, backgroundColor: 'var(--mantine-color-body)' }}
     >
       <Group gap="sm" wrap="nowrap">
-        <Logo h={52} w={78} />
+        {/* A real `href`, not a button dressed as one: cmd-click and
+            middle-click have to open the app in a new tab the way every other
+            logo on the web does, and only a left click without modifiers is
+            handled in the page. `BASE_URL` rather than a written-out path —
+            the app is served from a subdirectory and Vite is the one that
+            knows which. */}
+        <Anchor
+          href={import.meta.env.BASE_URL}
+          aria-label={t('app.home')}
+          underline="never"
+          onClick={(event) => {
+            if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return
+            event.preventDefault()
+            onHome()
+          }}
+          style={{ display: 'inline-flex', lineHeight: 0 }}
+        >
+          <Logo h={52} w={78} />
+        </Anchor>
         <Stack gap={2}>
           <Title order={1} lh={0.9}>
             Woodstack{' '}

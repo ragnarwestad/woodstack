@@ -5,6 +5,7 @@ import type { TranslationKey } from './nb'
 export const en: Record<TranslationKey, string> = {
   'app.slogan': 'Peace, love and dry firewood',
   'app.tagline': 'When is the firewood dry enough to burn?',
+  'app.home': 'Home',
   'app.language': 'Language',
   'app.theme': 'Colour theme',
   'app.themeLight': 'Light',

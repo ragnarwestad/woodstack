@@ -72,6 +72,27 @@ describe('App', () => {
     await waitFor(() => expect(window.location.hash).toBe(''))
   })
 
+  /** The mark in the header is the way home, and home is the list. It has to
+   *  work from a screen with a hash and from one without: the add form is
+   *  plain state in `App` with no URL of its own, so clearing the hash alone
+   *  would have left the visitor standing on it. */
+  it('goes home from the mark in the header, hash or no hash', async () => {
+    saveStacks([makeStack({ id: 'a', name: 'Bjørk ved veggen' })])
+    renderWithMantine(<App />)
+    const home = () => screen.getByRole('link', { name: /til forsiden/i })
+
+    fireEvent.click(screen.getByRole('button', { name: /bjørk ved veggen/i }))
+    await waitFor(() => expect(window.location.hash).toBe('#s=a'))
+    fireEvent.click(home())
+    await waitFor(() => expect(window.location.hash).toBe(''))
+    expect(screen.getByRole('button', { name: /bjørk ved veggen/i })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: /ny stabel/i }))
+    await waitFor(() => expect(screen.queryByRole('button', { name: /bjørk ved veggen/i })).toBeNull())
+    fireEvent.click(home())
+    await waitFor(() => expect(screen.getByRole('button', { name: /bjørk ved veggen/i })).toBeInTheDocument())
+  })
+
   it('takes a deleted stack off the list it came from', async () => {
     saveStacks([makeStack({ id: 'a', name: 'Bjørk ved veggen' }), makeStack({ id: 'b', name: 'Grana bak låven' })])
     renderWithMantine(<App />)

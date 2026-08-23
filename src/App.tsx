@@ -94,6 +94,20 @@ export function App({ today = new Date() }: Props = {}) {
     return () => window.removeEventListener('hashchange', sync)
   }, [])
 
+  /** The mark in the header. Every screen in the app is one of five things
+   *  standing here, and home is none of them — so this clears all five rather
+   *  than the one the visitor happens to be looking at. `back()` and its two
+   *  siblings each leave the others alone on purpose; this is the one that
+   *  does not. */
+  function goHome() {
+    history.replaceState(null, '', window.location.pathname + window.location.search)
+    setSelectedId(null)
+    setComparing(false)
+    setNeeding(false)
+    setAdding(false)
+    setEditing(false)
+  }
+
   function select(id: string) {
     window.location.hash = stackHash(id)
     setSelectedId(id)
@@ -139,7 +153,7 @@ export function App({ today = new Date() }: Props = {}) {
   return (
     <Container size="sm" py="xl">
       <Stack gap="lg">
-        <AppHeader />
+        <AppHeader onHome={goHome} />
 
         <InstallPrompt />
 
