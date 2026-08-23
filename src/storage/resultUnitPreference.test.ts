@@ -19,7 +19,7 @@ describe('the result unit preference', () => {
   })
 
   it('ignores a stored value that is not a unit this app knows', () => {
-    localStorage.setItem(RESULT_UNIT_STORAGE_KEY, 'cord')
+    localStorage.setItem(RESULT_UNIT_STORAGE_KEY, 'kubikkfot')
     expect(readResultUnitPreference()).toBe('favn')
   })
 

@@ -16,7 +16,7 @@ import { VOLUME_UNITS, type VolumeUnit } from './schema'
 export const RESULT_UNIT_STORAGE_KEY = 'woodstack.resultUnit'
 
 function isResultUnit(value: string | null): value is VolumeUnit {
-  return VOLUME_UNITS.includes(value as VolumeUnit)
+  return (VOLUME_UNITS as readonly string[]).includes(value ?? '')
 }
 
 /** Favn without a stored choice: it is the unit firewood is advertised in
