@@ -4,6 +4,7 @@ import {
   Button,
   Divider,
   Group,
+  Image,
   Stack as MantineStack,
   Tabs,
   Text,
@@ -20,6 +21,7 @@ import {
 } from '../storage/stacksRepo'
 import { getNormals } from '../climate/normalsCache'
 import { estimateWindow, simulate } from '../model/simulate'
+import { speciesLabel } from '../model/species'
 import { DRY_ENOUGH_MOISTURE, formatWindow } from '../model/units'
 import { currentSolidLiters, formatVolume } from '../model/volume'
 import { useTranslation } from '../i18n/useTranslation'
@@ -127,6 +129,13 @@ export function StackDetail({ stackId, onBack, onEdit, getNormalsFn = getNormals
   const loading = result?.key !== requestKey
   const dryWindow = normals ? estimateWindow(stack, normals) : null
   const points = normals ? simulate(stack, normals, { months: CURVE_MONTHS }) : []
+  // The second wood gets its own curve rather than an average of the two: the
+  // window below is the union of both, and one line inside it would not
+  // explain why it is that wide.
+  const secondPoints =
+    normals && stack.secondSpecies
+      ? simulate({ ...stack, species: stack.secondSpecies.species }, normals, { months: CURVE_MONTHS })
+      : undefined
 
   return (
     <MantineStack gap="md">
@@ -160,11 +169,16 @@ export function StackDetail({ stackId, onBack, onEdit, getNormalsFn = getNormals
       </Group>
       <Text c="dimmed">
         {t('stackDetail.meta', {
-          species: t(`species.${stack.species}`),
+          species: speciesLabel(stack, t),
           date: stack.stackedDate,
           place: stack.location.name,
         })}
       </Text>
+
+      {/* Under the meta line and above the drying window: the photo says which
+          pile this is, which is the question asked on the way in, not one of
+          the numbers below. */}
+      {stack.photo && <Image src={stack.photo} alt={t('photo.alt')} radius="md" maw={320} />}
 
       {/* The moment to ask: the visitor has a stack open, so there is now
           something concrete to be told about. Not on arrival. */}
@@ -183,6 +197,7 @@ export function StackDetail({ stackId, onBack, onEdit, getNormalsFn = getNormals
           </Text>
           <DryingCurveChart
             points={points}
+            secondPoints={secondPoints}
             readings={stack.readings}
             threshold={DRY_ENOUGH_MOISTURE}
             window={dryWindow}

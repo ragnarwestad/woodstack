@@ -14,13 +14,16 @@ const PADDING = { top: 12, right: 12, bottom: 24, left: 12 }
 
 type Props = {
   points: SimulationPoint[]
+  /** The second wood's own curve, when the pile is a mix. Dashed, so the two
+   *  read apart without a legend the chart has no room for. */
+  secondPoints?: SimulationPoint[]
   readings: Reading[]
   /** Dry basis, %. */
   threshold: number
   window: DryWindow
 }
 
-export function DryingCurveChart({ points, readings, threshold, window }: Props) {
+export function DryingCurveChart({ points, secondPoints, readings, threshold, window }: Props) {
   const translator = useTranslation()
   const { t } = translator
 
@@ -31,7 +34,12 @@ export function DryingCurveChart({ points, readings, threshold, window }: Props)
   const times = points.map((point) => point.date.getTime())
   const minTime = Math.min(...times)
   const maxTime = Math.max(...times)
-  const maxMoisture = Math.max(...points.map((point) => point.moisture), threshold, ...readings.map((r) => r.moisture))
+  const maxMoisture = Math.max(
+    ...points.map((point) => point.moisture),
+    ...(secondPoints ?? []).map((point) => point.moisture),
+    threshold,
+    ...readings.map((r) => r.moisture),
+  )
   const minMoisture = 0
 
   const x = (time: number) =>
@@ -41,7 +49,10 @@ export function DryingCurveChart({ points, readings, threshold, window }: Props)
     PADDING.bottom -
     ((moisture - minMoisture) / (maxMoisture - minMoisture || 1)) * (HEIGHT - PADDING.top - PADDING.bottom)
 
-  const curve = points.map((point) => `${x(point.date.getTime()).toFixed(1)},${y(point.moisture).toFixed(1)}`).join(' ')
+  const toCurve = (line: SimulationPoint[]) =>
+    line.map((point) => `${x(point.date.getTime()).toFixed(1)},${y(point.moisture).toFixed(1)}`).join(' ')
+  const curve = toCurve(points)
+  const secondCurve = secondPoints?.length ? toCurve(secondPoints) : null
   const bandStart = x(clamp(window.earliest.getTime(), minTime, maxTime))
   const bandEnd = x(clamp(window.latest.getTime(), minTime, maxTime))
 
@@ -73,6 +84,16 @@ export function DryingCurveChart({ points, readings, threshold, window }: Props)
       </text>
 
       <polyline points={curve} fill="none" stroke="var(--mantine-color-orange-filled)" strokeWidth="2" />
+
+      {secondCurve && (
+        <polyline
+          points={secondCurve}
+          fill="none"
+          stroke="var(--mantine-color-grape-filled)"
+          strokeWidth="2"
+          strokeDasharray="6 4"
+        />
+      )}
 
       {readings.map((reading) => (
         <circle

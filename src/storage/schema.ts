@@ -14,6 +14,12 @@ export const SCHEMA_VERSION = 1
 export const SPECIES_IDS = ['bjork', 'or', 'osp', 'furu', 'gran', 'eik', 'bok'] as const
 export type Species = (typeof SPECIES_IDS)[number]
 
+/** How much of the pile the second species is, roughly — the first species
+ *  (`Stack.species`) implicitly makes up the rest. Coarse on purpose: a
+ *  felling gives a visitor "mostly birch, some spruce", never a percentage. */
+export const SPECIES_SHARES = ['half', 'third', 'bit'] as const
+export type SpeciesShare = (typeof SPECIES_SHARES)[number]
+
 export const SPLIT_SIZES = ['small', 'medium', 'large'] as const
 export type SplitSize = (typeof SPLIT_SIZES)[number]
 
@@ -65,6 +71,13 @@ export type Stack = {
   id: string
   name: string
   species: Species
+  /** A second species mixed into the same pile, roughly `share` of it — the
+   *  rest is `species`. Absent on a pure stack, which is every stack made
+   *  before this field existed and most made after: nobody is required to
+   *  record a mix they do not have. Set once, at creation, like `species`
+   *  itself — see `EditStackForm`'s reasoning for why species is not
+   *  editable after the fact. */
+  secondSpecies?: { species: Species; share: SpeciesShare }
   /** ISO calendar date, `YYYY-MM-DD`. */
   stackedDate: string
   splitSize: SplitSize
@@ -84,6 +97,13 @@ export type Stack = {
    *  `volumeEntries` reads as "nothing logged", and for the same reason: the
    *  version guard would have emptied every browser instead of migrating it. */
   notifiedReadyAt?: string
+  /** One photo of the stack, as a resized JPEG data URL — absent when none has
+   *  been taken, never an empty string. Optional for the same reason
+   *  `volumeEntries` is: a `SCHEMA_VERSION` bump would empty every stored
+   *  browser instead of migrating it. Resized before it is stored, because
+   *  everything here shares one ~5 MB `localStorage` quota and travels whole in
+   *  every share link. */
+  photo?: string
 }
 
 /** Everything needed to create a stack; the id and the empty reading list are

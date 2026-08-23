@@ -40,6 +40,14 @@ describe('StackDetail', () => {
     expect(screen.getByRole('img', { name: /tørkekurve/i })).toBeInTheDocument()
   })
 
+  it('draws one curve when the pile is all one wood', async () => {
+    const { container } = renderWithMantine(
+      <StackDetail stackId="a" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+    )
+    await waitFor(() => expect(screen.getByText(/klar mellom/i)).toBeInTheDocument())
+    expect(container.querySelectorAll('polyline')).toHaveLength(1)
+  })
+
   it('shows an explicit fetching state before the climate data arrives', () => {
     renderWithMantine(
       <StackDetail stackId="a" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={() => new Promise(() => {})} />,
@@ -77,6 +85,20 @@ describe('StackDetail', () => {
     fireEvent.click(within(readingPanel).getByRole('button', { name: /^lagre$/i }))
 
     await waitFor(() => expect(screen.getByTestId('window-text').textContent).not.toBe(before))
+  })
+
+  it('shows the photo of the stack that is open, and none when it has no photo', async () => {
+    renderWithMantine(
+      <StackDetail stackId="a" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+    )
+    await waitFor(() => screen.getByText(/klar mellom/i))
+    expect(screen.queryByAltText(/bilde av vedstabelen/i)).not.toBeInTheDocument()
+
+    saveStacks([makeStack({ id: 'b', name: 'Bak fjøset', photo: 'data:image/jpeg;base64,big' })])
+    renderWithMantine(
+      <StackDetail stackId="b" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+    )
+    expect(screen.getByAltText(/bilde av vedstabelen/i)).toHaveAttribute('src', 'data:image/jpeg;base64,big')
   })
 
   it('says the volume is not tracked yet rather than showing a bare zero', async () => {
@@ -277,6 +299,31 @@ describe('StackDetail', () => {
       <StackDetail stackId="a" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
     )
     await waitFor(() => expect(screen.getByText(/få beskjed når veden er klar/i)).toBeInTheDocument())
+  })
+})
+
+describe('StackDetail with a mixed stack', () => {
+  beforeEach(() => {
+    localStorage.clear()
+    saveStacks([
+      makeStack({ id: 'm', name: 'Blandingsstabelen', secondSpecies: { species: 'eik', share: 'half' } }),
+    ])
+  })
+
+  it('names both woods in the heading line', async () => {
+    renderWithMantine(
+      <StackDetail stackId="m" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+    )
+    await waitFor(() => expect(screen.getByText(/klar mellom/i)).toBeInTheDocument())
+    expect(screen.getByText(/^Bjørk \+ Eik \(Omtrent halvparten\) · stablet 2026-04-15 · Oslo$/)).toBeInTheDocument()
+  })
+
+  it('draws a curve per wood, so the two speeds are visible', async () => {
+    const { container } = renderWithMantine(
+      <StackDetail stackId="m" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+    )
+    await waitFor(() => expect(screen.getByText(/klar mellom/i)).toBeInTheDocument())
+    expect(container.querySelectorAll('polyline')).toHaveLength(2)
   })
 })
 

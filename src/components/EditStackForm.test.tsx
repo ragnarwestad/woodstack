@@ -135,6 +135,73 @@ describe('EditStackForm', () => {
     expect(getStack('a')?.name).toBe('Bjørk ved veggen')
   })
 
+  it('opens on the photo the stack already has, and writes a new one through', async () => {
+    saveStacks([makeStack({ id: 'a', name: 'Bjørk ved veggen', photo: 'data:image/jpeg;base64,old' })])
+    const onSave = vi.fn()
+    const { container } = renderWithMantine(
+      <EditStackForm
+        stackId="a"
+        onSave={onSave}
+        onCancel={vi.fn()}
+        geocodeFn={geocodeBergen()}
+        resizeFn={vi.fn().mockResolvedValue('data:image/jpeg;base64,new')}
+      />,
+    )
+
+    expect(screen.getByAltText(/bilde av vedstabelen/i)).toHaveAttribute('src', 'data:image/jpeg;base64,old')
+
+    const input = container.querySelector('input[type="file"]') as HTMLInputElement
+    fireEvent.change(input, { target: { files: [new File(['bytes'], 'stabel.jpg', { type: 'image/jpeg' })] } })
+    await waitFor(() =>
+      expect(screen.getByAltText(/bilde av vedstabelen/i)).toHaveAttribute('src', 'data:image/jpeg;base64,new'),
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: /^lagre$/i }))
+
+    await waitFor(() => expect(onSave).toHaveBeenCalled())
+    expect(getStack('a')?.photo).toBe('data:image/jpeg;base64,new')
+  })
+
+  // One photo, replaceable — and removable. Saving after the remove has to
+  // take the photo off the stored stack, not leave the old one standing.
+  it('takes the photo off the stack when the visitor removes it', async () => {
+    saveStacks([makeStack({ id: 'a', name: 'Bjørk ved veggen', photo: 'data:image/jpeg;base64,old' })])
+    const onSave = vi.fn()
+    renderWithMantine(
+      <EditStackForm stackId="a" onSave={onSave} onCancel={vi.fn()} geocodeFn={geocodeBergen()} />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: /fjern bildet/i }))
+    fireEvent.click(screen.getByRole('button', { name: /^lagre$/i }))
+
+    await waitFor(() => expect(onSave).toHaveBeenCalled())
+    expect(getStack('a')?.photo).toBeUndefined()
+  })
+
+  /** The write is refused whole, so the stack on disk is untouched — the
+   *  screen has to say that rather than close as if the edit had landed. */
+  it('says the browser is full instead of throwing, and stays on the edit screen', async () => {
+    saveStacks([makeStack({ id: 'a', name: 'Bjørk ved veggen' })])
+    const onSave = vi.fn()
+    renderWithMantine(
+      <EditStackForm stackId="a" onSave={onSave} onCancel={vi.fn()} geocodeFn={geocodeBergen()} />,
+    )
+
+    fill(/navn/i, 'Bjørk bak låven')
+    // The browser's own refusal, so the repository's quota detection is part
+    // of what this test exercises rather than something it steps around.
+    const refused = vi.spyOn(localStorage, 'setItem').mockImplementation(() => {
+      throw new DOMException('quota', 'QuotaExceededError')
+    })
+    fireEvent.click(screen.getByRole('button', { name: /^lagre$/i }))
+
+    await waitFor(() => expect(screen.getByText(/ikke plass/i)).toBeInTheDocument())
+    refused.mockRestore()
+    expect(onSave).not.toHaveBeenCalled()
+    expect(screen.getByLabelText(/navn/i)).toHaveValue('Bjørk bak låven')
+    expect(getStack('a')?.name).toBe('Bjørk ved veggen')
+  })
+
   it('throws the draft away when the visitor cancels', () => {
     const onCancel = vi.fn()
     renderWithMantine(

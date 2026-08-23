@@ -1,5 +1,6 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
+  StorageQuotaError,
   addReading,
   addStack,
   addVolumeEntry,
@@ -13,13 +14,23 @@ import {
   saveStacks,
   updateStack,
 } from './stacksRepo'
-import { makeStack } from '../test/fixtures'
+import { OSLO_NORMALS, makeStack } from '../test/fixtures'
 import { SCHEMA_VERSION } from './schema'
 import { currentSolidLiters } from '../model/volume'
+import { estimateWindow } from '../model/simulate'
 
 beforeEach(() => {
   localStorage.clear()
 })
+
+/** A browser out of room rejects the write with this, and never half-writes:
+ *  whatever was stored before the call is still there afterwards. Restored by
+ *  the caller, so the same test can read storage back afterwards. */
+function refuseWrites() {
+  return vi.spyOn(localStorage, 'setItem').mockImplementation(() => {
+    throw new DOMException('quota', 'QuotaExceededError')
+  })
+}
 
 describe('loadStacks', () => {
   it('is an empty list on a fresh browser', () => {
@@ -49,6 +60,26 @@ describe('loadStacks', () => {
     expect(loaded).toHaveLength(1)
     expect(loaded[0].id).toBe('a')
     expect(currentSolidLiters(loaded[0].volumeEntries)).toBe(0)
+  })
+
+  it('reads a stack stored before a second species could be recorded', () => {
+    // Same reasoning as the volume ledger above: `secondSpecies` is optional
+    // rather than a SCHEMA_VERSION bump, so every stack already in a
+    // visitor's browser loads as the pure stack it is.
+    const oldShaped = makeStack({ id: 'b' })
+    expect('secondSpecies' in oldShaped).toBe(false)
+    localStorage.setItem('woodstack.state.v1', JSON.stringify({ version: SCHEMA_VERSION, stacks: [oldShaped] }))
+
+    const loaded = loadStacks()
+    expect(loaded).toHaveLength(1)
+    expect(loaded[0].secondSpecies).toBeUndefined()
+    expect(estimateWindow(loaded[0], OSLO_NORMALS)).toEqual(estimateWindow(oldShaped, OSLO_NORMALS))
+  })
+
+  it('keeps a second species through a save and a load', () => {
+    const mixed = makeStack({ id: 'c', secondSpecies: { species: 'gran', share: 'third' } })
+    saveStacks([mixed])
+    expect(loadStacks()[0].secondSpecies).toEqual({ species: 'gran', share: 'third' })
   })
 })
 
@@ -455,5 +486,122 @@ describe('markStackReadyNotified', () => {
 
     expect(markStackReadyNotified('nope', '2027-09-01')).toBeUndefined()
     expect(loadStacks()).toEqual(before)
+  })
+})
+
+describe('a photo on a stack', () => {
+  const BERGEN = { name: 'Bergen', latitude: 60.39, longitude: 5.32 }
+
+  function edit(photo: string | undefined) {
+    return { name: 'Bjørk bak låven', splitSize: 'small' as const, cover: 'none' as const, exposure: 'exposed' as const, location: BERGEN, photo }
+  }
+
+  it('replaces the photo and leaves everything else standing', () => {
+    saveStacks([
+      makeStack({
+        id: 'a',
+        photo: 'data:image/jpeg;base64,old',
+        readings: [{ id: 'r1', date: '2026-10-15', moisture: 28 }],
+        volumeEntries: [{ id: 'v1', date: '2026-04-15', kind: 'addition', amount: 2, unit: 'favn' }],
+      }),
+    ])
+
+    updateStack('a', edit('data:image/jpeg;base64,new'))
+
+    const stored = getStack('a')
+    expect(stored?.photo).toBe('data:image/jpeg;base64,new')
+    expect(stored?.species).toBe('bjork')
+    expect(stored?.stackedDate).toBe('2026-04-15')
+    expect(stored?.readings).toEqual([{ id: 'r1', date: '2026-10-15', moisture: 28 }])
+    expect(stored?.volumeEntries).toHaveLength(1)
+  })
+
+  // Not an empty string and not a `photo: undefined` key left sitting in the
+  // payload: the field goes away entirely, so it costs nothing in the share
+  // link either.
+  it('removes the photo when the edit carries none', () => {
+    saveStacks([makeStack({ id: 'a', photo: 'data:image/jpeg;base64,old' })])
+
+    updateStack('a', edit(undefined))
+
+    const stored = getStack('a')
+    expect(stored?.photo).toBeUndefined()
+    expect('photo' in (stored as object)).toBe(false)
+  })
+
+  it('carries a photo through `addStack`', () => {
+    const created = addStack({
+      name: 'Bjørk ved veggen',
+      species: 'bjork',
+      stackedDate: '2026-04-15',
+      splitSize: 'medium',
+      cover: 'roof',
+      exposure: 'normal',
+      location: { name: 'Oslo', latitude: 59.9, longitude: 10.8 },
+      photo: 'data:image/jpeg;base64,new',
+    })
+
+    expect(getStack(created.id)?.photo).toBe('data:image/jpeg;base64,new')
+  })
+})
+
+/** A photo is the first thing this app stores that can plausibly fill the
+ *  browser's ~5 MB. The write either lands or is refused whole, so the stacks
+ *  already on disk survive — what must not happen is a raw `DOMException`
+ *  escaping into a click handler with nothing to catch it. */
+describe('a browser with no room left', () => {
+  const BERGEN = { name: 'Bergen', latitude: 60.39, longitude: 5.32 }
+
+  it('turns a refused write into `StorageQuotaError` and keeps the stored stacks, on update', () => {
+    saveStacks([makeStack({ id: 'a' })])
+    const before = loadStacks()
+    const refused = refuseWrites()
+
+    expect(() =>
+      updateStack('a', {
+        name: 'Bjørk bak låven',
+        splitSize: 'small',
+        cover: 'none',
+        exposure: 'exposed',
+        location: BERGEN,
+        photo: 'data:image/jpeg;base64,huge',
+      }),
+    ).toThrow(StorageQuotaError)
+
+    refused.mockRestore()
+    expect(loadStacks()).toEqual(before)
+  })
+
+  it('turns a refused write into `StorageQuotaError` and keeps the stored stacks, on add', () => {
+    saveStacks([makeStack({ id: 'a' })])
+    const before = loadStacks()
+    const refused = refuseWrites()
+
+    expect(() =>
+      addStack({
+        name: 'Bjørk ved veggen',
+        species: 'bjork',
+        stackedDate: '2026-04-15',
+        splitSize: 'medium',
+        cover: 'roof',
+        exposure: 'normal',
+        location: { name: 'Oslo', latitude: 59.9, longitude: 10.8 },
+        photo: 'data:image/jpeg;base64,huge',
+      }),
+    ).toThrow(StorageQuotaError)
+
+    refused.mockRestore()
+    expect(loadStacks()).toEqual(before)
+  })
+
+  // Anything else that goes wrong is not a full disk, and dressing it up as
+  // one would send the visitor looking for room they already have.
+  it('lets an error that is not about room through as it is', () => {
+    const refused = vi.spyOn(localStorage, 'setItem').mockImplementation(() => {
+      throw new TypeError('something else entirely')
+    })
+
+    expect(() => saveStacks([makeStack({ id: 'a' })])).toThrow(TypeError)
+    refused.mockRestore()
   })
 })

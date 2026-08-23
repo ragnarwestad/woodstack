@@ -189,15 +189,35 @@ function crossingDate(stack: Stack, normals: ClimateNormals, rate: number): Date
   return addMonths(start.date, HORIZON_MONTHS)
 }
 
-/** When the stack is dry enough to burn — as a window, never a date. A single
- *  date is a promise the model cannot keep, and the first visitor who checks
- *  it with a meter and finds it wrong is lost. */
-export function estimateWindow(stack: Stack, normals: ClimateNormals): DryWindow {
+/** The one or two stacks a mixed pile behaves as: the second, when present,
+ *  is the same stack with `species` swapped, since every other condition —
+ *  split size, cover, exposure, readings — is shared by the whole pile. */
+function components(stack: Stack): Stack[] {
+  return stack.secondSpecies ? [stack, { ...stack, species: stack.secondSpecies.species }] : [stack]
+}
+
+function estimateWindowForComponent(stack: Stack, normals: ClimateNormals): DryWindow {
   const rate = effectiveRate(stack, normals)
   const spread = rateUncertainty(stack)
   return {
     earliest: crossingDate(stack, normals, rate * (1 + spread)),
     latest: crossingDate(stack, normals, rate * (1 - spread)),
+  }
+}
+
+/** When the stack is dry enough to burn — as a window, never a date. A single
+ *  date is a promise the model cannot keep, and the first visitor who checks
+ *  it with a meter and finds it wrong is lost.
+ *
+ *  A pile of two woods gets the two windows unioned: the first crossing to the
+ *  last, which is how such a pile actually dries — part of it ready to burn
+ *  while the rest is still wet. Averaging the two would give a date that fits
+ *  neither half. */
+export function estimateWindow(stack: Stack, normals: ClimateNormals): DryWindow {
+  const windows = components(stack).map((component) => estimateWindowForComponent(component, normals))
+  return {
+    earliest: windows.reduce((min, w) => (w.earliest < min ? w.earliest : min), windows[0].earliest),
+    latest: windows.reduce((max, w) => (w.latest > max ? w.latest : max), windows[0].latest),
   }
 }
 
