@@ -32,18 +32,13 @@ import { ExplainButton } from './ExplainButton'
 import { LogReadingForm } from './LogReadingForm'
 import { NotifyPrompt } from './NotifyPrompt'
 import { VolumeEntryForm } from './VolumeEntryForm'
-import { PLUM_PANEL } from '../theme'
+import { DASHED_RULE, PLUM_PANEL } from '../theme'
 
 const CURVE_MONTHS = 30
 
 /** The species and meta line, the same small tracked capitals as in the list:
  *  berry on cream, ochre on plum night. */
 const META_LINE = 'light-dark(var(--mantine-color-grape-6), var(--mantine-color-yellow-6))'
-
-/** The rule that fills the space to the left of a short label. Two pixels
- *  tall, drawn rather than bordered, so the dashes stay the same length
- *  whatever the label beside it is. */
-const DASHED_RULE = 'repeating-linear-gradient(90deg, var(--mantine-color-default-border) 0 6px, transparent 6px 12px)'
 
 /** The outcome of one normals request, tagged with the request it answers.
  *  Anything older than the current request still reads as loading, so a

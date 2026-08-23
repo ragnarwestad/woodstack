@@ -4,6 +4,7 @@ import {
   Button,
   Group,
   NativeSelect,
+  Paper,
   SimpleGrid,
   Stack as MantineStack,
   Tabs,
@@ -25,6 +26,7 @@ import { toSolidLiters } from '../model/volume'
 import { VOLUME_UNITS, type Species, type Stack, type VolumeUnit } from '../storage/schema'
 import { readResultUnitPreference } from '../storage/resultUnitPreference'
 import { useTranslation } from '../i18n/useTranslation'
+import { FIELD_LABEL_STYLE, PLUM_PANEL } from '../theme'
 import { BackLink } from './BackLink'
 
 type Mode = 'energy' | 'volume'
@@ -97,6 +99,11 @@ export function NeedCalculator({ stacks, onBack }: Props) {
       <BackLink onClick={onBack} />
       <Title order={2}>{t('need.title')}</Title>
 
+      {/* The only tabs in the app whose labels are sentences. `.ws-tab` gives
+          them the same underline weight as the stack page's, but the Bungee
+          capitals that page's four short labels take would be shouting here —
+          so the face is Outfit and the text is allowed to wrap. That is why
+          this styling is per instance rather than in the class. */}
       <Tabs
         value={mode}
         onChange={(value) => {
@@ -104,8 +111,25 @@ export function NeedCalculator({ stacks, onBack }: Props) {
           setResult(null)
           setError(null)
         }}
+        color="orange"
+        classNames={{ tab: 'ws-tab' }}
+        styles={{
+          tab: {
+            fontFamily: 'Outfit, sans-serif',
+            fontSize: 12,
+            fontWeight: 600,
+            whiteSpace: 'normal',
+            textAlign: 'center',
+            justifyContent: 'center',
+            lineHeight: 1.25,
+            padding: '9px 8px',
+          },
+        }}
       >
-        <Tabs.List>
+        {/* `grow`: two labels of about the same length, each taking half the
+            row, so a sentence has the width to wrap to two lines instead of
+            being squeezed against its neighbour. */}
+        <Tabs.List grow>
           <Tabs.Tab value="energy">{t('need.modeEnergyTab')}</Tabs.Tab>
           <Tabs.Tab value="volume">{t('need.modeVolumeTab')}</Tabs.Tab>
         </Tabs.List>
@@ -115,6 +139,7 @@ export function NeedCalculator({ stacks, onBack }: Props) {
             type="number"
             min={0}
             label={t('need.energyLabel')}
+            styles={{ label: FIELD_LABEL_STYLE }}
             value={energyAmount}
             onChange={(event) => setEnergyAmount(event.currentTarget.value)}
           />
@@ -126,12 +151,14 @@ export function NeedCalculator({ stacks, onBack }: Props) {
               type="number"
               min={0}
               label={t('need.amountLabel', { unit: t(`volume.unitShort.${volumeUnit}`) })}
+              styles={{ label: FIELD_LABEL_STYLE }}
               value={volumeAmount}
               onChange={(event) => setVolumeAmount(event.currentTarget.value)}
             />
             <NativeSelect
               id={unitId}
               label={t('need.unitLabel')}
+              styles={{ label: FIELD_LABEL_STYLE }}
               value={volumeUnit}
               onChange={(event) => setVolumeUnit(event.currentTarget.value as VolumeUnit)}
               data={VOLUME_UNITS.map((unit) => ({ value: unit, label: t(`volume.unit.${unit}`) }))}
@@ -148,6 +175,7 @@ export function NeedCalculator({ stacks, onBack }: Props) {
         <NativeSelect
           id={speciesId}
           label={t('need.speciesLabel')}
+          styles={{ label: FIELD_LABEL_STYLE }}
           value={species}
           onChange={(event) => setSpecies(event.currentTarget.value as Species)}
           data={SPECIES_IDS.map((id) => ({ value: id, label: t(`species.${id}`) }))}
@@ -155,6 +183,7 @@ export function NeedCalculator({ stacks, onBack }: Props) {
         <NativeSelect
           id={stoveId}
           label={t('need.stoveLabel')}
+          styles={{ label: FIELD_LABEL_STYLE }}
           value={stove}
           onChange={(event) => setStove(event.currentTarget.value as (typeof STOVE_OPTIONS)[number]['id'])}
           data={STOVE_OPTIONS.map((option) => ({ value: option.id, label: t(`stove.${option.id}`) }))}
@@ -167,21 +196,32 @@ export function NeedCalculator({ stacks, onBack }: Props) {
         <Button onClick={submit}>{t('need.submit')}</Button>
       </Group>
 
+      {/* The answer the screen exists to give, so it takes the plum panel the
+          stack page's drying window takes — not a card, which is for something
+          you act on. The two lines under it are context, dimmed by opacity
+          rather than by `c="dimmed"`: dimmed is a cream-page colour and would
+          go dark against plum. */}
       {result && (
-        <MantineStack gap={4}>
-          <Text data-testid="need-result">{formatNeed(result.solidLiters, preferredUnit, translator)}</Text>
-          {result.kwh !== undefined && (
-            <Text c="dimmed">{t('need.resultEnergy', { kwh: Math.round(result.kwh) })}</Text>
-          )}
-          {showAlreadyHave && (
-            <Text data-testid="need-already-have" c="dimmed">
-              {t('need.alreadyHave', {
-                have: formatUnitAmount(alreadyHaveSolidLiters, preferredUnit, translator),
-                toBuy: formatUnitAmount(Math.max(0, result.solidLiters - alreadyHaveSolidLiters), preferredUnit, translator),
-              })}
+        <Paper radius="lg" p="lg" style={{ backgroundColor: PLUM_PANEL, color: 'var(--mantine-color-white)' }}>
+          <MantineStack gap={4}>
+            <Text ff="Bungee, sans-serif" fw={400} fz={17} lh={1.3} data-testid="need-result">
+              {formatNeed(result.solidLiters, preferredUnit, translator)}
             </Text>
-          )}
-        </MantineStack>
+            {result.kwh !== undefined && (
+              <Text fz={13} style={{ opacity: 0.72 }}>
+                {t('need.resultEnergy', { kwh: Math.round(result.kwh) })}
+              </Text>
+            )}
+            {showAlreadyHave && (
+              <Text fz={13} style={{ opacity: 0.72 }} data-testid="need-already-have">
+                {t('need.alreadyHave', {
+                  have: formatUnitAmount(alreadyHaveSolidLiters, preferredUnit, translator),
+                  toBuy: formatUnitAmount(Math.max(0, result.solidLiters - alreadyHaveSolidLiters), preferredUnit, translator),
+                })}
+              </Text>
+            )}
+          </MantineStack>
+        </Paper>
       )}
     </MantineStack>
   )

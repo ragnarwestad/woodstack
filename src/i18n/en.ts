@@ -71,6 +71,7 @@ export const en: Record<TranslationKey, string> = {
   'compare.awaitingLot': 'Enter a price and an amount, and the figures appear here.',
   'compare.verdict': 'Lot {number} is {percent} % cheaper per kWh.',
   'compare.verdictTie': 'The two lots cost the same per kWh.',
+  'compare.cheapestBadge': 'Cheapest',
   'explain.compareMoisture.title': 'Why do we ask how dry the wood is?',
   'explain.compareMoisture.body':
     'Water weighs, and water does not burn. Buying wood by weight means paying for the water too, and then spending heat boiling it off. That is why fresh wood sold by weight is a worse buy than the price per kilo suggests.\n\nWhen the wood is sold by volume – favn, cubic metre, sack – the moisture makes no difference to the sum: a favn is the same amount of wood whether it rained on it or not.',

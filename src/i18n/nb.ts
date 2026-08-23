@@ -74,6 +74,7 @@ export const nb = {
   'compare.awaitingLot': 'Fyll inn pris og mengde, så kommer tallene her.',
   'compare.verdict': 'Parti {number} er {percent} % billigere per kWh.',
   'compare.verdictTie': 'De to partiene koster like mye per kWh.',
+  'compare.cheapestBadge': 'Billigst',
   'explain.compareMoisture.title': 'Hvorfor spør vi hvor tørr veden er?',
   'explain.compareMoisture.body':
     'Vann veier, og vann brenner ikke. Kjøper du ved etter vekt, betaler du for vannet også, og du må i tillegg bruke varme på å koke det bort. Derfor er fersk ved etter vekt et dårligere kjøp enn kiloprisen viser.\n\nSelges veden etter volum – favn, kubikkmeter, sekk – spiller fuktigheten ingen rolle for regnestykket: en favn er like mye ved uansett om det har regnet på den.',

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type CSSProperties } from 'react'
 import { Group, Input, Modal, Text, UnstyledButton } from '@mantine/core'
 
 /** A «?» next to a number or a field, for the explanation that used to sit
@@ -88,6 +88,10 @@ type LabelProps = Omit<Props, 'size'> & {
   /** The `id` of the field this labels. */
   htmlFor: string
   label: string
+  /** Overrides the label's own look. Only `ComparePage` passes this, for the
+   *  tracked capitals its fields take; every other caller keeps Mantine's
+   *  default label. */
+  labelStyle?: CSSProperties
 }
 
 /** A field's label with the mark beside it.
@@ -98,10 +102,12 @@ type LabelProps = Omit<Props, 'size'> & {
  *  query that looks a field up by its label finds the button too. So the label
  *  is rendered here instead, beside the mark rather than around it, and tied to
  *  the field by `htmlFor`. */
-export function ExplainedLabel({ htmlFor, label, title, body }: LabelProps) {
+export function ExplainedLabel({ htmlFor, label, title, body, labelStyle }: LabelProps) {
   return (
     <Group gap={4} wrap="nowrap">
-      <Input.Label htmlFor={htmlFor}>{label}</Input.Label>
+      <Input.Label htmlFor={htmlFor} style={labelStyle}>
+        {label}
+      </Input.Label>
       <ExplainButton title={title} body={body} />
     </Group>
   )

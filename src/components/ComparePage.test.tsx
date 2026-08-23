@@ -115,6 +115,19 @@ describe('ComparePage', () => {
     expect(verdict).toContain('50')
   })
 
+  /** Acceptance criterion 1. The verdict names a lot by number; the badge
+   *  points at the card, so the winner can be seen without reading a
+   *  sentence and counting cards. */
+  it('marks the cheaper lot\u2019s own card, not only the verdict line', () => {
+    renderWithMantine(<ComparePage onBack={() => undefined} />)
+
+    fillLot(0, { price: '1200', amount: '1', unit: 'favn', species: 'bjork' })
+    fillLot(1, { price: '2400', amount: '1', unit: 'favn', species: 'bjork' })
+
+    expect(within(screen.getByTestId('lot-0')).getByText(nb['compare.cheapestBadge'])).toBeInTheDocument()
+    expect(within(screen.getByTestId('lot-1')).queryByText(nb['compare.cheapestBadge'])).not.toBeInTheDocument()
+  })
+
   it('names no winner when the two cost the same', () => {
     renderWithMantine(<ComparePage onBack={() => undefined} />)
 
@@ -122,6 +135,9 @@ describe('ComparePage', () => {
     fillLot(1, { price: '2400', amount: '1', unit: 'favn', species: 'bjork' })
 
     expect(screen.getByTestId('verdict')).toHaveTextContent(nb['compare.verdictTie'])
+    // Acceptance criterion 2: a tie has no winner to point at, so neither
+    // card is marked either.
+    expect(screen.queryByText(nb['compare.cheapestBadge'])).not.toBeInTheDocument()
   })
 
   it('waits for both lots before saying anything about which one wins', () => {
@@ -130,5 +146,8 @@ describe('ComparePage', () => {
     fillLot(0, { price: '2400', amount: '1', unit: 'favn', species: 'bjork' })
 
     expect(screen.queryByTestId('verdict')).not.toBeInTheDocument()
+    // Acceptance criterion 3: the badge cannot run ahead of the verdict it
+    // reads from — one priced lot is not a comparison.
+    expect(screen.queryByText(nb['compare.cheapestBadge'])).not.toBeInTheDocument()
   })
 })

@@ -65,6 +65,26 @@ const plumNight: MantineColorsTuple = [
  *  the stack page's window both take it. */
 export const PLUM_PANEL = 'light-dark(#3A1A38, #2A1226)'
 
+/** The rule that fills the space to the left of, or above, a short label. Two
+ *  pixels tall, drawn rather than bordered, so the dashes stay the same length
+ *  whatever sits beside them. Written once here because the stack page's
+ *  volume line and the comparison screen's figure block both take it. */
+export const DASHED_RULE =
+  'repeating-linear-gradient(90deg, var(--mantine-color-default-border) 0 6px, transparent 6px 12px)'
+
+/** A field's label: small tracked capitals, dimmed. The same voice the stack
+ *  page's meta lines are in, so a thing you type into is labelled the way a
+ *  thing you read is. Passed as Mantine's `label` style rather than set on
+ *  `Input.Label` globally — the forms this round does not touch keep the
+ *  default until they are drawn too. */
+export const FIELD_LABEL_STYLE = {
+  fontSize: 11,
+  fontWeight: 700,
+  textTransform: 'uppercase' as const,
+  letterSpacing: '0.1em',
+  color: 'var(--mantine-color-dimmed)',
+}
+
 export const theme: MantineThemeOverride = createTheme({
   primaryColor: 'orange',
   primaryShade: { light: 6, dark: 5 },

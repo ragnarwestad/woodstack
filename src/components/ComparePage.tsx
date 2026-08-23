@@ -1,5 +1,6 @@
 import { useId, useState } from 'react'
 import {
+  Badge,
   Group,
   NativeSelect,
   Paper,
@@ -23,6 +24,7 @@ import { MOISTURE_BANDS, moistureBand, type MoistureBandId } from '../model/mois
 import { compareLots } from '../model/lotComparison'
 import { readResultUnitPreference, type ResultUnit } from '../storage/resultUnitPreference'
 import { useTranslation, type Translator } from '../i18n/useTranslation'
+import { DASHED_RULE, FIELD_LABEL_STYLE, PLUM_PANEL } from '../theme'
 import { BackLink } from './BackLink'
 import { ExplainButton, ExplainedLabel } from './ExplainButton'
 
@@ -106,9 +108,13 @@ type LotCardProps = {
    *  both lots' results anyway and one of them must not be priced twice. */
   result: LotResult | null
   resultUnit: ResultUnit
+  /** Whether the verdict points at this lot. `false` for both cards until
+   *  there is a verdict, and for both on a tie — the badge cannot run ahead
+   *  of the sentence it agrees with. */
+  isCheapest: boolean
 }
 
-function LotCard({ index, draft, onChange, result, resultUnit }: LotCardProps) {
+function LotCard({ index, draft, onChange, result, resultUnit, isCheapest }: LotCardProps) {
   const translator = useTranslation()
   const { t } = translator
   const moistureId = useId()
@@ -117,16 +123,28 @@ function LotCard({ index, draft, onChange, result, resultUnit }: LotCardProps) {
   const amountInResultUnit = result?.amountIn(resultUnit) ?? null
 
   return (
-    <Paper withBorder radius="md" p="md" data-testid={`lot-${index}`}>
+    <Paper withBorder radius="lg" p="md" shadow="md" style={{ borderWidth: 2 }} data-testid={`lot-${index}`}>
       <Stack gap="sm">
-        <Title order={3} fz={14} tt="uppercase" style={{ letterSpacing: '0.12em' }}>
-          {t('compare.lotHeading', { number: index + 1 })}
-        </Title>
+        {/* The badge sits on the title's own row rather than floating over the
+            card's corner: every other label-beside-a-heading in this app is a
+            `Group justify="space-between"`, and an overlay would land on the
+            card's 2 px border. */}
+        <Group justify="space-between" align="flex-start" wrap="nowrap">
+          <Title order={3} ff="Bungee, sans-serif" fz={14} tt="uppercase" style={{ letterSpacing: '0.12em' }}>
+            {t('compare.lotHeading', { number: index + 1 })}
+          </Title>
+          {isCheapest && (
+            <Badge color="yellow" radius="xl">
+              {t('compare.cheapestBadge')}
+            </Badge>
+          )}
+        </Group>
 
         <TextInput
           type="number"
           min={0}
           label={t('compare.priceLabel')}
+          styles={{ label: FIELD_LABEL_STYLE }}
           value={draft.price}
           onChange={(event) => onChange({ ...draft, price: event.currentTarget.value })}
         />
@@ -138,11 +156,13 @@ function LotCard({ index, draft, onChange, result, resultUnit }: LotCardProps) {
             type="number"
             min={0}
             label={t('compare.amountLabel')}
+            styles={{ label: FIELD_LABEL_STYLE }}
             value={draft.amount}
             onChange={(event) => onChange({ ...draft, amount: event.currentTarget.value })}
           />
           <NativeSelect
             label={t('compare.unitLabel')}
+            styles={{ label: FIELD_LABEL_STYLE }}
             value={draft.unit}
             onChange={(event) => onChange({ ...draft, unit: event.currentTarget.value as PriceUnit })}
             data={PRICE_UNITS.map((value) => ({ value, label: unitLabel(value, translator) }))}
@@ -157,6 +177,20 @@ function LotCard({ index, draft, onChange, result, resultUnit }: LotCardProps) {
         <div>
           <NativeSelect
             label={t('compare.speciesLabel')}
+            // Off, drawn rather than greyed: a palette with no grey in it has
+            // to say "not for you" some other way, so the border goes dashed
+            // and the fill a shade back from the cards around it.
+            styles={{
+              label: FIELD_LABEL_STYLE,
+              input: needsSpecies
+                ? undefined
+                : {
+                    borderStyle: 'dashed',
+                    borderWidth: 2,
+                    backgroundColor:
+                      'color-mix(in srgb, var(--mantine-color-default-border) 10%, var(--mantine-color-default))',
+                  },
+            }}
             description={needsSpecies ? undefined : t('compare.speciesNotNeeded')}
             disabled={!needsSpecies}
             value={draft.species}
@@ -169,6 +203,7 @@ function LotCard({ index, draft, onChange, result, resultUnit }: LotCardProps) {
           <ExplainedLabel
             htmlFor={moistureId}
             label={t('compare.moistureLabel')}
+            labelStyle={FIELD_LABEL_STYLE}
             title={t('explain.compareMoisture.title')}
             body={t('explain.compareMoisture.body')}
           />
@@ -186,6 +221,9 @@ function LotCard({ index, draft, onChange, result, resultUnit }: LotCardProps) {
           </Text>
         ) : (
           <Stack gap={4} pt="xs">
+            {/* Above the line, the six things you type; below it, the four the
+                screen works out. The same rule the volume line is drawn with. */}
+            <div aria-hidden="true" style={{ height: 2, background: DASHED_RULE }} />
             <Figure
               name="krPerKgDry"
               label={t('compare.krPerKgDry')}
@@ -261,13 +299,14 @@ export function ComparePage({ onBack }: { onBack: () => void }) {
             onChange={(next) => setLot(index, next)}
             result={results[index]}
             resultUnit={resultUnit}
+            isCheapest={verdict?.cheaperIndex === index}
           />
         ))}
       </SimpleGrid>
 
       {verdict && (
-        <Paper withBorder radius="md" p="md">
-          <Text fw={700} data-testid="verdict">
+        <Paper radius="lg" p="lg" style={{ backgroundColor: PLUM_PANEL, color: 'var(--mantine-color-white)' }}>
+          <Text ff="Bungee, sans-serif" fw={400} fz={17} lh={1.3} data-testid="verdict">
             {verdict.cheaperIndex === null
               ? t('compare.verdictTie')
               : t('compare.verdict', {
