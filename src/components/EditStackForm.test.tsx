@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { fireEvent, screen, waitFor } from '@testing-library/react'
+import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { EditStackForm } from './EditStackForm'
 import { renderWithMantine } from '../test/render'
 import { OSLO_NORMALS, makeStack } from '../test/fixtures'
@@ -16,11 +16,23 @@ function fill(label: RegExp, value: string) {
   fireEvent.change(screen.getByLabelText(label), { target: { value } })
 }
 
+/** The place field is an Autocomplete: its label belongs to both the input and
+ *  the listbox, so the input is the one with the combobox role. */
+function placeField(name: RegExp = /nærmeste sted/i) {
+  return screen.getByRole('combobox', { name })
+}
+
+/** The matches sit in a floating dropdown Mantine positions with a layout
+ *  library. `happy-dom` computes no layout, so they count as hidden. */
+function match(name: RegExp) {
+  return screen.getByRole('option', { name, hidden: true })
+}
+
 async function pickBergen() {
-  fill(/^nærmeste sted$/i, 'Bergen')
+  fireEvent.change(placeField(), { target: { value: 'Bergen' } })
   fireEvent.click(screen.getByRole('button', { name: /søk/i }))
-  await waitFor(() => screen.getByRole('button', { name: /Bergen/ }))
-  fireEvent.click(screen.getByRole('button', { name: /Bergen/ }))
+  await waitFor(() => expect(match(/Bergen/)).toBeInTheDocument())
+  fireEvent.click(match(/Bergen/))
 }
 
 beforeEach(() => {
@@ -38,7 +50,8 @@ describe('EditStackForm', () => {
     expect(screen.getByLabelText(/kløyvd/i)).toHaveValue('medium')
     expect(screen.getByLabelText(/tak/i)).toHaveValue('roof')
     expect(screen.getByLabelText(/sol og vind/i)).toHaveValue('normal')
-    expect(screen.getByText(/valgt sted: Oslo/i)).toBeInTheDocument()
+    // The place the stack already has is what the field opens on.
+    expect(placeField()).toHaveValue('Oslo')
   })
 
   // The two fields every reading was interpreted against are fixed at
@@ -172,6 +185,8 @@ describe('EditStackForm', () => {
     )
 
     fireEvent.click(screen.getByRole('button', { name: /fjern bildet/i }))
+    // Removing a photo is asked for now, like every other delete in the app.
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^ok$/i }))
     fireEvent.click(screen.getByRole('button', { name: /^lagre$/i }))
 
     await waitFor(() => expect(onSave).toHaveBeenCalled())
@@ -225,9 +240,11 @@ describe('EditStackForm', () => {
       <EditStackForm stackId="a" onSave={onSave} onCancel={vi.fn()} geocodeFn={geocodeBergen()} />,
     )
 
-    fill(/^nærmeste sted$/i, 'Bergen')
+    fireEvent.change(placeField(), { target: { value: 'Bergen' } })
     fireEvent.click(screen.getByRole('button', { name: /søk/i }))
-    await waitFor(() => screen.getByRole('button', { name: /Bergen/ }))
+    // Searched but never picked: the field says Bergen while the stack still
+    // stands in Oslo, and saving on that would move it somewhere nobody chose.
+    await waitFor(() => expect(match(/Bergen/)).toBeInTheDocument())
     fireEvent.click(screen.getByRole('button', { name: /^lagre$/i }))
 
     await waitFor(() => expect(screen.getByText(/velg et sted/i)).toBeInTheDocument())
@@ -245,7 +262,7 @@ describe('EditStackForm', () => {
       />,
     )
 
-    fill(/^nærmeste sted$/i, 'Xyzzy')
+    fireEvent.change(placeField(), { target: { value: 'Xyzzy' } })
     fireEvent.click(screen.getByRole('button', { name: /søk/i }))
     await waitFor(() => expect(screen.getByText(/fant ingen steder/i)).toBeInTheDocument())
   })

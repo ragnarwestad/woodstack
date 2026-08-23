@@ -26,6 +26,7 @@ import {
 import { SPECIES_IDS } from '../model/species'
 import { StorageQuotaError } from '../storage/stacksRepo'
 import { geocode, type GeocodeResult } from '../climate/openMeteo'
+import { labelledMatches } from '../climate/placeLabels'
 import { useTranslation } from '../i18n/useTranslation'
 import { FieldRow } from './FieldRow'
 import { PhotoField, PhotoPreview } from './PhotoField'
@@ -80,7 +81,7 @@ export function AddStackForm({ onAdd, onCancel, geocodeFn, resizeFn }: Props) {
       setResults(await lookUpPlace(query))
     } catch {
       setResults([])
-      setError(t('addStack.searchFailed'))
+      setError(t('stackForm.searchFailed'))
     }
   }
 
@@ -98,7 +99,7 @@ export function AddStackForm({ onAdd, onCancel, geocodeFn, resizeFn }: Props) {
       return
     }
     if (!chosenPlace) {
-      setError(t('addStack.pickPlace'))
+      setError(t('stackForm.pickPlace'))
       return
     }
     // The opening amount is optional, and an empty field is not a zero entry:
@@ -142,7 +143,7 @@ export function AddStackForm({ onAdd, onCancel, geocodeFn, resizeFn }: Props) {
 
       {/* Name and date: what this pile is and when it went up. */}
       <FieldRow>
-        <TextInput label={t('addStack.name')} value={name} onChange={(event) => setName(event.currentTarget.value)} />
+        <TextInput label={t('stackForm.name')} value={name} onChange={(event) => setName(event.currentTarget.value)} />
 
         <TextInput
           type="date"
@@ -168,7 +169,7 @@ export function AddStackForm({ onAdd, onCancel, geocodeFn, resizeFn }: Props) {
         />
 
         <NativeSelect
-          label={t('addStack.splitSize')}
+          label={t('stackForm.splitSize')}
           value={splitSize}
           onChange={(event) => setSplitSize(event.currentTarget.value as SplitSize)}
           data={SPLIT_SIZES.map((value) => ({ value, label: t(`splitSize.${value}`) }))}
@@ -202,14 +203,14 @@ export function AddStackForm({ onAdd, onCancel, geocodeFn, resizeFn }: Props) {
       {/* Where it stands. */}
       <FieldRow>
         <NativeSelect
-          label={t('addStack.cover')}
+          label={t('stackForm.cover')}
           value={cover}
           onChange={(event) => setCover(event.currentTarget.value as Cover)}
           data={COVERS.map((value) => ({ value, label: t(`cover.${value}`) }))}
         />
 
         <NativeSelect
-          label={t('addStack.exposure')}
+          label={t('stackForm.exposure')}
           value={exposure}
           onChange={(event) => setExposure(event.currentTarget.value as Exposure)}
           data={EXPOSURES.map((value) => ({ value, label: t(`exposure.${value}`) }))}
@@ -246,8 +247,8 @@ export function AddStackForm({ onAdd, onCancel, geocodeFn, resizeFn }: Props) {
             the query. */}
         <Group align="flex-end" gap="xs" wrap="nowrap">
           <Autocomplete
-            label={t('addStack.place')}
-            description={t('addStack.placeDescription')}
+            label={t('stackForm.place')}
+            description={t('stackForm.placeDescription')}
             value={query}
             data={matches.map((m) => m.label)}
             filter={({ options }) => options}
@@ -285,17 +286,15 @@ export function AddStackForm({ onAdd, onCancel, geocodeFn, resizeFn }: Props) {
               event.preventDefault()
               void search()
             }}
-            error={results?.length === 0 ? t('addStack.noPlaces') : undefined}
+            error={results?.length === 0 ? t('stackForm.noPlaces') : undefined}
             style={{ flex: 1 }}
           />
           <Button variant="default" onClick={search}>
-            {t('addStack.search')}
+            {t('stackForm.search')}
           </Button>
         </Group>
         <PhotoField value={photo} onChange={setPhoto} resizeFn={resizeFn} />
       </FieldRow>
-
-      {error && <Alert color="red">{error}</Alert>}
 
       {/* The last row of the same two-column grid the rest of the form uses:
           the buttons in the left column, the picture in the right — directly
@@ -304,12 +303,19 @@ export function AddStackForm({ onAdd, onCancel, geocodeFn, resizeFn }: Props) {
           them. `start` keeps them at the top of the row when the picture is
           taller than they are. */}
       <FieldRow align="start">
-        <Group gap="md" wrap="nowrap">
-          <Button onClick={submit}>{t('addStack.save')}</Button>
-          <Button variant="subtle" onClick={onCancel}>
-            {t('addStack.cancel')}
-          </Button>
-        </Group>
+        {/* The message belongs to the buttons, so it sits under them inside
+            their own column. Above the row it pushed the picture down with it;
+            here the picture's column does not know it exists. */}
+        <MantineStack gap="xs">
+          <Group gap="md" wrap="nowrap">
+            <Button onClick={submit}>{t('stackForm.save')}</Button>
+            <Button variant="subtle" onClick={onCancel}>
+              {t('stackForm.cancel')}
+            </Button>
+          </Group>
+
+          {error && <Alert color="red">{error}</Alert>}
+        </MantineStack>
 
         <PhotoPreview value={photo} onChange={setPhoto} />
       </FieldRow>
@@ -317,38 +323,4 @@ export function AddStackForm({ onAdd, onCancel, geocodeFn, resizeFn }: Props) {
   )
 }
 
-/** Name and country, not the region in between. Open-Meteo has no Norwegian
- *  name for every admin region and falls back to English per field, so
- *  "Oslo, Oslo County, Norge" was half one language and half the other. The
- *  region is what a Norwegian would drop anyway. */
-function placeLabel(result: GeocodeResult): string {
-  return [result.name, result.country].filter(Boolean).join(', ')
-}
 
-/** One label per match, guaranteed unique, because the dropdown refuses
- *  duplicate options by THROWING — and a thrown error there takes the whole
- *  page down, which is what a search for "Oslo" used to do.
- *
- *  Two passes: add the region where two matches would otherwise read alike,
- *  and then drop any that are still identical. Open-Meteo really does return
- *  the same place twice — same name, same region, same country — and no amount
- *  of extra words tells those apart, so showing one of them is the honest
- *  answer. The matches are filtered with the labels, so the two stay aligned. */
-function labelledMatches(results: GeocodeResult[]): { result: GeocodeResult; label: string }[] {
-  const plain = results.map(placeLabel)
-  const count = new Map<string, number>()
-  for (const label of plain) count.set(label, (count.get(label) ?? 0) + 1)
-
-  const seen = new Set<string>()
-  const out: { result: GeocodeResult; label: string }[] = []
-  results.forEach((result, index) => {
-    const short = plain[index]
-    const label = (count.get(short) ?? 0) > 1 && result.admin1
-      ? [result.name, result.admin1, result.country].filter(Boolean).join(', ')
-      : short
-    if (seen.has(label)) return
-    seen.add(label)
-    out.push({ result, label })
-  })
-  return out
-}

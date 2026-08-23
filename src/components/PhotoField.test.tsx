@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { fireEvent, screen, waitFor } from '@testing-library/react'
+import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { PhotoField, PhotoPreview } from './PhotoField'
 import { renderWithMantine } from '../test/render'
 import { ENGLISH_TEST_LANGUAGE, setTestLanguage } from '../test/language'
@@ -64,8 +64,21 @@ describe('PhotoField', () => {
     renderWithMantine(<PhotoPreview value={DATA_URL} onChange={onChange} />)
 
     fireEvent.click(screen.getByRole('button', { name: /fjern bildet/i }))
+    // Removing a photo is asked for now, like every other delete in the app.
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^ok$/i }))
 
     expect(onChange).toHaveBeenCalledWith(undefined)
+  })
+
+  it('keeps the photo when the visitor backs out of removing it', () => {
+    const onChange = vi.fn()
+    renderWithMantine(<PhotoPreview value={DATA_URL} onChange={onChange} />)
+
+    fireEvent.click(screen.getByRole('button', { name: /fjern bildet/i }))
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /avbryt/i }))
+
+    expect(onChange).not.toHaveBeenCalled()
+    expect(screen.getByAltText(/bilde av vedstabelen/i)).toBeInTheDocument()
   })
 
   /** A file the browser cannot decode rejects inside an event handler, where

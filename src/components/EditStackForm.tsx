@@ -1,14 +1,13 @@
 import { useMemo, useState } from 'react'
 import {
+  Autocomplete,
   Alert,
   Button,
   Group,
   NativeSelect,
-  Paper,
   Stack as MantineStack,
   Text,
   TextInput,
-  UnstyledButton,
 } from '@mantine/core'
 import {
   COVERS,
@@ -23,6 +22,7 @@ import {
 import { StorageQuotaError, getStack, updateStack } from '../storage/stacksRepo'
 import { geocode, type GeocodeResult } from '../climate/openMeteo'
 import { getNormals } from '../climate/normalsCache'
+import { labelledMatches, placeLabel } from '../climate/placeLabels'
 import { useTranslation } from '../i18n/useTranslation'
 import { FieldRow } from './FieldRow'
 import { PhotoField, PhotoPreview } from './PhotoField'
@@ -64,7 +64,10 @@ export function EditStackForm({
   const [exposure, setExposure] = useState<Exposure>(stack?.exposure ?? 'normal')
   const [photo, setPhoto] = useState<string | undefined>(stack?.photo)
 
-  const [query, setQuery] = useState('')
+  const [query, setQuery] = useState(stack ? placeLabel(stack.location) : '')
+  /** The exact text the place was last shown as — a label may carry the
+   *  region when two matches would otherwise read alike. */
+  const [placeText, setPlaceText] = useState(stack ? placeLabel(stack.location) : '')
   const [results, setResults] = useState<GeocodeResult[] | null>(null)
   // Seeded with where the stack stands, so the screen opens on the current
   // place rather than on an empty search.
@@ -88,14 +91,19 @@ export function EditStackForm({
   // values rather than the possibly-missing stack itself.
   const { name: storedName, location: current } = stack
 
+  const matches = labelledMatches(results ?? [])
+  const showMatches = matches.length > 0
+  /** In force only while the field still says what was picked — or, untouched,
+   *  what the stack already had. */
+  const chosenPlace = place && placeText === query ? place : null
+
   async function search() {
     setError(null)
-    setPlace(null)
     try {
       setResults(await lookUpPlace(query))
     } catch {
       setResults([])
-      setError(t('editStack.searchFailed'))
+      setError(t('stackForm.searchFailed'))
     }
   }
 
@@ -103,18 +111,19 @@ export function EditStackForm({
     setError(null)
     // A search that was started and never finished leaves no place at all;
     // saving then would throw away the location the stack already has.
-    if (!place) {
-      setError(t('editStack.pickPlace'))
+    if (!chosenPlace) {
+      setError(t('stackForm.pickPlace'))
       return
     }
 
-    const moved = place.latitude !== current.latitude || place.longitude !== current.longitude
+    const moved =
+      chosenPlace.latitude !== current.latitude || chosenPlace.longitude !== current.longitude
     if (moved) {
       // The whole save waits on this, and is abandoned if it fails: a stack
       // whose climate data belongs somewhere else gives a window that looks
       // right and is not.
       try {
-        await getNormalsFn(place.latitude, place.longitude)
+        await getNormalsFn(chosenPlace.latitude, chosenPlace.longitude)
       } catch {
         setError(t('editStack.locationFailed'))
         return
@@ -129,7 +138,7 @@ export function EditStackForm({
         splitSize,
         cover,
         exposure,
-        location: { name: place.name, latitude: place.latitude, longitude: place.longitude },
+        location: { name: chosenPlace.name, latitude: chosenPlace.latitude, longitude: chosenPlace.longitude },
         photo,
       })
     } catch (error) {
@@ -148,74 +157,80 @@ export function EditStackForm({
     <MantineStack gap="md">
       <Text fw={600}>{t('editStack.heading')}</Text>
 
-      <TextInput label={t('editStack.name')} value={name} onChange={(event) => setName(event.currentTarget.value)} />
+      {/* The same two-column layout as the new-stack form: none of these
+          values needs the full width, and the two screens should not read like
+          different apps. */}
+      <FieldRow>
+        <TextInput label={t('stackForm.name')} value={name} onChange={(event) => setName(event.currentTarget.value)} />
 
-      <NativeSelect
-        label={t('editStack.splitSize')}
-        value={splitSize}
-        onChange={(event) => setSplitSize(event.currentTarget.value as SplitSize)}
-        data={SPLIT_SIZES.map((value) => ({ value, label: t(`splitSize.${value}`) }))}
-      />
-
-      <NativeSelect
-        label={t('editStack.cover')}
-        value={cover}
-        onChange={(event) => setCover(event.currentTarget.value as Cover)}
-        data={COVERS.map((value) => ({ value, label: t(`cover.${value}`) }))}
-      />
-
-      <NativeSelect
-        label={t('editStack.exposure')}
-        value={exposure}
-        onChange={(event) => setExposure(event.currentTarget.value as Exposure)}
-        data={EXPOSURES.map((value) => ({ value, label: t(`exposure.${value}`) }))}
-      />
-
-      <PhotoField value={photo} onChange={setPhoto} resizeFn={resizeFn} />
-
-      <Group align="flex-end" gap="xs">
-        <TextInput
-          label={t('editStack.place')}
-          description={t('editStack.placeDescription')}
-          value={query}
-          onChange={(event) => setQuery(event.currentTarget.value)}
-          onKeyDown={(event) => {
-            if (event.key !== 'Enter') return
-            // The field sits in a form-shaped page without a <form>, so Enter
-            // does nothing unless it is handled. A search box that ignores it
-            // reads as broken.
-            event.preventDefault()
-            void search()
-          }}
-          style={{ flex: 1 }}
+        <NativeSelect
+          label={t('stackForm.splitSize')}
+          value={splitSize}
+          onChange={(event) => setSplitSize(event.currentTarget.value as SplitSize)}
+          data={SPLIT_SIZES.map((value) => ({ value, label: t(`splitSize.${value}`) }))}
         />
-        <Button variant="default" onClick={search}>
-          {t('editStack.search')}
-        </Button>
-      </Group>
+      </FieldRow>
 
-      {place ? (
-        <Text size="sm">{t('editStack.chosenPlace', { place: placeLabel(place) })}</Text>
-      ) : (
-        results?.length === 0 && <Text size="sm">{t('editStack.noPlaces')}</Text>
-      )}
+      {/* Where it stands. */}
+      <FieldRow>
+        <NativeSelect
+          label={t('stackForm.cover')}
+          value={cover}
+          onChange={(event) => setCover(event.currentTarget.value as Cover)}
+          data={COVERS.map((value) => ({ value, label: t(`cover.${value}`) }))}
+        />
 
-      {!place &&
-        results?.map((result) => (
-          <UnstyledButton
-            key={`${result.latitude},${result.longitude}`}
-            onClick={() => {
-              setPlace(result)
+        <NativeSelect
+          label={t('stackForm.exposure')}
+          value={exposure}
+          onChange={(event) => setExposure(event.currentTarget.value as Exposure)}
+          data={EXPOSURES.map((value) => ({ value, label: t(`exposure.${value}`) }))}
+        />
+      </FieldRow>
+
+      {/* The place and the picture. `start`: the picture's field is taller than
+          the search box, and bottom-aligned that dragged the place down. */}
+      <FieldRow align="start">
+        <Group align="flex-end" gap="xs" wrap="nowrap">
+          <Autocomplete
+            label={t('stackForm.place')}
+            description={t('stackForm.placeDescription')}
+            value={query}
+            data={matches.map((m) => m.label)}
+            filter={({ options }) => options}
+            openOnFocus={false}
+            comboboxProps={{ transitionProps: { duration: 0 } }}
+            dropdownOpened={showMatches}
+            onChange={(value) => {
+              setQuery(value)
+              setResults(null)
+            }}
+            onOptionSubmit={(label) => {
+              const picked = matches.find((m) => m.label === label)?.result
+              if (!picked) return
+              setPlace(picked)
+              setPlaceText(label)
+              setQuery(label)
+              setResults(null)
               setError(null)
             }}
-          >
-            <Paper withBorder p="xs" radius="sm">
-              <Text size="sm">{placeLabel(result)}</Text>
-            </Paper>
-          </UnstyledButton>
-        ))}
+            onKeyDown={(event) => {
+              if (event.key !== 'Enter') return
+              // The field sits in a form-shaped page without a <form>, so Enter
+              // does nothing unless it is handled.
+              event.preventDefault()
+              void search()
+            }}
+            error={results?.length === 0 ? t('stackForm.noPlaces') : undefined}
+            style={{ flex: 1 }}
+          />
+          <Button variant="default" onClick={search}>
+            {t('stackForm.search')}
+          </Button>
+        </Group>
 
-      {error && <Alert color="red">{error}</Alert>}
+        <PhotoField value={photo} onChange={setPhoto} resizeFn={resizeFn} />
+      </FieldRow>
 
       {/* The last row of the same two-column grid the rest of the form uses:
           the buttons in the left column, the picture in the right — directly
@@ -224,12 +239,19 @@ export function EditStackForm({
           them. `start` keeps them at the top of the row when the picture is
           taller than they are. */}
       <FieldRow align="start">
-        <Group gap="md" wrap="nowrap">
-          <Button onClick={submit}>{t('editStack.save')}</Button>
-          <Button variant="subtle" onClick={onCancel}>
-            {t('editStack.cancel')}
-          </Button>
-        </Group>
+        {/* The message belongs to the buttons, so it sits under them inside
+            their own column. Above the row it pushed the picture down with it;
+            here the picture's column does not know it exists. */}
+        <MantineStack gap="xs">
+          <Group gap="md" wrap="nowrap">
+            <Button onClick={submit}>{t('stackForm.save')}</Button>
+            <Button variant="subtle" onClick={onCancel}>
+              {t('stackForm.cancel')}
+            </Button>
+          </Group>
+
+          {error && <Alert color="red">{error}</Alert>}
+        </MantineStack>
 
         <PhotoPreview value={photo} onChange={setPhoto} />
       </FieldRow>
@@ -241,6 +263,3 @@ export function EditStackForm({
  *  region in between comes back half in English whatever language is asked
  *  for. A stack's own stored location has no country at all, and reads as
  *  just the name. */
-function placeLabel(place: Place | GeocodeResult): string {
-  return [place.name, place.country].filter(Boolean).join(', ')
-}

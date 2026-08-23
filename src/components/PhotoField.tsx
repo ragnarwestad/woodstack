@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { Alert, CloseButton, FileInput, Group, Image, rem, Stack as MantineStack } from '@mantine/core'
+import { Alert, FileInput, Group, Image, rem, Stack as MantineStack } from '@mantine/core'
 import { resizePhoto } from '../media/photo'
 import { useTranslation } from '../i18n/useTranslation'
+import { ConfirmButton } from './ConfirmButton'
 
 type Props = {
   value: string | undefined
@@ -34,7 +35,16 @@ export function PhotoPreview({ value, onChange }: Pick<Props, 'value' | 'onChang
     // picture, and centring inside it centres nothing.
     <Group gap={4} wrap="nowrap" align="flex-start" justify="center" w="100%">
       <Image src={value} alt={t('photo.alt')} h={rem(140)} w="auto" fit="contain" radius="sm" />
-      <CloseButton size="sm" aria-label={t('photo.remove')} onClick={() => onChange(undefined)} />
+      {/* Asked for, like every other delete in this app: the photo is gone for
+          good once it goes, and the same click that removes it is the one right
+          next to the picture the visitor is looking at. */}
+      <ConfirmButton
+        label={t('photo.remove')}
+        question={t('photo.removeQuestion')}
+        confirmLabel={t('common.ok')}
+        cancelLabel={t('common.cancel')}
+        onConfirm={() => onChange(undefined)}
+      />
     </Group>
   )
 }
