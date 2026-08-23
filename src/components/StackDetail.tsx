@@ -20,6 +20,7 @@ import {
 } from '../storage/stacksRepo'
 import { getNormals } from '../climate/normalsCache'
 import { estimateWindow, simulate } from '../model/simulate'
+import { speciesLabel } from '../model/species'
 import { DRY_ENOUGH_MOISTURE, formatWindow } from '../model/units'
 import { currentSolidLiters, formatVolume } from '../model/volume'
 import { useTranslation } from '../i18n/useTranslation'
@@ -126,6 +127,13 @@ export function StackDetail({ stackId, onBack, onEdit, getNormalsFn = getNormals
   const loading = result?.key !== requestKey
   const dryWindow = normals ? estimateWindow(stack, normals) : null
   const points = normals ? simulate(stack, normals, { months: CURVE_MONTHS }) : []
+  // The second wood gets its own curve rather than an average of the two: the
+  // window below is the union of both, and one line inside it would not
+  // explain why it is that wide.
+  const secondPoints =
+    normals && stack.secondSpecies
+      ? simulate({ ...stack, species: stack.secondSpecies.species }, normals, { months: CURVE_MONTHS })
+      : undefined
 
   return (
     <MantineStack gap="md">
@@ -159,7 +167,7 @@ export function StackDetail({ stackId, onBack, onEdit, getNormalsFn = getNormals
       </Group>
       <Text c="dimmed">
         {t('stackDetail.meta', {
-          species: t(`species.${stack.species}`),
+          species: speciesLabel(stack, t),
           date: stack.stackedDate,
           place: stack.location.name,
         })}
@@ -178,6 +186,7 @@ export function StackDetail({ stackId, onBack, onEdit, getNormalsFn = getNormals
           </Text>
           <DryingCurveChart
             points={points}
+            secondPoints={secondPoints}
             readings={stack.readings}
             threshold={DRY_ENOUGH_MOISTURE}
             window={dryWindow}

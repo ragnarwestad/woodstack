@@ -12,9 +12,10 @@ import {
   saveStacks,
   updateStack,
 } from './stacksRepo'
-import { makeStack } from '../test/fixtures'
+import { OSLO_NORMALS, makeStack } from '../test/fixtures'
 import { SCHEMA_VERSION } from './schema'
 import { currentSolidLiters } from '../model/volume'
+import { estimateWindow } from '../model/simulate'
 
 beforeEach(() => {
   localStorage.clear()
@@ -48,6 +49,26 @@ describe('loadStacks', () => {
     expect(loaded).toHaveLength(1)
     expect(loaded[0].id).toBe('a')
     expect(currentSolidLiters(loaded[0].volumeEntries)).toBe(0)
+  })
+
+  it('reads a stack stored before a second species could be recorded', () => {
+    // Same reasoning as the volume ledger above: `secondSpecies` is optional
+    // rather than a SCHEMA_VERSION bump, so every stack already in a
+    // visitor's browser loads as the pure stack it is.
+    const oldShaped = makeStack({ id: 'b' })
+    expect('secondSpecies' in oldShaped).toBe(false)
+    localStorage.setItem('woodstack.state.v1', JSON.stringify({ version: SCHEMA_VERSION, stacks: [oldShaped] }))
+
+    const loaded = loadStacks()
+    expect(loaded).toHaveLength(1)
+    expect(loaded[0].secondSpecies).toBeUndefined()
+    expect(estimateWindow(loaded[0], OSLO_NORMALS)).toEqual(estimateWindow(oldShaped, OSLO_NORMALS))
+  })
+
+  it('keeps a second species through a save and a load', () => {
+    const mixed = makeStack({ id: 'c', secondSpecies: { species: 'gran', share: 'third' } })
+    saveStacks([mixed])
+    expect(loadStacks()[0].secondSpecies).toEqual({ species: 'gran', share: 'third' })
   })
 })
 

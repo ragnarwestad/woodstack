@@ -41,6 +41,9 @@ export const en: Record<TranslationKey, string> = {
   'addStack.heading': 'New woodpile',
   'addStack.name': 'Name of the woodpile',
   'addStack.species': 'Species',
+  'addStack.secondSpecies': 'Mixed with anything else?',
+  'addStack.secondSpeciesNone': 'No, just the one',
+  'addStack.secondSpeciesShare': 'How much of the other?',
   'addStack.stackedDate': 'Date stacked',
   'addStack.splitSize': 'How coarsely is it split?',
   'addStack.cover': 'Is it under a roof?',
@@ -103,6 +106,11 @@ export const en: Record<TranslationKey, string> = {
   'species.gran': 'Spruce',
   'species.eik': 'Oak',
   'species.bok': 'Beech',
+
+  'species.mixedLabel': '{primary} + {secondary} ({share})',
+  'species.share.half': 'About half',
+  'species.share.third': 'A third or so',
+  'species.share.bit': 'Just a bit',
 
   'splitSize.small': 'Finely split',
   'splitSize.medium': 'Medium',

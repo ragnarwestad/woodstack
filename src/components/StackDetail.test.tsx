@@ -20,6 +20,14 @@ describe('StackDetail', () => {
     expect(screen.getByRole('img', { name: /tørkekurve/i })).toBeInTheDocument()
   })
 
+  it('draws one curve when the pile is all one wood', async () => {
+    const { container } = renderWithMantine(
+      <StackDetail stackId="a" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+    )
+    await waitFor(() => expect(screen.getByText(/klar mellom/i)).toBeInTheDocument())
+    expect(container.querySelectorAll('polyline')).toHaveLength(1)
+  })
+
   it('shows an explicit fetching state before the climate data arrives', () => {
     renderWithMantine(
       <StackDetail stackId="a" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={() => new Promise(() => {})} />,
@@ -247,6 +255,31 @@ describe('StackDetail', () => {
       <StackDetail stackId="nope" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
     )
     expect(screen.getByText(/finner ikke/i)).toBeInTheDocument()
+  })
+})
+
+describe('StackDetail with a mixed stack', () => {
+  beforeEach(() => {
+    localStorage.clear()
+    saveStacks([
+      makeStack({ id: 'm', name: 'Blandingsstabelen', secondSpecies: { species: 'eik', share: 'half' } }),
+    ])
+  })
+
+  it('names both woods in the heading line', async () => {
+    renderWithMantine(
+      <StackDetail stackId="m" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+    )
+    await waitFor(() => expect(screen.getByText(/klar mellom/i)).toBeInTheDocument())
+    expect(screen.getByText(/^Bjørk \+ Eik \(Omtrent halvparten\) · stablet 2026-04-15 · Oslo$/)).toBeInTheDocument()
+  })
+
+  it('draws a curve per wood, so the two speeds are visible', async () => {
+    const { container } = renderWithMantine(
+      <StackDetail stackId="m" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+    )
+    await waitFor(() => expect(screen.getByText(/klar mellom/i)).toBeInTheDocument())
+    expect(container.querySelectorAll('polyline')).toHaveLength(2)
   })
 })
 

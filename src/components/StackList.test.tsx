@@ -34,6 +34,17 @@ describe('StackList', () => {
     expect(onSelect).toHaveBeenCalledWith('b')
   })
 
+  it('names both woods when a pile is mixed', () => {
+    const mixed = makeStack({ id: 'c', name: 'Blandingsstabelen', secondSpecies: { species: 'gran', share: 'third' } })
+    renderWithMantine(<StackList stacks={[mixed]} normalsFor={() => OSLO_NORMALS} onSelect={vi.fn()} onAdd={vi.fn()} />)
+    expect(screen.getByText('Bjørk + Gran (En tredjedel eller så)')).toBeInTheDocument()
+  })
+
+  it('names only the one wood when a pile is not mixed', () => {
+    renderWithMantine(<StackList stacks={[stacks[0]]} normalsFor={() => OSLO_NORMALS} onSelect={vi.fn()} onAdd={vi.fn()} />)
+    expect(screen.getByText('Bjørk')).toBeInTheDocument()
+  })
+
   it('invites the first stack when there are none', () => {
     renderWithMantine(<StackList stacks={[]} normalsFor={() => null} onSelect={vi.fn()} onAdd={vi.fn()} />)
     expect(screen.getByText(/ingen vedstabler/i)).toBeInTheDocument()

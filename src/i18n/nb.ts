@@ -40,6 +40,9 @@ export const nb = {
   'addStack.heading': 'Ny vedstabel',
   'addStack.name': 'Navn på stabelen',
   'addStack.species': 'Treslag',
+  'addStack.secondSpecies': 'Blandet med noe annet?',
+  'addStack.secondSpeciesNone': 'Nei, bare dette',
+  'addStack.secondSpeciesShare': 'Hvor mye av det andre?',
   'addStack.stackedDate': 'Stablet dato',
   'addStack.splitSize': 'Hvor grovt er den kløyvd?',
   'addStack.cover': 'Står den under tak?',
@@ -102,6 +105,11 @@ export const nb = {
   'species.gran': 'Gran',
   'species.eik': 'Eik',
   'species.bok': 'Bøk',
+
+  'species.mixedLabel': '{primary} + {secondary} ({share})',
+  'species.share.half': 'Omtrent halvparten',
+  'species.share.third': 'En tredjedel eller så',
+  'species.share.bit': 'Bare et innslag',
 
   'splitSize.small': 'Fint kløyvd',
   'splitSize.medium': 'Middels',

@@ -103,6 +103,68 @@ describe('AddStackForm', () => {
     expect(onAdd.mock.calls[0][0]).not.toHaveProperty('initialVolume')
   })
 
+  it('leaves the second wood out entirely when the pile is all one species', async () => {
+    const onAdd = vi.fn()
+    renderWithMantine(<AddStackForm onAdd={onAdd} onCancel={vi.fn()} geocodeFn={geocodeFn} />)
+
+    fill(/navn/i, 'Bjørk ved veggen')
+    await pickOslo()
+    fireEvent.click(screen.getByRole('button', { name: /lagre/i }))
+
+    expect(onAdd.mock.calls[0][0]).not.toHaveProperty('secondSpecies')
+  })
+
+  it('asks how much of the second wood there is only once one has been picked', () => {
+    renderWithMantine(<AddStackForm onAdd={vi.fn()} onCancel={vi.fn()} geocodeFn={geocodeFn} />)
+    expect(screen.getByLabelText(/blandet/i)).toBeInTheDocument()
+    expect(screen.queryByLabelText(/hvor mye/i)).not.toBeInTheDocument()
+
+    fill(/blandet/i, 'gran')
+    expect(screen.getByLabelText(/hvor mye/i)).toBeInTheDocument()
+  })
+
+  it('hands over the second wood and roughly how much of it there is', async () => {
+    const onAdd = vi.fn()
+    renderWithMantine(<AddStackForm onAdd={onAdd} onCancel={vi.fn()} geocodeFn={geocodeFn} />)
+
+    fill(/navn/i, 'Blandingsstabelen')
+    fill(/treslag/i, 'bjork')
+    fill(/blandet/i, 'gran')
+    fill(/hvor mye/i, 'half')
+    await pickOslo()
+    fireEvent.click(screen.getByRole('button', { name: /lagre/i }))
+
+    expect(onAdd).toHaveBeenCalledWith(
+      expect.objectContaining({ species: 'bjork', secondSpecies: { species: 'gran', share: 'half' } }),
+    )
+  })
+
+  it('will not offer the same wood twice', () => {
+    renderWithMantine(<AddStackForm onAdd={vi.fn()} onCancel={vi.fn()} geocodeFn={geocodeFn} />)
+    fill(/treslag/i, 'gran')
+
+    const second = screen.getByLabelText(/blandet/i) as HTMLSelectElement
+    const values = Array.from(second.options).map((option) => option.value)
+    expect(values).not.toContain('gran')
+    expect(values).toContain('bjork')
+  })
+
+  /** Picking spruce as the second wood and then making spruce the first one
+   *  would otherwise leave "spruce mixed with spruce" standing. */
+  it('drops the second wood when the first one becomes the same wood', async () => {
+    const onAdd = vi.fn()
+    renderWithMantine(<AddStackForm onAdd={onAdd} onCancel={vi.fn()} geocodeFn={geocodeFn} />)
+
+    fill(/blandet/i, 'gran')
+    fill(/treslag/i, 'gran')
+    expect(screen.queryByLabelText(/hvor mye/i)).not.toBeInTheDocument()
+
+    fill(/navn/i, 'Granstabelen')
+    await pickOslo()
+    fireEvent.click(screen.getByRole('button', { name: /lagre/i }))
+    expect(onAdd.mock.calls[0][0]).not.toHaveProperty('secondSpecies')
+  })
+
   it('says so when the place search finds nothing', async () => {
     renderWithMantine(<AddStackForm onAdd={vi.fn()} onCancel={vi.fn()} geocodeFn={vi.fn().mockResolvedValue([])} />)
     fill(/sted/i, 'Xyzzy')

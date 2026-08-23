@@ -2,6 +2,7 @@ import { Button, Group, Paper, Stack as MantineStack, Text, UnstyledButton } fro
 import type { ClimateNormals, Stack } from '../storage/schema'
 import { estimateWindow, windowProgress } from '../model/simulate'
 import { formatWindow } from '../model/units'
+import { speciesLabel } from '../model/species'
 import { useTranslation, type Translator } from '../i18n/useTranslation'
 import { ProgressRing } from './ProgressRing'
 
@@ -68,7 +69,7 @@ function StackRow({
           <MantineStack gap={2}>
             <Text fw={600}>{stack.name}</Text>
             <Text size="sm" c="dimmed">
-              {t(`species.${stack.species}`)}
+              {speciesLabel(stack, t)}
             </Text>
             {window ? (
               <Text size="sm">{t('common.readyBetween', { window: formatWindow(window, translator) })}</Text>

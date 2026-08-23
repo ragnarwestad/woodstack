@@ -54,6 +54,46 @@ describe('estimateWindow', () => {
   })
 })
 
+describe('estimateWindow on a mixed stack', () => {
+  const spruce = makeStack({ species: 'gran' })
+  const oak = makeStack({ species: 'eik' })
+  const mixed = makeStack({ species: 'gran', secondSpecies: { species: 'eik', share: 'third' } })
+
+  it('runs from the first species ready to the last, not somewhere in between', () => {
+    const window = estimateWindow(mixed, OSLO_NORMALS)
+    expect(window.earliest).toEqual(estimateWindow(spruce, OSLO_NORMALS).earliest)
+    expect(window.latest).toEqual(estimateWindow(oak, OSLO_NORMALS).latest)
+  })
+
+  it('is wider than either species on its own', () => {
+    const window = estimateWindow(mixed, OSLO_NORMALS)
+    const span = (w: { earliest: Date; latest: Date }) => w.latest.getTime() - w.earliest.getTime()
+    expect(span(window)).toBeGreaterThan(span(estimateWindow(spruce, OSLO_NORMALS)))
+    expect(span(window)).toBeGreaterThan(span(estimateWindow(oak, OSLO_NORMALS)))
+  })
+
+  it('still returns two dates in order', () => {
+    const window = estimateWindow(mixed, OSLO_NORMALS)
+    expect(window.latest.getTime()).toBeGreaterThan(window.earliest.getTime())
+  })
+
+  it('does not change the window of a stack with no second species', () => {
+    expect(estimateWindow(spruce, OSLO_NORMALS)).toEqual(estimateWindow(makeStack({ species: 'gran' }), OSLO_NORMALS))
+  })
+
+  it('keeps the ring inside 0-100 across the combined window', () => {
+    const window = estimateWindow(mixed, OSLO_NORMALS)
+    const before = new Date(window.earliest.getTime() - 1000 * 60 * 60 * 24 * 365)
+    const middle = new Date((window.earliest.getTime() + window.latest.getTime()) / 2)
+    const after = new Date(window.latest.getTime() + 1000 * 60 * 60 * 24 * 365)
+
+    expect(windowProgress(window, before)).toBe(0)
+    expect(windowProgress(window, after)).toBe(100)
+    expect(windowProgress(window, middle)).toBeGreaterThan(0)
+    expect(windowProgress(window, middle)).toBeLessThan(100)
+  })
+})
+
 describe('refitRate', () => {
   it('fits a slower rate when the wood is wetter than projected', () => {
     const stack = makeStack()

@@ -13,12 +13,14 @@ import {
 import {
   COVERS,
   EXPOSURES,
+  SPECIES_SHARES,
   SPLIT_SIZES,
   VOLUME_UNITS,
   type Cover,
   type Exposure,
   type NewStack,
   type Species,
+  type SpeciesShare,
   type SplitSize,
   type VolumeUnit,
 } from '../storage/schema'
@@ -43,6 +45,10 @@ export function AddStackForm({ onAdd, onCancel, geocodeFn }: Props) {
   const lookUpPlace = geocodeFn ?? ((name: string) => geocode(name, {}, language))
   const [name, setName] = useState('')
   const [species, setSpecies] = useState<Species>('bjork')
+  // '' is "the pile is all one wood", which is most piles — the share picker
+  // stays out of the way until there is a second wood to have a share of.
+  const [secondSpeciesId, setSecondSpeciesId] = useState<Species | ''>('')
+  const [secondShare, setSecondShare] = useState<SpeciesShare>('third')
   const [stackedDate, setStackedDate] = useState(today)
   const [splitSize, setSplitSize] = useState<SplitSize>('medium')
   const [cover, setCover] = useState<Cover>('roof')
@@ -79,9 +85,12 @@ export function AddStackForm({ onAdd, onCancel, geocodeFn }: Props) {
         ? { amount, unit: volumeUnit }
         : undefined
 
+    const secondSpecies = secondSpeciesId ? { species: secondSpeciesId, share: secondShare } : undefined
+
     onAdd({
       name: name.trim() || t(`species.${species}`),
       species,
+      ...(secondSpecies ? { secondSpecies } : {}),
       stackedDate,
       splitSize,
       cover,
@@ -100,9 +109,34 @@ export function AddStackForm({ onAdd, onCancel, geocodeFn }: Props) {
       <NativeSelect
         label={t('addStack.species')}
         value={species}
-        onChange={(event) => setSpecies(event.currentTarget.value as Species)}
+        onChange={(event) => {
+          const chosen = event.currentTarget.value as Species
+          setSpecies(chosen)
+          // Birch mixed with birch is not a mix; picking the second wood as
+          // the first one clears it rather than leaving that standing.
+          if (secondSpeciesId === chosen) setSecondSpeciesId('')
+        }}
         data={SPECIES_IDS.map((id) => ({ value: id, label: t(`species.${id}`) }))}
       />
+
+      <NativeSelect
+        label={t('addStack.secondSpecies')}
+        value={secondSpeciesId}
+        onChange={(event) => setSecondSpeciesId(event.currentTarget.value as Species | '')}
+        data={[
+          { value: '', label: t('addStack.secondSpeciesNone') },
+          ...SPECIES_IDS.filter((id) => id !== species).map((id) => ({ value: id, label: t(`species.${id}`) })),
+        ]}
+      />
+
+      {secondSpeciesId && (
+        <NativeSelect
+          label={t('addStack.secondSpeciesShare')}
+          value={secondShare}
+          onChange={(event) => setSecondShare(event.currentTarget.value as SpeciesShare)}
+          data={SPECIES_SHARES.map((value) => ({ value, label: t(`species.share.${value}`) }))}
+        />
+      )}
 
       <TextInput
         type="date"
