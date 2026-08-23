@@ -4,6 +4,7 @@ import {
   Button,
   Divider,
   Group,
+  Image,
   Stack as MantineStack,
   Tabs,
   Text,
@@ -21,6 +22,7 @@ import {
 import { getNormals } from '../climate/normalsCache'
 import { getActualWeather } from '../climate/actualWeatherCache'
 import { estimateWindow, simulate } from '../model/simulate'
+import { speciesLabel } from '../model/species'
 import { DRY_ENOUGH_MOISTURE, formatWindow } from '../model/units'
 import { currentSolidLiters, formatVolume } from '../model/volume'
 import { useTranslation } from '../i18n/useTranslation'
@@ -28,6 +30,7 @@ import { ConfirmButton } from './ConfirmButton'
 import { DryingCurveChart } from './DryingCurveChart'
 import { EntryList } from './EntryList'
 import { LogReadingForm } from './LogReadingForm'
+import { NotifyPrompt } from './NotifyPrompt'
 import { VolumeEntryForm } from './VolumeEntryForm'
 
 const CURVE_MONTHS = 30
@@ -161,6 +164,13 @@ export function StackDetail({
   const loading = result?.key !== requestKey
   const dryWindow = normals ? estimateWindow(stack, normals, actual) : null
   const points = normals ? simulate(stack, normals, { months: CURVE_MONTHS }, actual) : []
+  // The second wood gets its own curve rather than an average of the two: the
+  // window below is the union of both, and one line inside it would not
+  // explain why it is that wide.
+  const secondPoints =
+    normals && stack.secondSpecies
+      ? simulate({ ...stack, species: stack.secondSpecies.species }, normals, { months: CURVE_MONTHS }, actual)
+      : undefined
 
   // Which way the correction moved the window, or nothing at all when it did
   // not move it. A window that quietly shifts between visits, for reasons
@@ -202,11 +212,20 @@ export function StackDetail({
       </Group>
       <Text c="dimmed">
         {t('stackDetail.meta', {
-          species: t(`species.${stack.species}`),
+          species: speciesLabel(stack, t),
           date: stack.stackedDate,
           place: stack.location.name,
         })}
       </Text>
+
+      {/* Under the meta line and above the drying window: the photo says which
+          pile this is, which is the question asked on the way in, not one of
+          the numbers below. */}
+      {stack.photo && <Image src={stack.photo} alt={t('photo.alt')} radius="md" maw={320} />}
+
+      {/* The moment to ask: the visitor has a stack open, so there is now
+          something concrete to be told about. Not on arrival. */}
+      <NotifyPrompt />
 
       {loading && <Text>{t('common.loadingClimate')}</Text>}
 
@@ -230,6 +249,7 @@ export function StackDetail({
           )}
           <DryingCurveChart
             points={points}
+            secondPoints={secondPoints}
             readings={stack.readings}
             threshold={DRY_ENOUGH_MOISTURE}
             window={dryWindow}

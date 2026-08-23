@@ -20,10 +20,11 @@ import {
   type SplitSize,
   type StackLocation,
 } from '../storage/schema'
-import { getStack, updateStack } from '../storage/stacksRepo'
+import { StorageQuotaError, getStack, updateStack } from '../storage/stacksRepo'
 import { geocode, type GeocodeResult } from '../climate/openMeteo'
 import { getNormals } from '../climate/normalsCache'
 import { useTranslation } from '../i18n/useTranslation'
+import { PhotoField } from './PhotoField'
 
 /** A place the stack can stand: either the one it already stands in, or one
  *  the visitor picked out of the search. */
@@ -35,13 +36,21 @@ type Props = {
   onCancel: () => void
   geocodeFn?: (query: string) => Promise<GeocodeResult[]>
   getNormalsFn?: (latitude: number, longitude: number) => Promise<ClimateNormals>
+  resizeFn?: (file: File) => Promise<string>
 }
 
-/** The five fields a stack can be changed on, on a screen of its own — the
+/** The six fields a stack can be changed on, on a screen of its own — the
  *  same swap `AddStackForm` already uses, rather than an edit mode inside
  *  `StackDetail`. Species and stacked date are not here: every reading was
  *  measured against the curve those two fix. */
-export function EditStackForm({ stackId, onSave, onCancel, geocodeFn, getNormalsFn = getNormals }: Props) {
+export function EditStackForm({
+  stackId,
+  onSave,
+  onCancel,
+  geocodeFn,
+  getNormalsFn = getNormals,
+  resizeFn,
+}: Props) {
   const { t, language } = useTranslation()
   const lookUpPlace = geocodeFn ?? ((name: string) => geocode(name, {}, language))
   // Read once. Saving swaps this screen out for a fresh `StackDetail`, and
@@ -52,6 +61,7 @@ export function EditStackForm({ stackId, onSave, onCancel, geocodeFn, getNormals
   const [splitSize, setSplitSize] = useState<SplitSize>(stack?.splitSize ?? 'medium')
   const [cover, setCover] = useState<Cover>(stack?.cover ?? 'roof')
   const [exposure, setExposure] = useState<Exposure>(stack?.exposure ?? 'normal')
+  const [photo, setPhoto] = useState<string | undefined>(stack?.photo)
 
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<GeocodeResult[] | null>(null)
@@ -110,13 +120,26 @@ export function EditStackForm({ stackId, onSave, onCancel, geocodeFn, getNormals
       }
     }
 
-    updateStack(stackId, {
-      name: name.trim() || storedName,
-      splitSize,
-      cover,
-      exposure,
-      location: { name: place.name, latitude: place.latitude, longitude: place.longitude },
-    })
+    try {
+      // `photo` goes along even when it is undefined: that is how a photo the
+      // visitor removed comes off the stored stack.
+      updateStack(stackId, {
+        name: name.trim() || storedName,
+        splitSize,
+        cover,
+        exposure,
+        location: { name: place.name, latitude: place.latitude, longitude: place.longitude },
+        photo,
+      })
+    } catch (error) {
+      // The write was refused whole, so the stack on disk is untouched — this
+      // screen has to say so rather than close as if the edit had landed.
+      if (error instanceof StorageQuotaError) {
+        setError(t('common.storageFull'))
+        return
+      }
+      throw error
+    }
     onSave()
   }
 
@@ -146,6 +169,8 @@ export function EditStackForm({ stackId, onSave, onCancel, geocodeFn, getNormals
         onChange={(event) => setExposure(event.currentTarget.value as Exposure)}
         data={EXPOSURES.map((value) => ({ value, label: t(`exposure.${value}`) }))}
       />
+
+      <PhotoField value={photo} onChange={setPhoto} resizeFn={resizeFn} />
 
       <Group align="flex-end" gap="xs">
         <TextInput

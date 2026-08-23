@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { StackDetail } from './StackDetail'
 import { renderWithMantine } from '../test/render'
@@ -13,6 +13,26 @@ beforeEach(() => {
   // it. Nothing in a unit test may reach the network, so the default path
   // hits a refusal here rather than open-meteo.com.
   vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('no network in tests')))
+})
+
+/** The notify opt-in only shows itself where the browser could honour it, and
+ *  `happy-dom` has neither API — so the one test about it installs both. */
+function installNotificationSupport() {
+  Object.defineProperty(globalThis, 'Notification', {
+    value: { permission: 'default' as NotificationPermission, requestPermission: vi.fn() },
+    configurable: true,
+    writable: true,
+  })
+  Object.defineProperty(navigator, 'serviceWorker', {
+    value: { ready: Promise.resolve({ showNotification: vi.fn() }) },
+    configurable: true,
+    writable: true,
+  })
+}
+
+afterEach(() => {
+  Reflect.deleteProperty(globalThis, 'Notification')
+  Reflect.deleteProperty(navigator, 'serviceWorker')
 })
 
 describe('StackDetail', () => {
@@ -82,6 +102,14 @@ describe('StackDetail', () => {
     expect(screen.getByTestId('correction-caption')).toHaveTextContent(/bak normalt/i)
   })
 
+  it('draws one curve when the pile is all one wood', async () => {
+    const { container } = renderWithMantine(
+      <StackDetail stackId="a" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+    )
+    await waitFor(() => expect(screen.getByText(/klar mellom/i)).toBeInTheDocument())
+    expect(container.querySelectorAll('polyline')).toHaveLength(1)
+  })
+
   it('shows an explicit fetching state before the climate data arrives', () => {
     renderWithMantine(
       <StackDetail stackId="a" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={() => new Promise(() => {})} />,
@@ -119,6 +147,20 @@ describe('StackDetail', () => {
     fireEvent.click(within(readingPanel).getByRole('button', { name: /^lagre$/i }))
 
     await waitFor(() => expect(screen.getByTestId('window-text').textContent).not.toBe(before))
+  })
+
+  it('shows the photo of the stack that is open, and none when it has no photo', async () => {
+    renderWithMantine(
+      <StackDetail stackId="a" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+    )
+    await waitFor(() => screen.getByText(/klar mellom/i))
+    expect(screen.queryByAltText(/bilde av vedstabelen/i)).not.toBeInTheDocument()
+
+    saveStacks([makeStack({ id: 'b', name: 'Bak fjøset', photo: 'data:image/jpeg;base64,big' })])
+    renderWithMantine(
+      <StackDetail stackId="b" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+    )
+    expect(screen.getByAltText(/bilde av vedstabelen/i)).toHaveAttribute('src', 'data:image/jpeg;base64,big')
   })
 
   it('says the volume is not tracked yet rather than showing a bare zero', async () => {
@@ -309,6 +351,41 @@ describe('StackDetail', () => {
       <StackDetail stackId="nope" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
     )
     expect(screen.getByText(/finner ikke/i)).toBeInTheDocument()
+  })
+
+  /** `1-description.md` puts the ask here and nowhere else: after the visitor
+   *  has entered a stack, when there is something to be told about. */
+  it('offers to notify the visitor once they have a stack open', async () => {
+    installNotificationSupport()
+    renderWithMantine(
+      <StackDetail stackId="a" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+    )
+    await waitFor(() => expect(screen.getByText(/få beskjed når veden er klar/i)).toBeInTheDocument())
+  })
+})
+
+describe('StackDetail with a mixed stack', () => {
+  beforeEach(() => {
+    localStorage.clear()
+    saveStacks([
+      makeStack({ id: 'm', name: 'Blandingsstabelen', secondSpecies: { species: 'eik', share: 'half' } }),
+    ])
+  })
+
+  it('names both woods in the heading line', async () => {
+    renderWithMantine(
+      <StackDetail stackId="m" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+    )
+    await waitFor(() => expect(screen.getByText(/klar mellom/i)).toBeInTheDocument())
+    expect(screen.getByText(/^Bjørk \+ Eik \(Omtrent halvparten\) · stablet 2026-04-15 · Oslo$/)).toBeInTheDocument()
+  })
+
+  it('draws a curve per wood, so the two speeds are visible', async () => {
+    const { container } = renderWithMantine(
+      <StackDetail stackId="m" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+    )
+    await waitFor(() => expect(screen.getByText(/klar mellom/i)).toBeInTheDocument())
+    expect(container.querySelectorAll('polyline')).toHaveLength(2)
   })
 })
 

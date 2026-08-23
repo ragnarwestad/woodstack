@@ -225,20 +225,45 @@ function crossingDate(
   return addMonths(start.date, HORIZON_MONTHS)
 }
 
-/** When the stack is dry enough to burn — as a window, never a date. A single
- *  date is a promise the model cannot keep, and the first visitor who checks
- *  it with a meter and finds it wrong is lost. */
-export function estimateWindow(
-  stack: Stack,
-  normals: ClimateNormals,
-  actual?: ActualWeather,
-): DryWindow {
+/** The one or two stacks a mixed pile behaves as: the second, when present,
+ *  is the same stack with `species` swapped, since every other condition —
+ *  split size, cover, exposure, readings — is shared by the whole pile. */
+function components(stack: Stack): Stack[] {
+  return stack.secondSpecies ? [stack, { ...stack, species: stack.secondSpecies.species }] : [stack]
+}
+
+function estimateWindowForComponent(stack: Stack, normals: ClimateNormals, actual?: ActualWeather): DryWindow {
   const rate = effectiveRate(stack, normals)
   const spread = rateUncertainty(stack)
   return {
     earliest: crossingDate(stack, normals, rate * (1 + spread), actual),
     latest: crossingDate(stack, normals, rate * (1 - spread), actual),
   }
+}
+
+/** When the stack is dry enough to burn — as a window, never a date. A single
+ *  date is a promise the model cannot keep, and the first visitor who checks
+ *  it with a meter and finds it wrong is lost.
+ *
+ *  A pile of two woods gets the two windows unioned: the first crossing to the
+ *  last, which is how such a pile actually dries — part of it ready to burn
+ *  while the rest is still wet. Averaging the two would give a date that fits
+ *  neither half. */
+export function estimateWindow(stack: Stack, normals: ClimateNormals, actual?: ActualWeather): DryWindow {
+  const windows = components(stack).map((component) => estimateWindowForComponent(component, normals, actual))
+  return {
+    earliest: windows.reduce((min, w) => (w.earliest < min ? w.earliest : min), windows[0].earliest),
+    latest: windows.reduce((max, w) => (w.latest > max ? w.latest : max), windows[0].latest),
+  }
+}
+
+/** Whether the window has opened yet — the one fact the ready-check needs out
+ *  of the whole window, and the only place "on the day itself" is decided.
+ *  Recomputed from the stack's current fields every time it is asked, so an
+ *  edit or a new reading moves the answer with it; nothing is ever scheduled
+ *  against a date the app may stop believing in. */
+export function hasEnteredWindow(window: DryWindow, today: Date): boolean {
+  return today.getTime() >= window.earliest.getTime()
 }
 
 /** How far through the ready-window today is, 0-100. Before the window it is

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Alert, Button, Group, Stack as MantineStack, Text } from '@mantine/core'
 import { useTranslation } from '../i18n/useTranslation'
+import { isIos, isStandalone } from '../platform'
 
 /** Offers to put the app on the home screen, and says what that gets you: it
  *  opens like any other app and works without a connection.
@@ -20,14 +21,6 @@ type Props = {
   /** Overridable so a test does not have to fake the platform globally. */
   standalone?: boolean
   ios?: boolean
-}
-
-function isStandalone(): boolean {
-  return typeof window.matchMedia === 'function' && window.matchMedia('(display-mode: standalone)').matches
-}
-
-function isIos(): boolean {
-  return /iphone|ipad|ipod/i.test(navigator.userAgent)
 }
 
 export function InstallPrompt({ standalone = isStandalone(), ios = isIos() }: Props) {

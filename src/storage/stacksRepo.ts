@@ -39,9 +39,30 @@ export function loadStacks(): Stack[] {
   }
 }
 
+/** Thrown when a write does not fit the browser's storage quota — distinct
+ *  from anything else `saveStacks` can raise, so a form can catch exactly this
+ *  and tell the visitor their stacks are safe rather than lost. */
+export class StorageQuotaError extends Error {}
+
+/** Firefox has its own name for the same refusal. */
+function isQuotaExceeded(error: unknown): boolean {
+  return (
+    error instanceof DOMException &&
+    (error.name === 'QuotaExceededError' || error.name === 'NS_ERROR_DOM_QUOTA_REACHED')
+  )
+}
+
 export function saveStacks(stacks: Stack[]): void {
   const state: AppState = { version: SCHEMA_VERSION, stacks }
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+  } catch (error) {
+    // `setItem` writes all of it or none of it, so what was stored before this
+    // call is still there — only this write is lost, and the caller is told so
+    // rather than left with an exception nothing was waiting for.
+    if (isQuotaExceeded(error)) throw new StorageQuotaError()
+    throw error
+  }
   window.dispatchEvent(new Event(CHANGED_EVENT))
 }
 
@@ -72,13 +93,14 @@ export function removeStack(id: string): void {
   saveStacks(loadStacks().filter((stack) => stack.id !== id))
 }
 
-/** The five fields a stack can be changed on after the fact. `species` and
+/** The six fields a stack can be changed on after the fact. `species` and
  *  `stackedDate` are deliberately absent: every reading was measured against
  *  the drying curve those two fix, so moving them would reinterpret history
- *  the visitor never re-measured. */
-export type StackEdit = Pick<Stack, 'name' | 'splitSize' | 'cover' | 'exposure' | 'location'>
+ *  the visitor never re-measured. `photo` is here as an ordinary field, and
+ *  passing it as `undefined` is how a photo is taken off again. */
+export type StackEdit = Pick<Stack, 'name' | 'splitSize' | 'cover' | 'exposure' | 'location' | 'photo'>
 
-/** Overwrite those five and nothing else. Last-write-wins on the whole stored
+/** Overwrite those six and nothing else. Last-write-wins on the whole stored
  *  array, exactly like every other mutator here — a later sync layer has
  *  nothing extra to unwind. */
 export function updateStack(id: string, edit: StackEdit): Stack | undefined {
@@ -87,6 +109,19 @@ export function updateStack(id: string, edit: StackEdit): Stack | undefined {
   if (!target) return undefined
 
   const updated: Stack = { ...target, ...edit }
+  saveStacks(stacks.map((stack) => (stack.id === id ? updated : stack)))
+  return updated
+}
+
+/** Records that the visitor has been told this stack's window has opened, so
+ *  the check on the next app open does not tell them all over again. One
+ *  direction only: nothing here ever clears the field. */
+export function markStackReadyNotified(id: string, date: string): Stack | undefined {
+  const stacks = loadStacks()
+  const target = stacks.find((stack) => stack.id === id)
+  if (!target) return undefined
+
+  const updated: Stack = { ...target, notifiedReadyAt: date }
   saveStacks(stacks.map((stack) => (stack.id === id ? updated : stack)))
   return updated
 }

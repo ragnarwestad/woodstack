@@ -15,6 +15,8 @@ export const en: Record<TranslationKey, string> = {
   'common.back': 'Back',
   'common.ok': 'OK',
   'common.cancel': 'Cancel',
+  'common.storageFull':
+    'The browser has no room left, so nothing was saved. Try removing the photo, or delete a woodpile you no longer need.',
 
   'stackList.heading': 'My woodpiles',
   'stackList.add': 'New woodpile',
@@ -40,9 +42,19 @@ export const en: Record<TranslationKey, string> = {
   'entryList.delete': 'Remove',
   'entryList.deleteQuestion': 'Delete this entry? This cannot be undone.',
 
+  'photo.label': 'Photo of the woodpile',
+  'photo.description': 'Optional. Take it with the camera, or pick one you already have.',
+  'photo.placeholder': 'Take or choose a photo',
+  'photo.remove': 'Remove the photo',
+  'photo.alt': 'Photo of the woodpile',
+  'photo.failed': 'Could not read that photo. Try another one.',
+
   'addStack.heading': 'New woodpile',
   'addStack.name': 'Name of the woodpile',
   'addStack.species': 'Species',
+  'addStack.secondSpecies': 'Mixed with anything else?',
+  'addStack.secondSpeciesNone': 'No, just the one',
+  'addStack.secondSpeciesShare': 'How much of the other?',
   'addStack.stackedDate': 'Date stacked',
   'addStack.splitSize': 'How coarsely is it split?',
   'addStack.cover': 'Is it under a roof?',
@@ -95,6 +107,14 @@ export const en: Record<TranslationKey, string> = {
   'install.install': 'Install',
   'install.close': 'Close',
 
+  'notify.heading': 'Get a nudge when the firewood is ready',
+  'notify.reason':
+    'We will tell you when the firewood is ready to burn, so you do not have to keep it in mind for months.',
+  'notify.enable': 'Tell me',
+  'notify.close': 'Close',
+
+  'ready.body': '{name} might be ready to burn now. Worth checking with a meter.',
+
   'chart.emptyLabel': 'Drying curve without data',
   'chart.label': 'Drying curve: how dry the firewood gets over time, with the limit at {threshold}',
 
@@ -105,6 +125,11 @@ export const en: Record<TranslationKey, string> = {
   'species.gran': 'Spruce',
   'species.eik': 'Oak',
   'species.bok': 'Beech',
+
+  'species.mixedLabel': '{primary} + {secondary} ({share})',
+  'species.share.half': 'About half',
+  'species.share.third': 'A third or so',
+  'species.share.bit': 'Just a bit',
 
   'splitSize.small': 'Finely split',
   'splitSize.medium': 'Medium',

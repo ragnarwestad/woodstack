@@ -14,6 +14,8 @@ export const nb = {
   'common.back': 'Tilbake',
   'common.ok': 'Ok',
   'common.cancel': 'Avbryt',
+  'common.storageFull':
+    'Nettleseren har ikke plass til mer, så ingenting ble lagret. Prøv å fjerne bildet, eller slett en stabel du ikke trenger.',
 
   'stackList.heading': 'Vedstablene mine',
   'stackList.add': 'Ny stabel',
@@ -39,9 +41,19 @@ export const nb = {
   'entryList.delete': 'Fjern',
   'entryList.deleteQuestion': 'Slette denne føringen? Det kan ikke angres.',
 
+  'photo.label': 'Bilde av stabelen',
+  'photo.description': 'Valgfritt. Ta bildet med kameraet, eller velg et du har fra før.',
+  'photo.placeholder': 'Ta eller velg et bilde',
+  'photo.remove': 'Fjern bildet',
+  'photo.alt': 'Bilde av vedstabelen',
+  'photo.failed': 'Fikk ikke lest bildet. Prøv et annet.',
+
   'addStack.heading': 'Ny vedstabel',
   'addStack.name': 'Navn på stabelen',
   'addStack.species': 'Treslag',
+  'addStack.secondSpecies': 'Blandet med noe annet?',
+  'addStack.secondSpeciesNone': 'Nei, bare dette',
+  'addStack.secondSpeciesShare': 'Hvor mye av det andre?',
   'addStack.stackedDate': 'Stablet dato',
   'addStack.splitSize': 'Hvor grovt er den kløyvd?',
   'addStack.cover': 'Står den under tak?',
@@ -94,6 +106,16 @@ export const nb = {
   'install.install': 'Installer',
   'install.close': 'Lukk',
 
+  'notify.heading': 'Få beskjed når veden er klar',
+  'notify.reason':
+    'Vi sier fra når stabelen er tørr nok til å fyre med, så du slipper å huske på det i månedsvis.',
+  'notify.enable': 'Si fra',
+  'notify.close': 'Lukk',
+
+  // «Kan være klar», ikke «er klar»: modellen regner ut et vindu, ikke en
+  // dato, og den som sjekker med måler rett etterpå skal ikke bli overrasket.
+  'ready.body': '{name} kan være klar å fyre med nå. Sjekk gjerne med måler.',
+
   'chart.emptyLabel': 'Tørkekurve uten data',
   'chart.label': 'Tørkekurve: hvor tørr veden blir over tid, med grensen på {threshold}',
 
@@ -104,6 +126,11 @@ export const nb = {
   'species.gran': 'Gran',
   'species.eik': 'Eik',
   'species.bok': 'Bøk',
+
+  'species.mixedLabel': '{primary} + {secondary} ({share})',
+  'species.share.half': 'Omtrent halvparten',
+  'species.share.third': 'En tredjedel eller så',
+  'species.share.bit': 'Bare et innslag',
 
   'splitSize.small': 'Fint kløyvd',
   'splitSize.medium': 'Middels',

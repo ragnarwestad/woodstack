@@ -1,4 +1,5 @@
-import { SPECIES_IDS, type Species } from '../storage/schema'
+import { SPECIES_IDS, type Species, type Stack } from '../storage/schema'
+import type { Translator } from '../i18n/useTranslation'
 
 export { SPECIES_IDS }
 export type { Species }
@@ -30,4 +31,16 @@ export const SPECIES: Record<Species, SpeciesInfo> = {
   gran: { id: 'gran', greenMoisture: 120, baseRate: 0.5 },
   eik: { id: 'eik', greenMoisture: 75, baseRate: 0.22 },
   bok: { id: 'bok', greenMoisture: 78, baseRate: 0.28 },
+}
+
+/** How a stack's species reads to a visitor: just the one wood, or both of
+ *  them with a word for how much the second one is. */
+export function speciesLabel(stack: Pick<Stack, 'species' | 'secondSpecies'>, t: Translator['t']): string {
+  const primary = t(`species.${stack.species}`)
+  if (!stack.secondSpecies) return primary
+  return t('species.mixedLabel', {
+    primary,
+    secondary: t(`species.${stack.secondSpecies.species}`),
+    share: t(`species.share.${stack.secondSpecies.share}`),
+  })
 }

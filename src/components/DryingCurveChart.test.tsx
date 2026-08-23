@@ -23,6 +23,21 @@ describe('DryingCurveChart', () => {
     expect(container.querySelectorAll('polyline')).toHaveLength(1)
   })
 
+  it('draws the second species its own curve when the pile is mixed', () => {
+    const mixed = makeStack({ secondSpecies: { species: 'eik', share: 'third' } })
+    const secondPoints = simulate({ ...mixed, species: 'eik' }, OSLO_NORMALS, { months: 24 })
+    const { container } = renderWithMantine(
+      <DryingCurveChart
+        points={points}
+        secondPoints={secondPoints}
+        readings={readings}
+        threshold={DRY_ENOUGH_MOISTURE}
+        window={estimateWindow(mixed, OSLO_NORMALS)}
+      />,
+    )
+    expect(container.querySelectorAll('polyline')).toHaveLength(2)
+  })
+
   it('draws one point per logged reading', () => {
     const { container } = renderWithMantine(
       <DryingCurveChart points={points} readings={readings} threshold={DRY_ENOUGH_MOISTURE} window={window} />,
