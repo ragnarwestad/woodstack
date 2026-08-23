@@ -8,6 +8,7 @@ import { getStack, loadStacks, removeStack, saveStacks } from './storage/stacksR
 import { clearNormalsCache, writeCachedNormals } from './climate/normalsCache'
 import { exportState } from './storage/appState'
 import { ENGLISH_TEST_LANGUAGE, setTestLanguage } from './test/language'
+import { nb } from './i18n/nb'
 
 beforeEach(() => {
   localStorage.clear()
@@ -128,6 +129,79 @@ describe('App', () => {
     renderWithMantine(<App />)
     await waitFor(() => expect(screen.getByText('Importert stabel')).toBeInTheDocument())
     expect(window.location.hash).not.toContain('i=')
+  })
+})
+
+/** The fourth screen the hash routes to, and the one that belongs to no
+ *  stack: it answers a question about wood someone else is selling. */
+describe('App and the comparison screen', () => {
+  it('opens the comparison screen from the three-dot menu', async () => {
+    saveStacks([makeStack({ id: 'a', name: 'Bjørk ved veggen' })])
+    renderWithMantine(<App />)
+
+    fireEvent.click(screen.getByRole('button', { name: nb['about.menuLabel'] }))
+    fireEvent.click(screen.getByRole('menuitem', { name: nb['compare.menuItem'] }))
+
+    // The menu writes the hash; `App` hears the `hashchange` and switches
+    // screen on the tick after it, so both halves are waited for.
+    await waitFor(() =>
+      expect(screen.getByRole('heading', { name: nb['compare.title'] })).toBeInTheDocument(),
+    )
+    expect(window.location.hash).toBe('#compare')
+    expect(screen.queryByText('Bjørk ved veggen')).not.toBeInTheDocument()
+  })
+
+  /** A bookmark straight to the screen. The visitor asked for the comparison,
+   *  not for a detour through their own stacks on the way to it. */
+  it('renders the comparison screen directly when the app loads on #compare', async () => {
+    saveStacks([makeStack({ id: 'a', name: 'Bjørk ved veggen' })])
+    window.location.hash = '#compare'
+    renderWithMantine(<App />)
+
+    await waitFor(() =>
+      expect(screen.getByRole('heading', { name: nb['compare.title'] })).toBeInTheDocument(),
+    )
+    expect(screen.queryByText('Bjørk ved veggen')).not.toBeInTheDocument()
+  })
+
+  /** The same trap `back()` already guards against, reached the other way
+   *  round: leaving a half-finished edit through the menu must not leave
+   *  `editing` standing, or the NEXT stack the visitor opens lands on the
+   *  edit screen unasked. */
+  it('does not leave an abandoned edit standing behind it', async () => {
+    saveStacks([makeStack({ id: 'a', name: 'Bjørk ved veggen' })])
+    window.location.hash = '#s=a'
+    renderWithMantine(<App />)
+
+    await waitFor(() => screen.getByRole('button', { name: /^endre$/i }))
+    fireEvent.click(screen.getByRole('button', { name: /^endre$/i }))
+    await waitFor(() => screen.getByRole('button', { name: /^lagre$/i }))
+
+    fireEvent.click(screen.getByRole('button', { name: nb['about.menuLabel'] }))
+    fireEvent.click(screen.getByRole('menuitem', { name: nb['compare.menuItem'] }))
+    await waitFor(() => screen.getByRole('heading', { name: nb['compare.title'] }))
+
+    fireEvent.click(screen.getByRole('button', { name: /tilbake/i }))
+    await waitFor(() => screen.getByText('Bjørk ved veggen'))
+    fireEvent.click(screen.getByRole('button', { name: /bjørk ved veggen/i }))
+
+    // The name field is the edit form's own — the stack page never shows it.
+    await waitFor(() =>
+      expect(screen.getByRole('heading', { name: 'Bjørk ved veggen' })).toBeInTheDocument(),
+    )
+    expect(screen.queryByLabelText(/navn/i)).not.toBeInTheDocument()
+  })
+
+  it('clears the hash and shows the list again on the way back', async () => {
+    saveStacks([makeStack({ id: 'a', name: 'Bjørk ved veggen' })])
+    window.location.hash = '#compare'
+    renderWithMantine(<App />)
+
+    await waitFor(() => screen.getByRole('heading', { name: nb['compare.title'] }))
+    fireEvent.click(screen.getByRole('button', { name: /tilbake/i }))
+
+    await waitFor(() => expect(screen.getByText('Bjørk ved veggen')).toBeInTheDocument())
+    expect(window.location.hash).toBe('')
   })
 })
 

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Alert, Container, Stack } from '@mantine/core'
 import type { NewStack, Stack as WoodStack } from './storage/schema'
-import { readStackId, stackHash } from './storage/appState'
+import { isCompareHash, readStackId, stackHash } from './storage/appState'
 import { addStack, markStackReadyNotified, removeStack, replaceStacks, useStacks } from './storage/stacksRepo'
 import { getCachedNormals, getNormals } from './climate/normalsCache'
 import { AppHeader } from './components/AppHeader'
@@ -9,6 +9,7 @@ import { StackList } from './components/StackList'
 import { StackDetail } from './components/StackDetail'
 import { AddStackForm } from './components/AddStackForm'
 import { EditStackForm } from './components/EditStackForm'
+import { ComparePage } from './components/ComparePage'
 import { InstallPrompt } from './components/InstallPrompt'
 import { findNewlyReady, notifyReady } from './notifications/readyNotifier'
 import { useImportOnLoad } from './storage/importOnLoad'
@@ -21,13 +22,15 @@ type Props = {
   today?: Date
 }
 
-/** Three screens and one hash. A router would be a dependency for something
- *  `location.hash` already does: `#s=<id>` opens a stack, and `#i=<payload>`
- *  is a share link that `useImportOnLoad` consumes and clears. */
+/** Four screens and one hash. A router would be a dependency for something
+ *  `location.hash` already does: `#s=<id>` opens a stack, `#i=<payload>` is a
+ *  share link that `useImportOnLoad` consumes and clears, and `#compare` is
+ *  the buy comparison, which belongs to no stack and so carries no payload. */
 export function App({ today = new Date() }: Props = {}) {
   const { language, t } = useTranslation()
   const stacks = useStacks()
   const [selectedId, setSelectedId] = useState<string | null>(() => readStackId(window.location.hash))
+  const [comparing, setComparing] = useState(() => isCompareHash(window.location.hash))
   const [adding, setAdding] = useState(false)
   const [editing, setEditing] = useState(false)
   const [justReady, setJustReady] = useState<WoodStack[]>([])
@@ -81,6 +84,7 @@ export function App({ today = new Date() }: Props = {}) {
   useEffect(() => {
     function sync() {
       setSelectedId(readStackId(window.location.hash))
+      setComparing(isCompareHash(window.location.hash))
     }
     window.addEventListener('hashchange', sync)
     return () => window.removeEventListener('hashchange', sync)
@@ -96,6 +100,17 @@ export function App({ today = new Date() }: Props = {}) {
     setSelectedId(null)
     // Otherwise the next stack the visitor opens lands on the edit screen
     // unasked, because `editing` was left standing from the last one.
+    setEditing(false)
+  }
+
+  /** The same asymmetry as `back()`, for the same reason: arriving pushes a
+   *  hash, so leaving clears it rather than adding a second history entry —
+   *  and it drops `editing` for the same reason `back()` does. The comparison
+   *  can be opened from the header while a stack is half-edited, and without
+   *  this the next stack the visitor opens lands on the edit screen unasked. */
+  function closeCompare() {
+    history.replaceState(null, '', window.location.pathname + window.location.search)
+    setComparing(false)
     setEditing(false)
   }
 
@@ -129,7 +144,11 @@ export function App({ today = new Date() }: Props = {}) {
           </Alert>
         ))}
 
-        {selectedId && editing ? (
+        {/* The comparison first: it belongs to no stack, so it is the one
+            branch here that asks nothing about `selectedId`. */}
+        {comparing ? (
+          <ComparePage onBack={closeCompare} />
+        ) : selectedId && editing ? (
           <EditStackForm
             stackId={selectedId}
             onSave={() => setEditing(false)}
