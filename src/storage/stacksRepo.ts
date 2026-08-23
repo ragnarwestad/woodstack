@@ -39,6 +39,15 @@ export function loadStacks(): Stack[] {
   }
 }
 
+/** Whether this browser has ever written stack state — including an empty
+ *  array, which `removeStack` writes when the last stack goes. Distinct from
+ *  `loadStacks().length === 0`, which is also true for a browser that has
+ *  never run the app at all; seeding the example stacks needs exactly that
+ *  distinction, or deleting them would never stick. */
+export function hasStoredState(): boolean {
+  return localStorage.getItem(STORAGE_KEY) !== null
+}
+
 /** Thrown when a write does not fit the browser's storage quota — distinct
  *  from anything else `saveStacks` can raise, so a form can catch exactly this
  *  and tell the visitor their stacks are safe rather than lost. */

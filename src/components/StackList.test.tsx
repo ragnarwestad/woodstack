@@ -179,3 +179,49 @@ describe('StackList in English', () => {
     expect(onDelete).not.toHaveBeenCalled()
   })
 })
+
+/** Three stacks nobody entered, in a list headed "Vedstablene mine", are a
+ *  small lie unless the list says where they came from. */
+describe('StackList marking the app’s own example stacks', () => {
+  it('says so on the stack the app seeded, and on no other', () => {
+    renderWithMantine(
+      <StackList
+        stacks={stacks}
+        normalsFor={() => OSLO_NORMALS}
+        onSelect={vi.fn()}
+        onDelete={vi.fn()}
+        onAdd={vi.fn()}
+        isExample={(stack) => stack.id === 'a'}
+      />,
+    )
+
+    const seeded = screen.getByText('Bjørk ved veggen').closest('[class*="Paper"]') as HTMLElement
+    expect(within(seeded).getByText('Eksempel')).toBeInTheDocument()
+
+    const own = screen.getByText('Granstabelen').closest('[class*="Paper"]') as HTMLElement
+    expect(within(own).queryByText('Eksempel')).not.toBeInTheDocument()
+  })
+
+  it('says nothing about examples when the list is not told about any', () => {
+    renderWithMantine(
+      <StackList stacks={stacks} normalsFor={() => OSLO_NORMALS} onSelect={vi.fn()}
+        onDelete={vi.fn()} onAdd={vi.fn()} />,
+    )
+    expect(screen.queryByText('Eksempel')).not.toBeInTheDocument()
+  })
+
+  it('translates the label', () => {
+    setTestLanguage(ENGLISH_TEST_LANGUAGE)
+    renderWithMantine(
+      <StackList
+        stacks={[stacks[0]]}
+        normalsFor={() => OSLO_NORMALS}
+        onSelect={vi.fn()}
+        onDelete={vi.fn()}
+        onAdd={vi.fn()}
+        isExample={() => true}
+      />,
+    )
+    expect(screen.getByText('Example')).toBeInTheDocument()
+  })
+})

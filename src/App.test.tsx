@@ -1,18 +1,26 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { App } from './App'
 import { renderWithMantine } from './test/render'
 import { OSLO_NORMALS, makeStack } from './test/fixtures'
 import { estimateWindow } from './model/simulate'
-import { getStack, saveStacks } from './storage/stacksRepo'
-import { writeCachedNormals } from './climate/normalsCache'
+import { getStack, loadStacks, removeStack, saveStacks } from './storage/stacksRepo'
+import { clearNormalsCache, writeCachedNormals } from './climate/normalsCache'
 import { exportState } from './storage/appState'
 import { ENGLISH_TEST_LANGUAGE, setTestLanguage } from './test/language'
 
 beforeEach(() => {
   localStorage.clear()
   window.location.hash = ''
+  clearNormalsCache()
   writeCachedNormals(OSLO_NORMALS)
+  // A brand-new browser seeds the example stacks and fetches their climate
+  // normals; no unit test is going to the network for them.
+  vi.stubGlobal('fetch', vi.fn(() => Promise.reject(new Error('ingen nettverk i test'))))
+})
+
+afterEach(() => {
+  vi.unstubAllGlobals()
 })
 
 /** The window is printed as thirds of a month — "midten av oktober 2026" — so
@@ -194,5 +202,93 @@ describe('App in English', () => {
     setTestLanguage(ENGLISH_TEST_LANGUAGE)
     renderWithMantine(<App />)
     expect(document.documentElement.lang).toBe('en')
+  })
+})
+
+/** An Open-Meteo archive answer with two days in every month, so the reducer
+ *  has something to average in all twelve — mild and damp enough that a stack
+ *  actually dries. */
+function archiveAnswer() {
+  const time: string[] = []
+  const temperature: number[] = []
+  const humidity: number[] = []
+  for (let month = 1; month <= 12; month++) {
+    const mm = String(month).padStart(2, '0')
+    time.push(`2025-${mm}-05`, `2025-${mm}-20`)
+    temperature.push(5, 7)
+    humidity.push(70, 74)
+  }
+  return {
+    ok: true,
+    json: () =>
+      Promise.resolve({
+        daily: { time, temperature_2m_mean: temperature, relative_humidity_2m_mean: humidity },
+      }),
+  }
+}
+
+const EXAMPLE_NAMES = ['Granveden i skjulet', 'Bjørkestabelen ved uthuset', 'Blandingen bak garasjen']
+
+describe('App seeding example stacks', () => {
+  it('gives a browser that has never run the app three stacks to look at', async () => {
+    renderWithMantine(<App />)
+
+    for (const name of EXAMPLE_NAMES) {
+      await waitFor(() => expect(screen.getByText(name)).toBeInTheDocument())
+    }
+    expect(loadStacks().map((stack) => stack.location.name)).toEqual([
+      'Lillehammer',
+      'Lillehammer',
+      'Lillehammer',
+    ])
+    expect(screen.getAllByText('Eksempel')).toHaveLength(3)
+  })
+
+  /** The one that would break silently: seeding on "the list is empty" rather
+   *  than "this browser has never held anything" puts the three examples back
+   *  every time the visitor deletes them, and deleting them never sticks. */
+  it('does not put them back after the visitor has deleted all three', async () => {
+    const first = renderWithMantine(<App />)
+    await waitFor(() => expect(screen.getByText(EXAMPLE_NAMES[0])).toBeInTheDocument())
+
+    loadStacks().forEach((stack) => removeStack(stack.id))
+    first.unmount()
+
+    renderWithMantine(<App />)
+    await waitFor(() => expect(screen.getByText(/ingen vedstabler ennå/i)).toBeInTheDocument())
+    expect(loadStacks()).toHaveLength(0)
+  })
+
+  it('lets a share link win over the examples on a brand-new browser', async () => {
+    window.location.hash = `#i=${exportState([makeStack({ id: 'a', name: 'Importert stabel' })])}`
+
+    renderWithMantine(<App />)
+
+    await waitFor(() => expect(screen.getByText('Importert stabel')).toBeInTheDocument())
+    expect(screen.queryByText(EXAMPLE_NAMES[0])).not.toBeInTheDocument()
+    expect(loadStacks()).toHaveLength(1)
+  })
+
+  /** Nothing else in the app fetches normals for a stack it did not just
+   *  create, so without a fetch here the three examples would sit on "Henter
+   *  klimadata …" for as long as the visitor cared to look. */
+  it('fetches the examples’ climate normals so the list has a window to show', async () => {
+    const fetchMock = vi.fn((_url: string) => Promise.resolve(archiveAnswer()))
+    vi.stubGlobal('fetch', fetchMock)
+
+    renderWithMantine(<App />)
+
+    await waitFor(() => expect(screen.getAllByText(/klar mellom/i)).toHaveLength(3))
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining('latitude=61.1153'))
+  })
+
+  it('still shows the three when there is no connection to fetch their climate with', async () => {
+    renderWithMantine(<App />)
+
+    for (const name of EXAMPLE_NAMES) {
+      await waitFor(() => expect(screen.getByText(name)).toBeInTheDocument())
+    }
+    expect(screen.getAllByText(/henter klimadata/i)).toHaveLength(3)
   })
 })

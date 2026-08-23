@@ -12,6 +12,7 @@ import { EditStackForm } from './components/EditStackForm'
 import { InstallPrompt } from './components/InstallPrompt'
 import { findNewlyReady, notifyReady } from './notifications/readyNotifier'
 import { useImportOnLoad } from './storage/importOnLoad'
+import { isExampleStack, useSeedExamplesOnLoad } from './storage/seedStacks'
 import { useTranslation } from './i18n/useTranslation'
 
 type Props = {
@@ -32,6 +33,12 @@ export function App({ today = new Date() }: Props = {}) {
   const [justReady, setJustReady] = useState<WoodStack[]>([])
 
   useImportOnLoad(useCallback((imported: WoodStack[]) => replaceStacks(imported), []))
+
+  // After the import on purpose: on a brand-new browser opened through a
+  // share link, the import has already written by the time this hook's gate
+  // runs, so the imported stack never arrives beside three examples the
+  // visitor never heard of.
+  useSeedExamplesOnLoad(today)
 
   // Telling the visitor a stack has become ready, on the one occasion this
   // app is ever running: when they open it. `getCachedNormals` never fetches,
@@ -136,6 +143,7 @@ export function App({ today = new Date() }: Props = {}) {
           <StackList
             stacks={stacks}
             normalsFor={(stack) => getCachedNormals(stack.location.latitude, stack.location.longitude)}
+            isExample={isExampleStack}
             onSelect={select}
             onDelete={(id) => removeStack(id)}
             onAdd={() => setAdding(true)}

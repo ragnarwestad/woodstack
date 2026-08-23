@@ -5,6 +5,7 @@ import {
   addStack,
   addVolumeEntry,
   getStack,
+  hasStoredState,
   loadStacks,
   markStackReadyNotified,
   removeReading,
@@ -603,5 +604,50 @@ describe('a browser with no room left', () => {
 
     expect(() => saveStacks([makeStack({ id: 'a' })])).toThrow(TypeError)
     refused.mockRestore()
+  })
+})
+
+/** The distinction the seeding step turns on: "this browser has never run the
+ *  app" against "this browser ran it and the visitor emptied the list". */
+describe('hasStoredState', () => {
+  it('is false in a browser that has never written anything', () => {
+    expect(hasStoredState()).toBe(false)
+  })
+
+  it('is true once a stack has been written', () => {
+    addStack({
+      name: 'Bjørkestabelen',
+      species: 'bjork',
+      stackedDate: '2026-04-15',
+      splitSize: 'medium',
+      cover: 'roof',
+      exposure: 'normal',
+      location: { name: 'Oslo', latitude: 59.9, longitude: 10.8 },
+    })
+    expect(hasStoredState()).toBe(true)
+  })
+
+  /** The one that would break silently: reading `loadStacks().length === 0`
+   *  instead would call an emptied browser new again, and the visitor who
+   *  deleted the examples would find them back on the next visit. */
+  it('stays true after the last stack has been deleted', () => {
+    const created = addStack({
+      name: 'Bjørkestabelen',
+      species: 'bjork',
+      stackedDate: '2026-04-15',
+      splitSize: 'medium',
+      cover: 'roof',
+      exposure: 'normal',
+      location: { name: 'Oslo', latitude: 59.9, longitude: 10.8 },
+    })
+    removeStack(created.id)
+
+    expect(loadStacks()).toHaveLength(0)
+    expect(hasStoredState()).toBe(true)
+  })
+
+  it('is true after an empty list has been saved on purpose', () => {
+    saveStacks([])
+    expect(hasStoredState()).toBe(true)
   })
 })

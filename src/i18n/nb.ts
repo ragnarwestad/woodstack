@@ -49,6 +49,9 @@ export const nb = {
   'stackList.heading': 'Vedstablene mine',
   'stackList.add': 'Ny stabel',
   'stackList.empty': 'Ingen vedstabler ennå. Legg inn den første, så regner vi ut når den er tørr.',
+  /** On a stack the app put there itself, so the list cannot pass three
+   *  woodpiles nobody entered off as the visitor's own. */
+  'stackList.example': 'Eksempel',
 
   'stackDetail.notFound': 'Finner ikke denne stabelen.',
   'stackDetail.meta': '{species} · stablet {date} · {place}',

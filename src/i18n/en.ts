@@ -46,6 +46,7 @@ export const en: Record<TranslationKey, string> = {
   'stackList.heading': 'My woodpiles',
   'stackList.add': 'New woodpile',
   'stackList.empty': 'No woodpiles yet. Add the first one, and we will work out when it is dry.',
+  'stackList.example': 'Example',
 
   'stackDetail.notFound': 'Cannot find this woodpile.',
   'stackDetail.meta': '{species} · stacked {date} · {place}',

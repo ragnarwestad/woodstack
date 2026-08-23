@@ -21,10 +21,22 @@ type Props = {
   onSelect: (id: string) => void
   onDelete: (id: string) => void
   onAdd: () => void
+  /** Whether the app seeded this stack itself rather than the visitor
+   *  entering it. Optional: a list told about no examples says nothing about
+   *  any. */
+  isExample?: (stack: Stack) => boolean
   today?: Date
 }
 
-export function StackList({ stacks, normalsFor, onSelect, onDelete, onAdd, today = new Date() }: Props) {
+export function StackList({
+  stacks,
+  normalsFor,
+  onSelect,
+  onDelete,
+  onAdd,
+  isExample = () => false,
+  today = new Date(),
+}: Props) {
   const translator = useTranslation()
   const { t } = translator
 
@@ -56,6 +68,7 @@ export function StackList({ stacks, normalsFor, onSelect, onDelete, onAdd, today
             key={stack.id}
             stack={stack}
             normals={normalsFor(stack)}
+            isExample={isExample(stack)}
             today={today}
             onSelect={() => onSelect(stack.id)}
             onDelete={() => onDelete(stack.id)}
@@ -70,6 +83,7 @@ export function StackList({ stacks, normalsFor, onSelect, onDelete, onAdd, today
 function StackRow({
   stack,
   normals,
+  isExample,
   today,
   onSelect,
   onDelete,
@@ -77,6 +91,7 @@ function StackRow({
 }: {
   stack: Stack
   normals: ClimateNormals | null
+  isExample: boolean
   today: Date
   onSelect: () => void
   onDelete: () => void
@@ -137,6 +152,11 @@ function StackRow({
               >
                 {speciesLabel(stack, t)}
               </Text>
+              {isExample && (
+                <Text fz={11} lh={1.35} c={ready ? undefined : 'dimmed'}>
+                  {t('stackList.example')}
+                </Text>
+              )}
               {window ? (
                 <Text size="sm" lh={1.35}>
                   {t('common.readyBetween', { window: formatWindow(window, translator) })}
