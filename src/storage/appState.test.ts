@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import { buildShareLink, exportState, importState, readImportPayload, readStackId, stackHash } from './appState'
+import {
+  buildShareLink,
+  compareHash,
+  exportState,
+  importState,
+  isCompareHash,
+  readImportPayload,
+  readStackId,
+  stackHash,
+} from './appState'
 import { makeStack } from '../test/fixtures'
 
 const stacks = [
@@ -84,5 +93,25 @@ describe('the namespaced hash', () => {
 
   it('writes a stack id back in the same shape it reads', () => {
     expect(readStackId(stackHash('abc'))).toBe('abc')
+  })
+
+  it('recognises the comparison screen only from its own bare marker', () => {
+    expect(isCompareHash('#compare')).toBe(true)
+    expect(isCompareHash('#s=abc')).toBe(false)
+    expect(isCompareHash('#i=abc')).toBe(false)
+    expect(isCompareHash('#comparez')).toBe(false)
+    expect(isCompareHash('')).toBe(false)
+  })
+
+  it('writes the comparison marker back in the same shape it reads', () => {
+    expect(isCompareHash(compareHash())).toBe(true)
+  })
+
+  /** The three namespaces have to stay mutually exclusive: a bookmark to the
+   *  comparison screen must never be read as a stack id or a share payload,
+   *  or the visitor lands somewhere they did not ask for. */
+  it('is not read as a stack id or an import payload', () => {
+    expect(readStackId(compareHash())).toBeNull()
+    expect(readImportPayload(compareHash())).toBeNull()
   })
 })

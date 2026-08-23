@@ -46,6 +46,14 @@ export const nb = {
     'Alt du legger inn i Woodstack blir liggende i denne nettleseren, og sendes aldri til noen server: appen har verken konto eller noen bakside å sende det til. Den eneste tjenesten utenfor appen den snakker med, er Open-Meteo, som brukes til å søke opp steder og hente klimadata for dem.',
   'about.version': 'Versjon {value}',
 
+  /* Comparing two lots of firewood: one purchase against another, nothing to
+     do with a woodpile the visitor already owns. */
+  'compare.menuItem': 'Sammenlign to vedpartier',
+  'compare.title': 'Sammenlign to vedpartier',
+  'compare.pending':
+    'Regnestykket bak sammenligningen – kroner per kWh og kilo tørr ved – er ikke bygd ennå. Skjermen kommer så snart det er på plass.',
+  'compare.resultUnitLabel': 'Enhet i svaret',
+
   'stackList.heading': 'Vedstablene mine',
   'stackList.add': 'Ny stabel',
   'stackList.empty': 'Ingen vedstabler ennå. Legg inn den første, så regner vi ut når den er tørr.',

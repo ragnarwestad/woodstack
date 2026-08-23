@@ -43,6 +43,14 @@ export const en: Record<TranslationKey, string> = {
     'Everything you enter in Woodstack stays in this browser and is never sent to any server: the app has no account and no backend to send it to. The only service outside the app it talks to is Open-Meteo, used to search for places and fetch climate data for them.',
   'about.version': 'Version {value}',
 
+  /* Comparing two lots of firewood: one purchase against another, nothing to
+     do with a woodpile the visitor already owns. */
+  'compare.menuItem': 'Compare two lots of firewood',
+  'compare.title': 'Compare two lots of firewood',
+  'compare.pending':
+    'The arithmetic behind the comparison – kroner per kWh and kilos of dry wood – has not been built yet. The screen arrives as soon as it is.',
+  'compare.resultUnitLabel': 'Unit in the answer',
+
   'stackList.heading': 'My woodpiles',
   'stackList.add': 'New woodpile',
   'stackList.empty': 'No woodpiles yet. Add the first one, and we will work out when it is dry.',

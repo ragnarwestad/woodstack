@@ -1,10 +1,15 @@
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { fireEvent, screen, within } from '@testing-library/react'
 import { renderWithMantine } from '../test/render'
 import { ENGLISH_TEST_LANGUAGE, setTestLanguage } from '../test/language'
 import { SERVICE_NAME } from '../climate/openMeteo'
 import { nb } from '../i18n/nb'
 import { en } from '../i18n/en'
+import {
+  RESULT_UNIT_STORAGE_KEY,
+  readResultUnitPreference,
+  writeResultUnitPreference,
+} from '../storage/resultUnitPreference'
 import { AboutMenu } from './AboutMenu'
 
 /** The version is baked in at build time and differs on every checkout, so the
@@ -26,9 +31,10 @@ describe('AboutMenu', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
 
-  it('opens a menu with the one item behind the dots', () => {
+  it('opens a menu with the things that belong to the app as a whole', () => {
     renderWithMantine(<AboutMenu />)
     fireEvent.click(screen.getByRole('button', { name: nb['about.menuLabel'] }))
+    expect(screen.getByRole('menuitem', { name: nb['compare.menuItem'] })).toBeInTheDocument()
     expect(screen.getByRole('menuitem', { name: nb['about.menuItem'] })).toBeInTheDocument()
   })
 
@@ -101,5 +107,54 @@ describe('AboutMenu', () => {
     fireEvent.click(within(dialog).getByRole('tab', { name: en['about.tabInfo'] }))
     expect(dialog.textContent).toContain(en['about.info.body'])
     expect(dialog.textContent).toContain(en['about.version'].replace('{value}', ''))
+  })
+})
+
+/** The comparison screen and the unit its answers are read in: two things
+ *  that belong to the app rather than to any one stack, so they live behind
+ *  the same three dots the «Om appen» item already did. */
+describe('AboutMenu holding the app-wide settings', () => {
+  beforeEach(() => {
+    localStorage.removeItem(RESULT_UNIT_STORAGE_KEY)
+    window.location.hash = ''
+  })
+
+  it('sends the visitor to the comparison screen', () => {
+    renderWithMantine(<AboutMenu />)
+    fireEvent.click(screen.getByRole('button', { name: nb['about.menuLabel'] }))
+    fireEvent.click(screen.getByRole('menuitem', { name: nb['compare.menuItem'] }))
+
+    expect(window.location.hash).toBe('#compare')
+  })
+
+  it('ticks the unit the answers are currently read in', () => {
+    writeResultUnitPreference('losKubikk')
+    renderWithMantine(<AboutMenu />)
+    fireEvent.click(screen.getByRole('button', { name: nb['about.menuLabel'] }))
+
+    expect(screen.getByRole('menuitem', { name: nb['volume.unit.losKubikk'] })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    )
+    expect(screen.getByRole('menuitem', { name: nb['volume.unit.favn'] })).toHaveAttribute(
+      'aria-checked',
+      'false',
+    )
+  })
+
+  /** The point of the setting: it is picked once and still there tomorrow.
+   *  Kept out of the stack data on purpose, so it survives a share link. */
+  it('remembers a new unit past this session', () => {
+    renderWithMantine(<AboutMenu />)
+    fireEvent.click(screen.getByRole('button', { name: nb['about.menuLabel'] }))
+    fireEvent.click(screen.getByRole('menuitem', { name: nb['volume.unit.storsekk'] }))
+
+    expect(readResultUnitPreference()).toBe('storsekk')
+
+    fireEvent.click(screen.getByRole('button', { name: nb['about.menuLabel'] }))
+    expect(screen.getByRole('menuitem', { name: nb['volume.unit.storsekk'] })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    )
   })
 })

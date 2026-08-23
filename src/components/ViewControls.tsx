@@ -113,7 +113,10 @@ const IconButton = forwardRef<HTMLButtonElement, { label: string; children: Reac
   },
 )
 
-function Choice({ selected, label, onClick }: { selected: boolean; label: string; onClick: () => void }) {
+/** Exported for `AboutMenu`, whose result-unit list is the same "one of these
+ *  is currently picked" row as theme and language — the same shape deserves
+ *  the same component rather than a third copy of it. */
+export function Choice({ selected, label, onClick }: { selected: boolean; label: string; onClick: () => void }) {
   return (
     <Menu.Item aria-checked={selected} leftSection={<Tick shown={selected} />} fw={selected ? 700 : 400} onClick={onClick}>
       {label}

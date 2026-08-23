@@ -1,6 +1,6 @@
 import { SCHEMA_VERSION, type AppState, type Stack } from './schema'
 
-/** Export and import of the whole state, and the two namespaced hashes the
+/** Export and import of the whole state, and the three namespaced hashes the
  *  app routes on.
  *
  *  The payload travels in the URL fragment, never the query string: fragments
@@ -11,6 +11,10 @@ import { SCHEMA_VERSION, type AppState, type Stack } from './schema'
 
 const IMPORT_PREFIX = 'i='
 const STACK_PREFIX = 's='
+
+/** The one screen that belongs to no stack and carries no payload, so it is a
+ *  bare marker rather than a third prefix with nothing after it. */
+const COMPARE_HASH = '#compare'
 
 function toBase64Url(text: string): string {
   const bytes = new TextEncoder().encode(text)
@@ -52,9 +56,9 @@ export function buildShareLink(stacks: Stack[], baseUrl: string): string {
   return `${withoutHash}#${IMPORT_PREFIX}${exportState(stacks)}`
 }
 
-/** The hash carries two unrelated things — which stack is open, and an
- *  incoming share payload — so each is namespaced and neither can be read as
- *  the other. */
+/** The hash carries three unrelated things — which stack is open, an incoming
+ *  share payload, and the comparison screen — so each is namespaced and none
+ *  can be read as another. */
 export function readImportPayload(hash: string): string | null {
   const value = hash.replace(/^#/, '')
   return value.startsWith(IMPORT_PREFIX) ? value.slice(IMPORT_PREFIX.length) : null
@@ -67,4 +71,12 @@ export function readStackId(hash: string): string | null {
 
 export function stackHash(id: string): string {
   return `#${STACK_PREFIX}${id}`
+}
+
+export function isCompareHash(hash: string): boolean {
+  return hash === COMPARE_HASH
+}
+
+export function compareHash(): string {
+  return COMPARE_HASH
 }

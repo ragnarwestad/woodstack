@@ -1,6 +1,10 @@
 import { useState } from 'react'
 import { Group, Menu, Modal, Tabs, Text, UnstyledButton } from '@mantine/core'
+import { VOLUME_UNITS, type VolumeUnit } from '../storage/schema'
+import { compareHash } from '../storage/appState'
+import { readResultUnitPreference, writeResultUnitPreference } from '../storage/resultUnitPreference'
 import { useTranslation } from '../i18n/useTranslation'
+import { Choice } from './ViewControls'
 
 /** Three dots, drawn here rather than pulled from an icon library. It is the
  *  only icon the app has, and a whole package for one glyph runs against the
@@ -19,8 +23,13 @@ function ThreeDots() {
 
 /** The things that belong to the app as a whole rather than to any one field:
  *  what it does, how it arrives at the date, and what it does with what you
- *  put into it. One item behind the header's three dots, so the header carries
- *  a button instead of a fourth thing to read past.
+ *  put into it. Behind the header's three dots, so the header carries a button
+ *  instead of that much to read past.
+ *
+ *  Three concerns now, not one. Besides «Om Woodstack» the dropdown holds the
+ *  way into the comparison screen and the unit its answers are read in —
+ *  both things that belong to the app rather than to any one stack, and
+ *  neither big enough to earn a fourth icon beside theme and language.
  *
  *  The same `Modal` as `ExplainButton` and `ConfirmButton`, and for the same
  *  reasons — it traps focus, closes on Escape or a tap outside, and brings its
@@ -33,6 +42,14 @@ function ThreeDots() {
 export function AboutMenu() {
   const { t } = useTranslation()
   const [opened, setOpened] = useState(false)
+  // Held in state as well as in storage so the tick moves the moment it is
+  // clicked, the same way `useLanguageChoice` keeps the language.
+  const [resultUnit, setResultUnit] = useState<VolumeUnit>(readResultUnitPreference)
+
+  function chooseResultUnit(unit: VolumeUnit) {
+    writeResultUnitPreference(unit)
+    setResultUnit(unit)
+  }
 
   return (
     <>
@@ -64,6 +81,28 @@ export function AboutMenu() {
             boxShadow: 'var(--mantine-shadow-sm)',
           }}
         >
+          {/* The two things a visitor changes and comes back to, above the
+              one-off «what is this app» item. */}
+          <Menu.Item
+            onClick={() => {
+              window.location.hash = compareHash()
+            }}
+          >
+            {t('compare.menuItem')}
+          </Menu.Item>
+
+          <Menu.Divider />
+          <Menu.Label>{t('compare.resultUnitLabel')}</Menu.Label>
+          {VOLUME_UNITS.map((unit) => (
+            <Choice
+              key={unit}
+              selected={unit === resultUnit}
+              label={t(`volume.unit.${unit}`)}
+              onClick={() => chooseResultUnit(unit)}
+            />
+          ))}
+
+          <Menu.Divider />
           <Menu.Item onClick={() => setOpened(true)}>{t('about.menuItem')}</Menu.Item>
         </Menu.Dropdown>
       </Menu>
