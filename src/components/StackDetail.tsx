@@ -32,13 +32,9 @@ import { ExplainButton } from './ExplainButton'
 import { LogReadingForm } from './LogReadingForm'
 import { NotifyPrompt } from './NotifyPrompt'
 import { VolumeEntryForm } from './VolumeEntryForm'
+import { PLUM_PANEL } from '../theme'
 
 const CURVE_MONTHS = 30
-
-/** The plum panel: flat, shadowless, cream text. It holds what the app is
- *  telling you, where a cream card with a hard shadow holds what you act on.
- *  Nothing in this app is both. */
-const PLUM_PANEL = 'light-dark(#3A1A38, #2A1226)'
 
 /** The species and meta line, the same small tracked capitals as in the list:
  *  berry on cream, ochre on plum night. */

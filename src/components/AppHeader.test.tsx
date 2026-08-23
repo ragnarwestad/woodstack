@@ -109,6 +109,17 @@ describe('AppHeader', () => {
     expect(screen.getByRole('button', { name: nb['about.menuLabel'] })).toBeInTheDocument()
   })
 
+  /** The growth rings and the scalloped edge are the panel's whole point to
+   *  look at and nothing at all to read. A screen reader that announces them
+   *  reads two empty boxes between the mark and the buttons, so they carry
+   *  `aria-hidden` — the assertion is on that, not on the gradients, which a
+   *  test could only restate. */
+  it('draws the rings and the scalloped edge, hidden from assistive tech', () => {
+    renderHeader()
+    expect(screen.getByTestId('header-rings')).toHaveAttribute('aria-hidden', 'true')
+    expect(screen.getByTestId('header-scallop')).toHaveAttribute('aria-hidden', 'true')
+  })
+
   /** Which group the dots sit in decides what a phone does with them. The
    *  controls group is the one allowed to wrap onto a line of its own; the
    *  wordmark group must not, so a control placed in there would push the
