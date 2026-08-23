@@ -69,6 +69,39 @@ body {
    edges of the panel, which is why the gradient is centred on the top edge and
    allowed to bleed rather than being fitted inside. A repeating gradient is
    one of the things a React `style` prop cannot say, hence a class. */
+/* The header's own measurements, as custom properties so one media query can
+   restate all of them together.
+
+   At the top of a phone the mark, the title and the slogan compete for the
+   same line, and all three lost: on a 384-393px screen "Woodstack '26" broke
+   after "Woodstack" and the slogan dropped "ved" to a line of its own. The
+   numbers below are what makes them fit — measured against the real fonts, not
+   guessed: the title is 283px at 34px of Bungee, the slogan 281.6px at 12px
+   with 0.26em of tracking, and the mark and padding took 130px of the 384
+   before either of them started.
+
+   Breakpoint at 430px rather than one of Mantine's: this is about a phone held
+   in one hand, and Mantine's xs is 576px, where the header has room to spare. */
+.ws-header {
+  --ws-header-pad-x: 20px;
+  --ws-header-gap: 12px;
+  --ws-header-logo-w: 78px;
+  --ws-header-logo-h: 52px;
+  --ws-header-title: 2.125rem;
+  --ws-header-track: 0.26em;
+}
+
+@media (max-width: 430px) {
+  .ws-header {
+    --ws-header-pad-x: 14px;
+    --ws-header-gap: 8px;
+    --ws-header-logo-w: 64px;
+    --ws-header-logo-h: 43px;
+    --ws-header-title: 1.875rem;
+    --ws-header-track: 0.18em;
+  }
+}
+
 .ws-header-rings {
   position: absolute;
   inset: -60px -40px auto;

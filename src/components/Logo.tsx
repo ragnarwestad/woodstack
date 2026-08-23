@@ -1,6 +1,9 @@
 type Props = {
-  h?: number
-  w?: number
+  /** A number of pixels or any CSS length. The header passes custom
+   *  properties, so that one media query can size the mark with the type
+   *  beside it rather than the two drifting apart. */
+  h?: number | string
+  w?: number | string
 }
 
 /** The five split logs from the app icon, cropped to the stack itself and

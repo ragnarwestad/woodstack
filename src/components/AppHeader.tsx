@@ -40,13 +40,19 @@ export function AppHeader({ onHome }: Props) {
     // bleeds to the screen edge on a phone, where a rounded corner would read
     // as a floating rectangle rather than a full-bleed band.
     <Paper
+      className="ws-header"
       pos="sticky"
       top={0}
       radius={0}
       style={{
         zIndex: 2,
         overflow: 'hidden',
-        padding: '22px 20px 30px',
+        padding: '22px var(--ws-header-pad-x) 30px',
+        // The side padding is a custom property: on a phone the header needs
+        // every pixel it can give the title and the slogan, and index.css
+        // restates it — along with the mark's size, the gap and the type — in
+        // one media query.
+        //
         // Out AND up. `App` wraps everything in `Container size="sm" py="xl"`,
         // and cancelling only the side padding left a strip of page above the
         // panel at rest — which then vanished the moment `top={0}` took hold
@@ -77,7 +83,7 @@ export function AppHeader({ onHome }: Props) {
         gap="sm"
         style={{ position: 'relative' }}
       >
-        <Group gap="sm" wrap="nowrap">
+        <Group gap="var(--ws-header-gap)" wrap="nowrap">
           {/* A real `href`, not a button dressed as one: cmd-click and
               middle-click have to open the app in a new tab the way every other
               logo on the web does, and only a left click without modifiers is
@@ -95,16 +101,22 @@ export function AppHeader({ onHome }: Props) {
             }}
             style={{ display: 'inline-flex', lineHeight: 0 }}
           >
-            <Logo h={52} w={78} />
+            <Logo h="var(--ws-header-logo-h)" w="var(--ws-header-logo-w)" />
           </Anchor>
           <Stack gap={2}>
-            <Title order={1} lh={0.9}>
+            <Title order={1} lh={0.9} style={{ fontSize: 'var(--ws-header-title)' }}>
               Woodstack{' '}
               <Text span inherit c="yellow.6">
                 &apos;26
               </Text>
             </Title>
-            <Text size="xs" fw={600} tt="uppercase" c="yellow.6" style={{ letterSpacing: '0.26em' }}>
+            <Text
+              size="xs"
+              fw={600}
+              tt="uppercase"
+              c="yellow.6"
+              style={{ letterSpacing: 'var(--ws-header-track)' }}
+            >
               {t('app.slogan')}
             </Text>
             {/* Not `c="dimmed"`: that token is tuned against the page's own
