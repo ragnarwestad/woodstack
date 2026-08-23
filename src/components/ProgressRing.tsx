@@ -42,9 +42,13 @@ export function ProgressRing({ value, size = 60 }: Props) {
         strokeDashoffset={CIRCUMFERENCE * (1 - clamped / 100)}
         transform={`rotate(-90 ${CENTRE} ${CENTRE})`}
       />
-      <circle cx={CENTRE} cy={CENTRE} r={13} fill="var(--mantine-color-body)" />
+      <circle data-testid="ring-face" cx={CENTRE} cy={CENTRE} r={13} fill="var(--mantine-color-body)" />
       {/* Outfit 12 / 700 — the size `size="xs"` gave it before, and the body
-          face because a percentage is a number to read, not a label to scan. */}
+          face because a percentage is a number to read, not a label to scan.
+          Not `currentColor`: the number sits on the disc above, which is the
+          page colour, NOT on whatever surrounds the ring. A ready row is teal
+          with cream-white text, and inheriting it laid #FFF7E6 on #F7EBD3 —
+          the 100 % simply was not there. Disc and label are one pair. */}
       <text
         x={CENTRE}
         y={CENTRE}
@@ -52,7 +56,7 @@ export function ProgressRing({ value, size = 60 }: Props) {
         dominantBaseline="central"
         fontSize={12}
         fontWeight={700}
-        fill="currentColor"
+        fill="var(--mantine-color-text)"
       >
         {formatPercent(clamped)}
       </text>

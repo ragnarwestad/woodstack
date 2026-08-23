@@ -177,6 +177,7 @@ function StackRow({
           confirmLabel={t('common.ok')}
           cancelLabel={t('common.cancel')}
           onConfirm={onDelete}
+          onFilled={ready}
         />
       </Group>
     </Paper>
