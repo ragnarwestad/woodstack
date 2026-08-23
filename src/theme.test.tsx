@@ -86,6 +86,23 @@ describe('the Woodstack ’26 theme, wired the way main.tsx wires it', () => {
     expect(resolvedVariable('dark', '--mantine-color-orange-filled')).toBe('#F0623A')
   })
 
+  /** The reported bug: the header panel's ring pattern did not render at all
+   *  on the deployed site. It was written as `light-dark()` inside
+   *  `index.css`, and Lightning CSS rewrites that function in a stylesheet
+   *  into `var(--lightningcss-light,…)var(--lightningcss-dark,…)` — two
+   *  colours glued together where one belongs — and then never defines either
+   *  variable. The gradient stop was invalid, so the browser threw the whole
+   *  declaration away.
+   *
+   *  The colour now comes through the resolver, like every other value that
+   *  differs between the schemes. `light-dark()` in JSX and in a JS string is
+   *  untouched by the build and stays fine; in a stylesheet it must not be
+   *  used, and `no-light-dark-in-css.test.ts` guards that. */
+  it('gives the header rings a colour in both schemes', () => {
+    expect(resolvedVariable('light', '--ws-header-ring')).toBe('rgba(232, 163, 42, 0.22)')
+    expect(resolvedVariable('dark', '--ws-header-ring')).toBe('rgba(242, 178, 60, 0.18)')
+  })
+
   /** Mantine's own body colour is white and its borders are grey. Both are
    *  wrong for this palette, and both are what `cssVariablesResolver` exists
    *  to replace. */

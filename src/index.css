@@ -75,7 +75,7 @@ body {
   height: 320px;
   background: repeating-radial-gradient(
     circle at 50% 0%,
-    light-dark(rgba(232, 163, 42, 0.22), rgba(242, 178, 60, 0.18)) 0 10px,
+    var(--ws-header-ring) 0 10px,
     transparent 10px 26px
   );
 }

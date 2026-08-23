@@ -125,11 +125,21 @@ export const cssVariablesResolver: Parameters<typeof import('@mantine/core').Man
     '--mantine-color-default': '#FFF7E6',
     '--mantine-color-default-border': '#2E1A0F',
     '--mantine-color-dimmed': '#6B5B4A',
+    // The header panel's ring pattern. It lives here rather than as a
+    // `light-dark()` in `index.css` because Lightning CSS rewrites that
+    // function inside a CSS file into a pair of `var(--lightningcss-*)` it
+    // then never defines — two colours glued together where one belongs, so
+    // the whole gradient is thrown away and the rings simply did not render.
+    // `light-dark()` in JSX and in a JS string (`PLUM_PANEL`, `Logo`) is
+    // untouched by the build and stays fine; in a stylesheet it must not be
+    // used.
+    '--ws-header-ring': 'rgba(232, 163, 42, 0.22)',
   },
   dark: {
     '--mantine-color-body': '#150A13',
     '--mantine-color-default': '#241428',
     '--mantine-color-default-border': '#4A2A44',
     '--mantine-color-dimmed': 'rgba(247, 235, 211, 0.62)',
+    '--ws-header-ring': 'rgba(242, 178, 60, 0.18)',
   },
 })
