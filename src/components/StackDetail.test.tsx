@@ -36,6 +36,34 @@ afterEach(() => {
 })
 
 describe('StackDetail', () => {
+  /** The reported bug: the chips sit at the foot of the page, so you are
+   *  scrolled to the bottom when you tap one. The panels are not the same
+   *  height — 1253 px of page on «Inn/ut» against 1096 on «Historikk» — and
+   *  switching to a shorter one left the page shorter than the scroll
+   *  position. The browser clamped it and everything slid up under the finger.
+   *
+   *  `happy-dom` has no layout, so the panel area's height is stood in for
+   *  here. What is being pinned is the rule, not the pixels: the area never
+   *  gives back room it has already taken. */
+  it('never lets the panel area shrink when a shorter chip is opened', async () => {
+    renderWithMantine(
+      <StackDetail stackId="a" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+    )
+    const area = await screen.findByTestId('tab-panels')
+    const stubHeight = (height: number) =>
+      Object.defineProperty(area, 'scrollHeight', { value: height, configurable: true })
+
+    stubHeight(198)
+    fireEvent.click(screen.getByRole('tab', { name: /måling/i }))
+    await waitFor(() => expect(area.style.minHeight).toBe('198px'))
+
+    // The history is the short one, and it is the switch that used to jump.
+    stubHeight(41)
+    fireEvent.click(screen.getByRole('tab', { name: /historikk/i }))
+    await waitFor(() => expect(screen.getByRole('tab', { name: /historikk/i })).toHaveAttribute('data-active', 'true'))
+    expect(area.style.minHeight).toBe('198px')
+  })
+
   it('shows the window and the curve once the climate data is there', async () => {
     renderWithMantine(
       <StackDetail stackId="a" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,

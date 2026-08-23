@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import {
   Alert,
   Button,
@@ -81,6 +81,12 @@ export function StackDetail({
   const [actualResult, setActualResult] = useState<ActualResult | null>(null)
   const [attempt, setAttempt] = useState(0)
 
+  // Which chip is open, and how much room the panels below them have earned.
+  // See the comment on the panel wrapper for what this is protecting against.
+  const [chip, setChip] = useState<string | null>('volume')
+  const panels = useRef<HTMLDivElement>(null)
+  const [reserved, setReserved] = useState(0)
+
   const latitude = stack?.location.latitude
   const longitude = stack?.location.longitude
   const requestKey = `${latitude},${longitude},${attempt}`
@@ -125,6 +131,14 @@ export function StackDetail({
   // A stack imported offline has no normals yet. Rather than leave the window
   // blank until someone thinks to reload, try again the moment there is a
   // network.
+  // Layout, not paint: the height must be settled before the browser draws,
+  // or the shrink happens for one frame and is seen. `stack` is a dependency
+  // because logging an entry grows the history without changing the chip.
+  useLayoutEffect(() => {
+    const shown = panels.current?.scrollHeight ?? 0
+    setReserved((tallest) => Math.max(tallest, shown))
+  }, [chip, stack])
+
   const retry = useCallback(() => setAttempt((value) => value + 1), [])
   useEffect(() => {
     window.addEventListener('online', retry)
@@ -303,7 +317,8 @@ export function StackDetail({
           the same place instead of one below the other. Panels stay mounted,
           so a half-typed entry survives a glance at the other tab. */}
       <Tabs
-        defaultValue="volume"
+        value={chip}
+        onChange={setChip}
         variant="pills"
         color="orange"
         radius={999}
@@ -317,6 +332,17 @@ export function StackDetail({
           {stack.photo && <Tabs.Tab value="photo">{t('stackDetail.tabPhoto')}</Tabs.Tab>}
         </Tabs.List>
 
+        {/* The chips sit at the foot of the page, so the visitor is scrolled
+            to the bottom when they use them — and the four panels are not the
+            same height. Switching to a shorter one made the page shorter than
+            the scroll position, the browser clamped it, and everything slid up
+            under the finger that had just tapped.
+            
+            So the panel area keeps the tallest height it has shown and never
+            goes below it. Not a fixed number: the history grows with every
+            entry up to its own 260, and the photo's height is the photo's.
+            Growing is harmless — it is the shrinking that moves the page. */}
+        <div data-testid="tab-panels" ref={panels} style={{ minHeight: reserved || undefined }}>
         <Tabs.Panel value="volume" pt="md">
           <VolumeEntryForm onLog={logVolume} />
         </Tabs.Panel>
@@ -350,6 +376,7 @@ export function StackDetail({
             </MantineStack>
           </Tabs.Panel>
         )}
+        </div>
       </Tabs>
     </MantineStack>
   )
