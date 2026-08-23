@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import { emc } from './emc'
-import { effectiveRate, estimateWindow, hasEnteredWindow, refitRate, simulate, windowProgress } from './simulate'
+import {
+  dryingProgress,
+  effectiveRate,
+  estimateWindow,
+  hasEnteredWindow,
+  refitRate,
+  simulate,
+} from './simulate'
 import { DRY_ENOUGH_MOISTURE } from './units'
 import { OSLO_NORMALS, actualWeather, constantNormals, makeStack } from '../test/fixtures'
 
@@ -113,18 +120,6 @@ describe('estimateWindow on a mixed stack', () => {
   it('does not change the window of a stack with no second species', () => {
     expect(estimateWindow(spruce, OSLO_NORMALS)).toEqual(estimateWindow(makeStack({ species: 'gran' }), OSLO_NORMALS))
   })
-
-  it('keeps the ring inside 0-100 across the combined window', () => {
-    const window = estimateWindow(mixed, OSLO_NORMALS)
-    const before = new Date(window.earliest.getTime() - 1000 * 60 * 60 * 24 * 365)
-    const middle = new Date((window.earliest.getTime() + window.latest.getTime()) / 2)
-    const after = new Date(window.latest.getTime() + 1000 * 60 * 60 * 24 * 365)
-
-    expect(windowProgress(window, before)).toBe(0)
-    expect(windowProgress(window, after)).toBe(100)
-    expect(windowProgress(window, middle)).toBeGreaterThan(0)
-    expect(windowProgress(window, middle)).toBeLessThan(100)
-  })
 })
 
 describe('refitRate', () => {
@@ -167,32 +162,50 @@ describe('estimateWindow with a logged reading', () => {
   })
 })
 
-describe('windowProgress', () => {
-  const window = {
-    earliest: new Date('2027-09-01T00:00:00Z'),
-    latest: new Date('2027-11-01T00:00:00Z'),
-  }
+describe('dryingProgress', () => {
+  const stack = makeStack({ stackedDate: '2026-04-15' })
 
-  it('is 0 before the window', () => {
-    expect(windowProgress(window, new Date('2027-01-01T00:00:00Z'))).toBe(0)
+  it('is 0 on the day the wood was stacked', () => {
+    expect(dryingProgress(stack, OSLO_NORMALS, new Date('2026-04-15T00:00:00Z'))).toBe(0)
   })
 
-  it('is strictly between 0 and 100 inside the window', () => {
-    const value = windowProgress(window, new Date('2027-10-01T00:00:00Z'))
-    expect(value).toBeGreaterThan(0)
-    expect(value).toBeLessThan(100)
+  /** The reported bug: the old ring counted towards the ready-window, so a
+   *  stack put up in April read 0 % through a whole summer of real drying. */
+  it('has moved months before the ready-window opens', () => {
+    const summer = new Date('2026-07-15T00:00:00Z')
+    expect(summer.getTime()).toBeLessThan(estimateWindow(stack, OSLO_NORMALS).earliest.getTime())
+    expect(dryingProgress(stack, OSLO_NORMALS, summer)).toBeGreaterThan(0)
   })
 
-  it('is 100 after the window', () => {
-    expect(windowProgress(window, new Date('2028-01-01T00:00:00Z'))).toBe(100)
+  it('is 100 from the moment the projection passes the dry-enough threshold', () => {
+    const crossed = simulate(stack, OSLO_NORMALS, { months: 36 }).find(
+      (point) => point.moisture <= DRY_ENOUGH_MOISTURE,
+    )
+    if (!crossed) throw new Error('the projection never reaches the threshold')
+
+    expect(dryingProgress(stack, OSLO_NORMALS, crossed.date)).toBe(100)
+    expect(dryingProgress(stack, OSLO_NORMALS, new Date('2030-01-15T00:00:00Z'))).toBe(100)
   })
 
-  it('never leaves 0-100 for any date', () => {
-    for (const iso of ['2020-01-01', '2027-09-30', '2100-01-01']) {
-      const value = windowProgress(window, new Date(`${iso}T00:00:00Z`))
+  it('never leaves 0-100, from long before the stack existed to long after it dried', () => {
+    for (const iso of ['2020-01-01', '2026-04-14', '2026-09-14', '2027-06-15', '2100-01-01']) {
+      const value = dryingProgress(stack, OSLO_NORMALS, new Date(`${iso}T00:00:00Z`))
       expect(value).toBeGreaterThanOrEqual(0)
       expect(value).toBeLessThanOrEqual(100)
     }
+  })
+
+  /** The same caution `estimateWindow` applies to the window: the ring must
+   *  never read further along than the wettest wood in the pile actually is. */
+  it('takes the slower-drying half of a mixed pile, never the average', () => {
+    const today = new Date('2026-10-15T00:00:00Z')
+    const spruce = makeStack({ species: 'gran' })
+    const oak = makeStack({ species: 'eik' })
+    const mixed = makeStack({ species: 'gran', secondSpecies: { species: 'eik', share: 'third' } })
+
+    expect(dryingProgress(mixed, OSLO_NORMALS, today)).toBe(
+      Math.min(dryingProgress(spruce, OSLO_NORMALS, today), dryingProgress(oak, OSLO_NORMALS, today)),
+    )
   })
 })
 

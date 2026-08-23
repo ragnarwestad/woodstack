@@ -1,6 +1,6 @@
 import { Button, Group, Image, Paper, Stack as MantineStack, Text, UnstyledButton } from '@mantine/core'
 import type { ClimateNormals, Stack } from '../storage/schema'
-import { estimateWindow, windowProgress } from '../model/simulate'
+import { dryingProgress, estimateWindow } from '../model/simulate'
 import { formatWindow } from '../model/units'
 import { speciesLabel } from '../model/species'
 import { useTranslation, type Translator } from '../i18n/useTranslation'
@@ -65,6 +65,7 @@ function StackRow({
 }) {
   const { t } = translator
   const window = normals ? estimateWindow(stack, normals) : null
+  const progress = normals ? dryingProgress(stack, normals, today) : 0
 
   return (
     // The row is not one big button any more: a delete inside a button is not
@@ -74,7 +75,7 @@ function StackRow({
       <Group wrap="nowrap" align="center" gap="md">
         <UnstyledButton onClick={onSelect} style={{ flex: 1, minWidth: 0 }}>
           <Group wrap="nowrap">
-            <ProgressRing value={window ? windowProgress(window, today) : 0} />
+            <ProgressRing value={progress} />
             {/* Names are what a visitor has to hold in their head to tell three
                 woodpiles apart; a photo of the pile does that at a glance. Only
               for the stacks that have one — a placeholder would take the same

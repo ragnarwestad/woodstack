@@ -2,12 +2,12 @@ import { RingProgress, Text } from '@mantine/core'
 import { formatPercent } from '../model/units'
 
 type Props = {
-  /** How far through the ready-window the stack is, 0-100. */
+  /** How far the wood has dried, 0-100. */
   value: number
   size?: number
 }
 
-/** Renders the number `windowProgress()` computed — it does not compute it.
+/** Renders the number `dryingProgress()` computed — it does not compute it.
  *  The clamp is repeated here anyway: a ring is the one place a wrong number
  *  would draw something visibly broken. */
 export function ProgressRing({ value, size = 60 }: Props) {
