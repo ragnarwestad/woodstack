@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Group, Menu, Modal, Tabs, Text, UnstyledButton } from '@mantine/core'
 import { VOLUME_UNITS, type VolumeUnit } from '../storage/schema'
-import { compareHash } from '../storage/appState'
+import { compareHash, needHash } from '../storage/appState'
 import { readResultUnitPreference, writeResultUnitPreference } from '../storage/resultUnitPreference'
 import { useTranslation } from '../i18n/useTranslation'
 import { Choice } from './ViewControls'
@@ -26,10 +26,11 @@ function ThreeDots() {
  *  put into it. Behind the header's three dots, so the header carries a button
  *  instead of that much to read past.
  *
- *  Three concerns now, not one. Besides «Om Woodstack» the dropdown holds the
- *  way into the comparison screen and the unit its answers are read in —
- *  both things that belong to the app rather than to any one stack, and
- *  neither big enough to earn a fourth icon beside theme and language.
+ *  Four concerns now, not one. Besides «Om Woodstack» the dropdown holds the
+ *  way into the comparison screen, the way into the "how much do I need?"
+ *  calculator, and the unit both screens' answers are read in — none of
+ *  which belongs to any one stack, and none big enough to earn its own icon
+ *  beside theme and language.
  *
  *  The same `Modal` as `ExplainButton` and `ConfirmButton`, and for the same
  *  reasons — it traps focus, closes on Escape or a tap outside, and brings its
@@ -89,6 +90,14 @@ export function AboutMenu() {
             }}
           >
             {t('compare.menuItem')}
+          </Menu.Item>
+
+          <Menu.Item
+            onClick={() => {
+              window.location.hash = needHash()
+            }}
+          >
+            {t('need.menuItem')}
           </Menu.Item>
 
           <Menu.Divider />

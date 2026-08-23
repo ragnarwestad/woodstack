@@ -16,6 +16,10 @@ const STACK_PREFIX = 's='
  *  bare marker rather than a third prefix with nothing after it. */
 const COMPARE_HASH = '#compare'
 
+/** "How much do I need?" — the other screen with nothing to do with any one
+ *  stack, reached the same way `#compare` is: its own bare hash marker. */
+const NEED_HASH = '#need'
+
 function toBase64Url(text: string): string {
   const bytes = new TextEncoder().encode(text)
   let binary = ''
@@ -79,4 +83,12 @@ export function isCompareHash(hash: string): boolean {
 
 export function compareHash(): string {
   return COMPARE_HASH
+}
+
+export function isNeedHash(hash: string): boolean {
+  return hash === NEED_HASH
+}
+
+export function needHash(): string {
+  return NEED_HASH
 }

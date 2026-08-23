@@ -5,6 +5,8 @@ import {
   exportState,
   importState,
   isCompareHash,
+  isNeedHash,
+  needHash,
   readImportPayload,
   readStackId,
   stackHash,
@@ -113,5 +115,24 @@ describe('the namespaced hash', () => {
   it('is not read as a stack id or an import payload', () => {
     expect(readStackId(compareHash())).toBeNull()
     expect(readImportPayload(compareHash())).toBeNull()
+  })
+
+  it('recognises the need calculator only from its own bare marker', () => {
+    expect(isNeedHash('#need')).toBe(true)
+    expect(isNeedHash('#s=abc')).toBe(false)
+    expect(isNeedHash('#i=abc')).toBe(false)
+    expect(isNeedHash('#compare')).toBe(false)
+    expect(isNeedHash('#needy')).toBe(false)
+    expect(isNeedHash('')).toBe(false)
+  })
+
+  it('writes the need calculator marker back in the same shape it reads', () => {
+    expect(isNeedHash(needHash())).toBe(true)
+  })
+
+  it('keeps the need calculator marker distinct from every other namespace', () => {
+    expect(readStackId(needHash())).toBeNull()
+    expect(readImportPayload(needHash())).toBeNull()
+    expect(isCompareHash(needHash())).toBe(false)
   })
 })

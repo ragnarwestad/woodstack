@@ -205,6 +205,69 @@ describe('App and the comparison screen', () => {
   })
 })
 
+/** The fifth screen the hash routes to, and the other one that belongs to no
+ *  stack: it answers how much wood a visitor should buy, not which of two
+ *  lots to buy. */
+describe('App and the need calculator', () => {
+  it('opens the need calculator from the three-dot menu', async () => {
+    saveStacks([makeStack({ id: 'a', name: 'Bjørk ved veggen' })])
+    renderWithMantine(<App />)
+
+    fireEvent.click(screen.getByRole('button', { name: nb['about.menuLabel'] }))
+    fireEvent.click(screen.getByRole('menuitem', { name: nb['need.menuItem'] }))
+
+    await waitFor(() => expect(screen.getByRole('heading', { name: nb['need.title'] })).toBeInTheDocument())
+    expect(window.location.hash).toBe('#need')
+    expect(screen.queryByText('Bjørk ved veggen')).not.toBeInTheDocument()
+  })
+
+  /** A bookmark straight to the screen, the same as `#compare`'s own test. */
+  it('renders the need calculator directly when the app loads on #need', async () => {
+    saveStacks([makeStack({ id: 'a', name: 'Bjørk ved veggen' })])
+    window.location.hash = '#need'
+    renderWithMantine(<App />)
+
+    await waitFor(() => expect(screen.getByRole('heading', { name: nb['need.title'] })).toBeInTheDocument())
+    expect(screen.queryByText('Bjørk ved veggen')).not.toBeInTheDocument()
+  })
+
+  it('clears the hash and shows the list again on the way back', async () => {
+    saveStacks([makeStack({ id: 'a', name: 'Bjørk ved veggen' })])
+    window.location.hash = '#need'
+    renderWithMantine(<App />)
+
+    await waitFor(() => screen.getByRole('heading', { name: nb['need.title'] }))
+    fireEvent.click(screen.getByRole('button', { name: /tilbake/i }))
+
+    await waitFor(() => expect(screen.getByText('Bjørk ved veggen')).toBeInTheDocument())
+    expect(window.location.hash).toBe('')
+  })
+
+  /** The same trap `back()` and `closeCompare()` already guard against. */
+  it('does not leave an abandoned edit standing behind it', async () => {
+    saveStacks([makeStack({ id: 'a', name: 'Bjørk ved veggen' })])
+    window.location.hash = '#s=a'
+    renderWithMantine(<App />)
+
+    await waitFor(() => screen.getByRole('button', { name: /^endre$/i }))
+    fireEvent.click(screen.getByRole('button', { name: /^endre$/i }))
+    await waitFor(() => screen.getByRole('button', { name: /^lagre$/i }))
+
+    fireEvent.click(screen.getByRole('button', { name: nb['about.menuLabel'] }))
+    fireEvent.click(screen.getByRole('menuitem', { name: nb['need.menuItem'] }))
+    await waitFor(() => screen.getByRole('heading', { name: nb['need.title'] }))
+
+    fireEvent.click(screen.getByRole('button', { name: /tilbake/i }))
+    await waitFor(() => screen.getByText('Bjørk ved veggen'))
+    fireEvent.click(screen.getByRole('button', { name: /bjørk ved veggen/i }))
+
+    await waitFor(() =>
+      expect(screen.getByRole('heading', { name: 'Bjørk ved veggen' })).toBeInTheDocument(),
+    )
+    expect(screen.queryByLabelText(/navn/i)).not.toBeInTheDocument()
+  })
+})
+
 /** The day after the default fixture stack's window opens. Read out of the
  *  model rather than written down, so a change to the drying rate cannot make
  *  this date quietly mean something else. */

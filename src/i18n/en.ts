@@ -51,6 +51,27 @@ export const en: Record<TranslationKey, string> = {
     'The arithmetic behind the comparison – kroner per kWh and kilos of dry wood – has not been built yet. The screen arrives as soon as it is.',
   'compare.resultUnitLabel': 'Unit in the answer',
 
+  /* "How much do I need?" — the calculator for an energy need or an offered
+     lot, not a comparison of two. */
+  'need.menuItem': 'How much do I need?',
+  'need.title': 'How much wood do I need?',
+  'need.modeEnergyTab': 'I know how much heat I need',
+  'need.modeVolumeTab': 'I know how much wood I am offered',
+  'need.speciesLabel': 'Species',
+  'need.stoveLabel': 'Stove',
+  'need.energyLabel': 'Energy need (kWh)',
+  'need.amountLabel': 'Amount ({unit})',
+  'need.unitLabel': 'Unit',
+  'need.submit': 'Calculate',
+  'need.result': 'About {primary}, or {secondary}',
+  'need.resultEnergy': 'That is about {kwh} kWh of delivered heat',
+  'need.alreadyHave': 'You already have about {have}, so you need to buy {toBuy} more.',
+  'need.amountRange': 'The amount must be a number greater than 0.',
+
+  'stove.rentbrennende': 'Clean-burning stove',
+  'stove.gammel': 'Old stove',
+  'stove.grue': 'Open fireplace',
+
   'stackList.heading': 'My woodpiles',
   'stackList.add': 'New woodpile',
   'stackList.empty': 'No woodpiles yet. Add the first one, and we will work out when it is dry.',

@@ -54,6 +54,27 @@ export const nb = {
     'Regnestykket bak sammenligningen – kroner per kWh og kilo tørr ved – er ikke bygd ennå. Skjermen kommer så snart det er på plass.',
   'compare.resultUnitLabel': 'Enhet i svaret',
 
+  /* "Hvor mye trenger jeg?" — kalkulatoren for et energibehov eller et
+     tilbudt vedparti, ikke en sammenligning av to. */
+  'need.menuItem': 'Hvor mye trenger jeg?',
+  'need.title': 'Hvor mye ved trenger jeg?',
+  'need.modeEnergyTab': 'Jeg vet hvor mye varme jeg trenger',
+  'need.modeVolumeTab': 'Jeg vet hvor mye ved jeg får tilbud om',
+  'need.speciesLabel': 'Vedtype',
+  'need.stoveLabel': 'Ovn',
+  'need.energyLabel': 'Energibehov (kWh)',
+  'need.amountLabel': 'Mengde ({unit})',
+  'need.unitLabel': 'Enhet',
+  'need.submit': 'Beregn',
+  'need.result': 'Omtrent {primary}, eller {secondary}',
+  'need.resultEnergy': 'Det tilsvarer omtrent {kwh} kWh levert varme',
+  'need.alreadyHave': 'Du har allerede omtrent {have}, så du trenger å kjøpe {toBuy} til.',
+  'need.amountRange': 'Mengden må være et tall større enn 0.',
+
+  'stove.rentbrennende': 'Rentbrennende ovn',
+  'stove.gammel': 'Gammel ovn',
+  'stove.grue': 'Åpen grue eller peis',
+
   'stackList.heading': 'Vedstablene mine',
   'stackList.add': 'Ny stabel',
   'stackList.empty': 'Ingen vedstabler ennå. Legg inn den første, så regner vi ut når den er tørr.',
