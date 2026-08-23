@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { fireEvent, screen } from '@testing-library/react'
+import { useMantineColorScheme } from '@mantine/core'
 import { renderWithMantine } from '../test/render'
 import { ENGLISH_TEST_LANGUAGE, setTestLanguage } from '../test/language'
 import { LanguageProvider } from '../i18n/LanguageProvider'
@@ -15,7 +16,9 @@ function renderHeader() {
 }
 
 describe('AppHeader', () => {
-  beforeEach(() => localStorage.removeItem(LANGUAGE_STORAGE_KEY))
+  // Both the language and Mantine's colour scheme are stored, so a choice
+  // made in one test would otherwise decide the next one's starting point.
+  beforeEach(() => localStorage.clear())
 
   it('shows the app name and the tagline in the current language', () => {
     renderHeader()
@@ -51,5 +54,33 @@ describe('AppHeader', () => {
     localStorage.setItem(LANGUAGE_STORAGE_KEY, 'nb')
     renderHeader()
     expect(screen.getByText('Når er veden tørr nok til å fyre med?')).toBeInTheDocument()
+  })
+
+  /** The switch has to change the scheme the whole app renders in, not just
+   *  light up a segment. A probe reads what Mantine actually resolved to. */
+  it('switches the colour scheme the app renders in', () => {
+    function Probe() {
+      const { colorScheme } = useMantineColorScheme()
+      return <span data-testid="scheme">{colorScheme}</span>
+    }
+    renderWithMantine(
+      <LanguageProvider>
+        <AppHeader />
+        <Probe />
+      </LanguageProvider>,
+    )
+
+    expect(screen.getByTestId('scheme')).toHaveTextContent('auto')
+
+    fireEvent.click(screen.getByRole('radio', { name: 'Mørk' }))
+    expect(screen.getByTestId('scheme')).toHaveTextContent('dark')
+
+    fireEvent.click(screen.getByRole('radio', { name: 'Lys' }))
+    expect(screen.getByTestId('scheme')).toHaveTextContent('light')
+  })
+
+  it('starts on auto, so the app follows the device until told otherwise', () => {
+    renderHeader()
+    expect(screen.getByRole('radio', { name: 'Auto' })).toBeChecked()
   })
 })

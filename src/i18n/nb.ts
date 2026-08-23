@@ -4,6 +4,10 @@
 export const nb = {
   'app.tagline': 'Når er veden tørr nok til å fyre med?',
   'app.language': 'Språk',
+  'app.theme': 'Fargetema',
+  'app.themeLight': 'Lys',
+  'app.themeDark': 'Mørk',
+  'app.themeAuto': 'Auto',
 
   'common.readyBetween': 'Klar mellom {window}',
   'common.loadingClimate': 'Henter klimadata for stedet …',

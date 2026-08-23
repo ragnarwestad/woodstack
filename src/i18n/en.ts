@@ -5,6 +5,10 @@ import type { TranslationKey } from './nb'
 export const en: Record<TranslationKey, string> = {
   'app.tagline': 'When is the firewood dry enough to burn?',
   'app.language': 'Language',
+  'app.theme': 'Colour theme',
+  'app.themeLight': 'Light',
+  'app.themeDark': 'Dark',
+  'app.themeAuto': 'Auto',
 
   'common.readyBetween': 'Ready between {window}',
   'common.loadingClimate': 'Fetching climate data for the location …',

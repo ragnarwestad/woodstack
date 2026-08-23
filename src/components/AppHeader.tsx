@@ -1,4 +1,6 @@
-import { Group, SegmentedControl, Stack, Text, Title } from '@mantine/core'
+import { Group, Image, SegmentedControl, Stack, Text, Title, useMantineColorScheme } from '@mantine/core'
+import type { MantineColorScheme } from '@mantine/core'
+import logo from '../assets/icon-source.svg'
 import type { Language } from '../i18n/language'
 import { useLanguageChoice, useTranslation } from '../i18n/useTranslation'
 
@@ -13,21 +15,46 @@ const LANGUAGES: { value: Language; label: string }[] = [
 export function AppHeader() {
   const { t } = useTranslation()
   const { language, setLanguage } = useLanguageChoice()
+  // Mantine keeps the choice itself, in its own storage key, and resolves
+  // `auto` against the device. Nothing here has to remember anything.
+  const { colorScheme, setColorScheme } = useMantineColorScheme()
+
+  const SCHEMES: { value: MantineColorScheme; label: string }[] = [
+    { value: 'light', label: t('app.themeLight') },
+    { value: 'dark', label: t('app.themeDark') },
+    { value: 'auto', label: t('app.themeAuto') },
+  ]
 
   return (
-    <Group justify="space-between" align="flex-start" wrap="nowrap">
-      <Stack gap="xs">
-        <Title order={1}>Woodstack</Title>
-        <Text c="dimmed">{t('app.tagline')}</Text>
-      </Stack>
+    // `wrap="wrap"`: the mark, the title and two switches do not fit on one
+    // line on a phone, and the switches are what should drop to a line of
+    // their own — not the app's name.
+    <Group justify="space-between" align="flex-start" wrap="wrap" gap="sm">
+      <Group gap="sm" wrap="nowrap">
+        <Image src={logo} alt="" w={44} h={44} />
+        <Stack gap={2}>
+          <Title order={1}>Woodstack</Title>
+          <Text c="dimmed">{t('app.tagline')}</Text>
+        </Stack>
+      </Group>
 
-      <SegmentedControl
-        size="xs"
-        value={language}
-        onChange={(value) => setLanguage(value as Language)}
-        data={LANGUAGES}
-        aria-label={t('app.language')}
-      />
+      <Group gap="xs" wrap="wrap">
+        <SegmentedControl
+          size="xs"
+          value={colorScheme}
+          onChange={(value) => setColorScheme(value as MantineColorScheme)}
+          data={SCHEMES}
+          aria-label={t('app.theme')}
+        />
+
+        <SegmentedControl
+          size="xs"
+          value={language}
+          onChange={(value) => setLanguage(value as Language)}
+          data={LANGUAGES}
+          aria-label={t('app.language')}
+        />
+      </Group>
     </Group>
   )
 }
