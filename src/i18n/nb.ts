@@ -39,7 +39,7 @@ export const nb = {
   'addStack.splitSize': 'Hvor grovt er den kløyvd?',
   'addStack.cover': 'Står den under tak?',
   'addStack.exposure': 'Sol og vind der den står',
-  'addStack.volumeAmount': 'Hvor mye ved la du i stabelen?',
+  'addStack.volumeAmount': 'Mengde ({unit})',
   'addStack.volumeAmountDescription': 'Valgfritt – du kan legge inn mengder senere også.',
   'addStack.volumeUnit': 'Enhet',
   'addStack.place': 'Sted',

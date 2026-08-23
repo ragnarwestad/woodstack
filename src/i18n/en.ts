@@ -40,7 +40,7 @@ export const en: Record<TranslationKey, string> = {
   'addStack.splitSize': 'How coarsely is it split?',
   'addStack.cover': 'Is it under a roof?',
   'addStack.exposure': 'Sun and wind where it stands',
-  'addStack.volumeAmount': 'How much wood did you stack?',
+  'addStack.volumeAmount': 'Amount ({unit})',
   'addStack.volumeAmountDescription': 'Optional – you can log amounts later as well.',
   'addStack.volumeUnit': 'Unit',
   'addStack.place': 'Location',

@@ -36,8 +36,11 @@ type Props = {
   geocodeFn?: (query: string) => Promise<GeocodeResult[]>
 }
 
-export function AddStackForm({ onAdd, onCancel, geocodeFn = (query) => geocode(query) }: Props) {
-  const { t } = useTranslation()
+export function AddStackForm({ onAdd, onCancel, geocodeFn }: Props) {
+  const { t, language } = useTranslation()
+  // The place search follows the app's language; a caller may still pass its
+  // own for tests.
+  const lookUpPlace = geocodeFn ?? ((name: string) => geocode(name, {}, language))
   const [name, setName] = useState('')
   const [species, setSpecies] = useState<Species>('bjork')
   const [stackedDate, setStackedDate] = useState(today)
@@ -56,7 +59,7 @@ export function AddStackForm({ onAdd, onCancel, geocodeFn = (query) => geocode(q
     setError(null)
     setPlace(null)
     try {
-      setResults(await geocodeFn(query))
+      setResults(await lookUpPlace(query))
     } catch {
       setResults([])
       setError(t('addStack.searchFailed'))
@@ -131,7 +134,7 @@ export function AddStackForm({ onAdd, onCancel, geocodeFn = (query) => geocode(q
 
       <TextInput
         type="number"
-        label={t('addStack.volumeAmount')}
+        label={t('addStack.volumeAmount', { unit: t(`volume.unitShort.${volumeUnit}`) })}
         description={t('addStack.volumeAmountDescription')}
         value={volumeAmount}
         onChange={(event) => setVolumeAmount(event.currentTarget.value)}
@@ -190,6 +193,10 @@ export function AddStackForm({ onAdd, onCancel, geocodeFn = (query) => geocode(q
   )
 }
 
+/** Name and country, not the region in between. Open-Meteo has no Norwegian
+ *  name for every admin region and falls back to English per field, so
+ *  "Oslo, Oslo County, Norge" was half one language and half the other. The
+ *  region is what a Norwegian would drop anyway. */
 function placeLabel(result: GeocodeResult): string {
-  return [result.name, result.admin1, result.country].filter(Boolean).join(', ')
+  return [result.name, result.country].filter(Boolean).join(', ')
 }

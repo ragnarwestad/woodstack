@@ -1,4 +1,5 @@
 import type { ClimateNormals, MonthlyNormal } from '../storage/schema'
+import type { Language } from '../i18n/language'
 
 /** Open-Meteo, used for two things and nothing else: turning a place name
  *  into coordinates, and fetching enough years of daily weather to reduce to
@@ -118,9 +119,18 @@ export async function fetchMonthlyNormals(
   }
 }
 
-export async function geocode(query: string, deps: OpenMeteoDeps = {}): Promise<GeocodeResult[]> {
+/** `language` decides what the API calls the places it finds. It follows the
+ *  app's language rather than being fixed, or an English visitor searches in
+ *  Norwegian. Open-Meteo does not have every name in every language and falls
+ *  back to English per field, which is why the caller shows the place name and
+ *  the country but not the region. */
+export async function geocode(
+  query: string,
+  deps: OpenMeteoDeps = {},
+  language: Language = 'nb',
+): Promise<GeocodeResult[]> {
   const fetchFn = deps.fetchFn ?? defaultFetch()
-  const params = new URLSearchParams({ name: query, count: '5', language: 'nb', format: 'json' })
+  const params = new URLSearchParams({ name: query, count: '5', language, format: 'json' })
   const response = await fetchFn(`${GEOCODING_URL}?${params}`)
   if (!response.ok) {
     throw new Error('Stedssøket svarte ikke')

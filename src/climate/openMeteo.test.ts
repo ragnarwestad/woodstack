@@ -98,4 +98,16 @@ describe('geocode', () => {
     const fetchFn = vi.fn().mockResolvedValue({ ok: true, json: async () => ({}) })
     await expect(geocode('Xyzzy', { fetchFn })).resolves.toEqual([])
   })
+
+  /** The language was hardcoded to `nb`, so an English visitor searched in
+   *  Norwegian. It has to follow the language the app is showing. */
+  it('asks the API for the language it is given', async () => {
+    const fetchFn = vi.fn().mockResolvedValue({ ok: true, json: async () => ({}) })
+
+    await geocode('Oslo', { fetchFn }, 'en')
+    expect(fetchFn.mock.calls[0][0]).toContain('language=en')
+
+    await geocode('Oslo', { fetchFn }, 'nb')
+    expect(fetchFn.mock.calls[1][0]).toContain('language=nb')
+  })
 })

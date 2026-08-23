@@ -5,7 +5,7 @@ import { renderWithMantine } from '../test/render'
 import { ENGLISH_TEST_LANGUAGE, setTestLanguage } from '../test/language'
 
 const geocodeFn = vi.fn().mockResolvedValue([
-  { name: 'Oslo', latitude: 59.91, longitude: 10.75, country: 'Norge', admin1: 'Oslo' },
+  { name: 'Oslo', latitude: 59.91, longitude: 10.75, country: 'Norge', admin1: 'Oslo County' },
 ])
 
 function fill(label: RegExp, value: string) {
@@ -65,12 +65,23 @@ describe('AddStackForm', () => {
     })
   })
 
+  /** Open-Meteo has no Norwegian name for every admin region and falls back to
+   *  English per field, so showing it gave "Oslo, Oslo County, Norge" — half
+   *  one language, half the other. Name and country only. */
+  it('names the place and the country, and leaves the region out', async () => {
+    renderWithMantine(<AddStackForm onAdd={vi.fn()} onCancel={vi.fn()} geocodeFn={geocodeFn} />)
+    await pickOslo()
+
+    expect(screen.getByText(/Valgt sted: Oslo, Norge$/)).toBeInTheDocument()
+    expect(screen.queryByText(/Oslo County/)).not.toBeInTheDocument()
+  })
+
   it('hands over an opening amount as the ledger the stack starts with', async () => {
     const onAdd = vi.fn()
     renderWithMantine(<AddStackForm onAdd={onAdd} onCancel={vi.fn()} geocodeFn={geocodeFn} />)
 
     fill(/navn/i, 'Bjørk ved veggen')
-    fill(/hvor mye ved/i, '2')
+    fill(/mengde \(favner\)/i, '2')
     fill(/enhet/i, 'favn')
     await pickOslo()
     fireEvent.click(screen.getByRole('button', { name: /lagre/i }))
@@ -110,7 +121,7 @@ describe('AddStackForm in English', () => {
     expect(screen.getByLabelText(/species/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/how coarsely is it split/i)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /^save$/i })).toBeInTheDocument()
-    expect(screen.getByLabelText(/how much wood/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/amount \(favn\)/i)).toBeInTheDocument()
     expect(screen.queryByText(/treslag/i)).not.toBeInTheDocument()
   })
 
