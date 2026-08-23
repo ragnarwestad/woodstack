@@ -8,6 +8,8 @@ import { computeAppVersion } from './src/appVersion.ts'
 
 // https://vite.dev/config/
 export default defineConfig({
+  // Served from a subpath on GitHub Pages, not the domain root.
+  base: '/woodstack/',
   // Read once, here, where git is still around to ask — the browser bundle
   // has no way to find out which commit it was built from.
   define: {
@@ -29,6 +31,11 @@ export default defineConfig({
         theme_color: '#3A1A38',
         background_color: '#3A1A38',
         display: 'standalone',
+        // No trailing slash: the app's home URL can end up as exactly
+        // '/woodstack' (no slash), which falls outside a scope written
+        // '/woodstack/' and trips Chrome's out-of-scope banner in the
+        // installed app — PaceUp already paid for this lesson once.
+        scope: '/woodstack',
         icons: pwaIcons,
       },
       workbox: {

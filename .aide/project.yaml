@@ -10,7 +10,11 @@ stack:
   database: none — stacks live in the visitor's own browser, never leave it
 docs:
   - README.md
+deployment:
+  host: GitHub Pages
+  build: pnpm build
+  output: dist
+  url: https://ragnarwestad.github.io/woodstack/
 # Left out until they are real, rather than guessed:
-#   deployment — no host chosen yet; base in vite.config.ts is still '/'
 #   dependencies — Open-Meteo (climate normals) is planned, not yet called
 #   logging, statistics, reports — nothing set up

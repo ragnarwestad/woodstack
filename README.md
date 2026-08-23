@@ -7,7 +7,7 @@
 - [Running it](#running-it)
 - [How it is built](#how-it-is-built)
 - [The icon](#the-icon)
-- [Not decided yet](#not-decided-yet)
+- [How it is deployed](#how-it-is-deployed)
 
 ---
 
@@ -78,8 +78,10 @@ generator is a one-off CLI run rather than a dependency — `pnpm-workspace.yaml
 says why. `src/pwaIcons.ts` lists the generated files for the PWA manifest, so
 changing the preset means changing that list too.
 
-## Not decided yet
+## How it is deployed
 
-Where it is deployed, and therefore the `base` path in `vite.config.ts`, which
-is still `/`. A host that serves from a subpath would force a base of its own,
-and the manifest scope and icon paths along with it.
+GitHub Pages, built and deployed by `.github/workflows/deploy.yml` on every
+push to `main`. The repository stays private; the site does not — anyone with
+the URL can read it. Pages serves from a subpath
+(`https://ragnarwestad.github.io/woodstack/`), which is why `base` in
+`vite.config.ts` is `/woodstack/` and the manifest carries a matching `scope`.

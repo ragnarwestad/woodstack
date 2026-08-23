@@ -47,12 +47,21 @@ describe('vite.config.ts', () => {
     expect(viteConfig).not.toMatch(/icons:\s*\[/)
   })
 
-  // No host is chosen yet, so nothing has asked for a base of its own.
-  // A host that serves from a subpath would force one — that is a decision
-  // for the spec that picks the host, not an assumption to bake in here.
-  it('leaves base at the Vite default', () => {
+  // GitHub Pages serves this app from https://ragnarwestad.github.io/woodstack/,
+  // not from a domain root. Every built asset URL hangs off this one value, so
+  // a silent change back to '/' would break the whole live site at once.
+  it('serves from the GitHub Pages subpath', () => {
     const base = viteConfig.match(/^\s*base:\s*(.+)$/m)
-    if (base) expect(base[1]).toMatch(/^'\/',?$/)
+    expect(base).not.toBeNull()
+    expect(base![1]).toMatch(/^'\/woodstack\/',?$/)
+  })
+
+  // No trailing slash: the installed app's own URL can end up as exactly
+  // '/woodstack', which falls outside a scope written '/woodstack/' and trips
+  // Chrome's out-of-scope banner. PaceUp paid for this lesson once already.
+  it('scopes the installed app to the deploy path, without a trailing slash', () => {
+    expect(viteConfig).toMatch(/scope: '\/woodstack'/)
+    expect(viteConfig).not.toContain("scope: '/woodstack/'")
   })
 })
 
