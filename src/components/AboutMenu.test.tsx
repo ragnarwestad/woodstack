@@ -91,6 +91,22 @@ describe('AboutMenu', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
 
+  /** The same underline tabs as the stack page, and for the same reason — but
+   *  without the even split. «Slik regner vi» is three times the width of
+   *  «Om», so an even split hands one label a lake of space and squeezes the
+   *  other two. The three keep their own widths, left-aligned. */
+  it('draws the dialog tabs as an underline row that keeps each label to its own width', () => {
+    renderWithMantine(<AboutMenu />)
+    const dialog = openDialog()
+
+    const list = within(dialog).getByRole('tablist')
+    expect(list).toHaveAttribute('data-variant', 'default')
+    expect(list).not.toHaveAttribute('data-grow')
+    expect(within(dialog).getByRole('tab', { name: nb['about.tabWhat'] })).toHaveStyle({
+      padding: '9px 6px',
+    })
+  })
+
   /** Three tabs of prose are the largest block of text in the app, and a
    *  block that size is exactly where one language quietly goes missing. */
   it('speaks English to an English visitor, all the way through', () => {

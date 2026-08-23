@@ -144,12 +144,13 @@ export function AboutMenu() {
         <Tabs
           defaultValue="what"
           keepMounted={false}
-          variant="pills"
           color="orange"
-          radius={999}
           classNames={{ tab: 'ws-tab' }}
-          styles={{ tab: { fontFamily: 'Bungee, sans-serif', fontSize: 10, textTransform: 'uppercase', padding: '7px 12px' } }}
+          styles={{ tab: { fontFamily: 'Bungee, sans-serif', fontSize: 10, textTransform: 'uppercase', padding: '9px 6px' } }}
         >
+          {/* No `grow` here, unlike the stack page: «Slik regner vi» is three
+              times the width of «Om», so an even split hands one label a lake
+              of space and squeezes the other two. */}
           <Tabs.List>
             <Tabs.Tab value="what">{t('about.tabWhat')}</Tabs.Tab>
             <Tabs.Tab value="how">{t('about.tabHow')}</Tabs.Tab>

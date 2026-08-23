@@ -43,15 +43,24 @@ body {
   }
 }
 
-/* Pill tabs, on the stack page and in the About dialog. The inactive border
-   and the active fill are a `data-` attribute apart, which no `style` prop can
-   see — hence a class. The active pill takes the page's own colour for its
-   text so it reads as a chip cut out of the background, not as a button. */
-.ws-tab {
-  border: 1.5px solid var(--mantine-color-default-border);
+/* Tabs, on the stack page and in the About dialog. Two weights the theme does
+   not give us, and neither is reachable from a `style` prop: the rule under
+   the whole row belongs to a pseudo-element, and the active tab is a `data-`
+   attribute away from the inactive ones.
+
+   The row rule: Mantine draws it as a 1 px box on the list's `::before`, which
+   comes out as a 2 px band only because the box is empty and its top and
+   bottom edges meet. That is the weight the screen was designed to, so it is
+   said here as one 2 px edge rather than left to depend on an empty box.
+
+   The active tab's underline goes to 3 px. Only the WIDTH is set. Mantine
+   colours the active tab through `:where([data-active])`, and `:where()`
+   carries no specificity at all — so a colour set here would win over it and
+   the active tab would lose its underline entirely. */
+.mantine-Tabs-list::before {
+  border-width: 2px 0 0 0;
 }
 
-.ws-tab[data-active] {
-  border-color: transparent;
-  color: var(--mantine-color-body);
+.ws-tab {
+  border-bottom-width: 3px;
 }

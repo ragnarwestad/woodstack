@@ -319,13 +319,15 @@ export function StackDetail({
       <Tabs
         value={chip}
         onChange={setChip}
-        variant="pills"
         color="orange"
-        radius={999}
         classNames={{ tab: 'ws-tab' }}
-        styles={{ tab: { fontFamily: 'Bungee, sans-serif', fontSize: 10, textTransform: 'uppercase', padding: '7px 12px' } }}
+        styles={{ tab: { fontFamily: 'Bungee, sans-serif', fontSize: 10, textTransform: 'uppercase', padding: '9px 6px' } }}
       >
-        <Tabs.List>
+        {/* `grow`: the four labels are of roughly equal length, so an even
+            split gives each one its own cell and its underline meets the rule
+            under the row. The About dialog's three are not, and it does not
+            get this. */}
+        <Tabs.List grow>
           <Tabs.Tab value="volume">{t('stackDetail.tabVolume')}</Tabs.Tab>
           <Tabs.Tab value="reading">{t('stackDetail.tabReading')}</Tabs.Tab>
           <Tabs.Tab value="history">{t('stackDetail.tabHistory')}</Tabs.Tab>

@@ -384,6 +384,26 @@ describe('StackDetail', () => {
     )
     await waitFor(() => expect(screen.getByText(/få beskjed når veden er klar/i)).toBeInTheDocument())
   })
+
+  /** The four labels are the place you are standing, not four filters you
+   *  switch on — a pill reads as the latter. So they are Mantine's underline
+   *  tabs, split evenly across the row so each label owns its own cell and
+   *  its underline meets the rule under the whole list.
+   *
+   *  `data-variant` and `data-grow` are what Mantine puts on the tablist for
+   *  the variant and the even split; the underline's own 2 px and 3 px are in
+   *  `index.css`, which has its own test. */
+  it('draws the chips as an evenly split underline row, not as pills', async () => {
+    renderWithMantine(
+      <StackDetail stackId="a" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+    )
+    await waitFor(() => screen.getByText(/klar mellom/i))
+
+    const list = screen.getByRole('tablist')
+    expect(list).toHaveAttribute('data-variant', 'default')
+    expect(list).toHaveAttribute('data-grow', 'true')
+    expect(screen.getByRole('tab', { name: /inn\/ut/i })).toHaveStyle({ padding: '9px 6px' })
+  })
 })
 
 describe('StackDetail with a mixed stack', () => {
