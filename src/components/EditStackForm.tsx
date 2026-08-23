@@ -24,7 +24,8 @@ import { StorageQuotaError, getStack, updateStack } from '../storage/stacksRepo'
 import { geocode, type GeocodeResult } from '../climate/openMeteo'
 import { getNormals } from '../climate/normalsCache'
 import { useTranslation } from '../i18n/useTranslation'
-import { PhotoField } from './PhotoField'
+import { FieldRow } from './FieldRow'
+import { PhotoField, PhotoPreview } from './PhotoField'
 
 /** A place the stack can stand: either the one it already stands in, or one
  *  the visitor picked out of the search. */
@@ -216,12 +217,22 @@ export function EditStackForm({
 
       {error && <Alert color="red">{error}</Alert>}
 
-      <Group>
-        <Button onClick={submit}>{t('editStack.save')}</Button>
-        <Button variant="subtle" onClick={onCancel}>
-          {t('editStack.cancel')}
-        </Button>
-      </Group>
+      {/* The last row of the same two-column grid the rest of the form uses:
+          the buttons in the left column, the picture in the right — directly
+          under the field that took it, and centred in that column. Beside the
+          buttons rather than above or below them, so a picture cannot move
+          them. `start` keeps them at the top of the row when the picture is
+          taller than they are. */}
+      <FieldRow align="start">
+        <Group gap="md" wrap="nowrap">
+          <Button onClick={submit}>{t('editStack.save')}</Button>
+          <Button variant="subtle" onClick={onCancel}>
+            {t('editStack.cancel')}
+          </Button>
+        </Group>
+
+        <PhotoPreview value={photo} onChange={setPhoto} />
+      </FieldRow>
     </MantineStack>
   )
 }

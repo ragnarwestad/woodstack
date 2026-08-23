@@ -146,6 +146,31 @@ describe('AddStackForm', () => {
     expect(placeField()).toBeInTheDocument()
   })
 
+  /** Open-Meteo returns the same place twice — same name, same region, same
+   *  country — and no extra words tell those apart. Showing one of them beats
+   *  throwing, which is what the dropdown does on a duplicate. */
+  it('survives two matches that are identical in every field', async () => {
+    const twins = vi.fn().mockResolvedValue([
+      { name: 'Oslo', latitude: 59.91, longitude: 10.75, country: 'Norge', admin1: 'Oslo' },
+      { name: 'Oslo', latitude: 59.92, longitude: 10.76, country: 'Norge', admin1: 'Oslo' },
+    ])
+    renderWithMantine(<AddStackForm onAdd={vi.fn()} onCancel={vi.fn()} geocodeFn={twins} />)
+
+    fireEvent.change(placeField(), { target: { value: 'Oslo' } })
+    fireEvent.click(screen.getByRole('button', { name: /søk/i }))
+
+    await waitFor(() => expect(match(/Oslo/)).toBeInTheDocument())
+    expect(screen.getAllByRole('option', { name: /Oslo, Norge/, hidden: true })).toHaveLength(1)
+    expect(placeField()).toBeInTheDocument()
+  })
+
+  it('closes the matches once one has been picked', async () => {
+    renderWithMantine(<AddStackForm onAdd={vi.fn()} onCancel={vi.fn()} geocodeFn={geocodeFn} />)
+    await pickOslo()
+
+    expect(screen.queryByRole('option', { name: /Oslo/, hidden: true })).not.toBeInTheDocument()
+  })
+
   it('names the place and the country, and leaves the region out', async () => {
     renderWithMantine(<AddStackForm onAdd={vi.fn()} onCancel={vi.fn()} geocodeFn={geocodeFn} />)
     await pickOslo()

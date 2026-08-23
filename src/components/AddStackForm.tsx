@@ -28,7 +28,7 @@ import { StorageQuotaError } from '../storage/stacksRepo'
 import { geocode, type GeocodeResult } from '../climate/openMeteo'
 import { useTranslation } from '../i18n/useTranslation'
 import { FieldRow } from './FieldRow'
-import { PhotoField } from './PhotoField'
+import { PhotoField, PhotoPreview } from './PhotoField'
 
 function today(): string {
   return new Date().toISOString().slice(0, 10)
@@ -70,8 +70,8 @@ export function AddStackForm({ onAdd, onCancel, geocodeFn, resizeFn }: Props) {
   const [error, setError] = useState<string | null>(null)
 
   /** The matches drop down over the page, so nothing below them moves. */
-  const matchLabels = placeLabels(results ?? [])
-  const showMatches = matchLabels.length > 0
+  const matches = labelledMatches(results ?? [])
+  const showMatches = matches.length > 0
 
   async function search() {
     setError(null)
@@ -234,9 +234,9 @@ export function AddStackForm({ onAdd, onCancel, geocodeFn, resizeFn }: Props) {
         />
       </FieldRow>
 
-      {/* The place and the picture. The picture is second because its preview
-          is the one thing here that changes the row's height. */}
-      <FieldRow>
+      {/* The place and the picture. `start`: the preview grows the picture's cell
+          after the fact, and bottom-aligned that dragged the place field down. */}
+      <FieldRow align="start">
 
         {/* The typed text stays in the field and the matches drop down over the
             page — nothing below moves, and searching again is just editing the
@@ -249,7 +249,7 @@ export function AddStackForm({ onAdd, onCancel, geocodeFn, resizeFn }: Props) {
             label={t('addStack.place')}
             description={t('addStack.placeDescription')}
             value={query}
-            data={matchLabels}
+            data={matches.map((m) => m.label)}
             filter={({ options }) => options}
             openOnFocus={false}
             // No fade: the matches are the answer to a button the visitor just
@@ -266,11 +266,15 @@ export function AddStackForm({ onAdd, onCancel, geocodeFn, resizeFn }: Props) {
               setResults(null)
             }}
             onOptionSubmit={(label) => {
-              const picked = (results ?? [])[matchLabels.indexOf(label)]
+              const picked = matches.find((m) => m.label === label)?.result
               if (!picked) return
               setPlace(picked)
               setPlaceText(label)
               setQuery(label)
+              // Clearing the matches closes the dropdown: the question has been
+              // answered, and a list still hanging open over the form is in the
+              // way of the next field.
+              setResults(null)
               setError(null)
             }}
             onKeyDown={(event) => {
@@ -293,12 +297,22 @@ export function AddStackForm({ onAdd, onCancel, geocodeFn, resizeFn }: Props) {
 
       {error && <Alert color="red">{error}</Alert>}
 
-      <Group>
-        <Button onClick={submit}>{t('addStack.save')}</Button>
-        <Button variant="subtle" onClick={onCancel}>
-          {t('addStack.cancel')}
-        </Button>
-      </Group>
+      {/* The last row of the same two-column grid the rest of the form uses:
+          the buttons in the left column, the picture in the right — directly
+          under the field that took it, and centred in that column. Beside the
+          buttons rather than above or below them, so a picture cannot move
+          them. `start` keeps them at the top of the row when the picture is
+          taller than they are. */}
+      <FieldRow align="start">
+        <Group gap="md" wrap="nowrap">
+          <Button onClick={submit}>{t('addStack.save')}</Button>
+          <Button variant="subtle" onClick={onCancel}>
+            {t('addStack.cancel')}
+          </Button>
+        </Group>
+
+        <PhotoPreview value={photo} onChange={setPhoto} />
+      </FieldRow>
     </MantineStack>
   )
 }
@@ -311,19 +325,30 @@ function placeLabel(result: GeocodeResult): string {
   return [result.name, result.country].filter(Boolean).join(', ')
 }
 
-/** The labels for one set of matches, with the region added back ONLY where two
- *  of them would otherwise read alike — a search for "Oslo" returns several
- *  Norwegian Oslos, and dropping the region turned them all into "Oslo, Norge".
- *  Identical labels are not merely confusing: the dropdown refuses duplicate
- *  options and takes the whole page down with it. */
-function placeLabels(results: GeocodeResult[]): string[] {
+/** One label per match, guaranteed unique, because the dropdown refuses
+ *  duplicate options by THROWING — and a thrown error there takes the whole
+ *  page down, which is what a search for "Oslo" used to do.
+ *
+ *  Two passes: add the region where two matches would otherwise read alike,
+ *  and then drop any that are still identical. Open-Meteo really does return
+ *  the same place twice — same name, same region, same country — and no amount
+ *  of extra words tells those apart, so showing one of them is the honest
+ *  answer. The matches are filtered with the labels, so the two stay aligned. */
+function labelledMatches(results: GeocodeResult[]): { result: GeocodeResult; label: string }[] {
   const plain = results.map(placeLabel)
-  const seen = new Map<string, number>()
-  for (const label of plain) seen.set(label, (seen.get(label) ?? 0) + 1)
+  const count = new Map<string, number>()
+  for (const label of plain) count.set(label, (count.get(label) ?? 0) + 1)
 
-  return results.map((result, index) => {
-    const label = plain[index]
-    if ((seen.get(label) ?? 0) < 2 || !result.admin1) return label
-    return [result.name, result.admin1, result.country].filter(Boolean).join(', ')
+  const seen = new Set<string>()
+  const out: { result: GeocodeResult; label: string }[] = []
+  results.forEach((result, index) => {
+    const short = plain[index]
+    const label = (count.get(short) ?? 0) > 1 && result.admin1
+      ? [result.name, result.admin1, result.country].filter(Boolean).join(', ')
+      : short
+    if (seen.has(label)) return
+    seen.add(label)
+    out.push({ result, label })
   })
+  return out
 }

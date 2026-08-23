@@ -8,12 +8,14 @@ import type { ReactNode } from 'react'
  *  A row per pair rather than one grid over every field: the pairs mean
  *  something — the wood, where it stands, how much — and a single flowing grid
  *  would re-pair them whenever a conditional field appears or disappears. */
-export function FieldRow({ children }: { children: ReactNode }) {
+export function FieldRow({ children, align = 'end' }: { children: ReactNode; align?: 'end' | 'start' }) {
   return (
-    // Bottoms aligned, not tops: a field with a description under its label
-    // is taller than its neighbour, and without this the two inputs sit at
-    // different heights on the same row.
-    <SimpleGrid cols={{ base: 1, xs: 2 }} spacing="sm" verticalSpacing="sm" style={{ alignItems: 'end' }}>
+    // Bottoms aligned by default: a field with a description under its label is
+    // taller than its neighbour, and without this the two inputs sit at
+    // different heights on the same row. A row where one cell GROWS after the
+    // fact — a photo preview — passes `start`, or the other column is dragged
+    // down every time.
+    <SimpleGrid cols={{ base: 1, xs: 2 }} spacing="sm" verticalSpacing="sm" style={{ alignItems: align }}>
       {children}
     </SimpleGrid>
   )

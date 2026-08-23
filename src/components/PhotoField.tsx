@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Alert, Button, FileInput, Group, Image, Stack as MantineStack } from '@mantine/core'
+import { Alert, CloseButton, FileInput, Group, Image, rem, Stack as MantineStack } from '@mantine/core'
 import { resizePhoto } from '../media/photo'
 import { useTranslation } from '../i18n/useTranslation'
 
@@ -19,7 +19,30 @@ type Props = {
  *  `capture="environment"` is what opens the camera straight away on a phone,
  *  pointing away from the visitor — the pile is in front of them. On a desktop
  *  the browser ignores it and shows an ordinary file picker. */
-export function PhotoField({ value, onChange, resizeFn = resizePhoto }: Props) {
+/** The picture itself, shown wherever the caller puts it — beside the save and
+ *  cancel buttons, in the add form. Kept out of the field on purpose: under the
+ *  field it added height the moment a photo arrived, and everything below it
+ *  moved down the page while the visitor was still filling the form in. */
+export function PhotoPreview({ value, onChange }: Pick<Props, 'value' | 'onChange'>) {
+  const { t } = useTranslation()
+  if (!value) return null
+
+  return (
+    // Big enough to actually look at — a thumbnail answers "is one attached",
+    // not "is this the right pile". Centred in whatever space it is given.
+    // `w="100%"`: without a width of its own the row is only as wide as the
+    // picture, and centring inside it centres nothing.
+    <Group gap={4} wrap="nowrap" align="flex-start" justify="center" w="100%">
+      <Image src={value} alt={t('photo.alt')} h={rem(140)} w="auto" fit="contain" radius="sm" />
+      <CloseButton size="sm" aria-label={t('photo.remove')} onClick={() => onChange(undefined)} />
+    </Group>
+  )
+}
+
+/** The control that takes a photo. `value` is part of the props so callers can
+ *  hand the same object to both halves, but the field does not show the photo
+ *  — `PhotoPreview` does, wherever the caller has room for it. */
+export function PhotoField({ onChange, resizeFn = resizePhoto }: Props) {
   const { t } = useTranslation()
   const [failed, setFailed] = useState(false)
 
@@ -47,15 +70,6 @@ export function PhotoField({ value, onChange, resizeFn = resizePhoto }: Props) {
         value={null}
         onChange={pick}
       />
-
-      {value && (
-        <Group align="flex-start" gap="sm">
-          <Image src={value} alt={t('photo.alt')} w={120} radius="sm" />
-          <Button variant="subtle" onClick={() => onChange(undefined)}>
-            {t('photo.remove')}
-          </Button>
-        </Group>
-      )}
 
       {failed && <Alert color="red">{t('photo.failed')}</Alert>}
     </MantineStack>
