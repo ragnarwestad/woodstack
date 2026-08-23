@@ -55,3 +55,33 @@ body {
   border-color: transparent;
   color: var(--mantine-color-body);
 }
+
+/* The header panel's growth-ring motif: the mark's own rings blown up past the
+   edges of the panel, which is why the gradient is centred on the top edge and
+   allowed to bleed rather than being fitted inside. A repeating gradient is
+   one of the things a React `style` prop cannot say, hence a class. */
+.ws-header-rings {
+  position: absolute;
+  inset: -60px -40px auto;
+  height: 320px;
+  background: repeating-radial-gradient(
+    circle at 50% 0%,
+    light-dark(rgba(232, 163, 42, 0.22), rgba(242, 178, 60, 0.18)) 0 10px,
+    transparent 10px 26px
+  );
+}
+
+/* The scalloped bottom edge, painted in the page's own colour so it reads as
+   bites taken out of the plum rather than as a strip of its own. `bottom: -1px`
+   overshoots the panel's edge on purpose: the sliver past it is clipped by the
+   panel's own `overflow: hidden`, and that is what stops a hairline of plum
+   surviving under the scallops on fractional device pixel ratios. */
+.ws-header-scallop {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 14px;
+  background: radial-gradient(circle at 11px 14px, var(--mantine-color-body) 11px, transparent 12px) repeat-x;
+  background-size: 22px 14px;
+}

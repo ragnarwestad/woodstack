@@ -59,6 +59,12 @@ const plumNight: MantineColorsTuple = [
   '#0E0610',
 ]
 
+/** The plum panel: flat, shadowless, cream text. It holds what the app is
+ *  telling you, where a cream card with a hard shadow holds what you act on.
+ *  Nothing in this app is both. Written once here because the header panel and
+ *  the stack page's window both take it. */
+export const PLUM_PANEL = 'light-dark(#3A1A38, #2A1226)'
+
 export const theme: MantineThemeOverride = createTheme({
   primaryColor: 'orange',
   primaryShade: { light: 6, dark: 5 },
