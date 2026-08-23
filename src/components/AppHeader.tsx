@@ -43,11 +43,17 @@ export function AppHeader({ onHome }: Props) {
       pos="sticky"
       top={0}
       radius={0}
-      mx="calc(var(--mantine-spacing-md) * -1)"
       style={{
         zIndex: 2,
         overflow: 'hidden',
         padding: '22px 20px 30px',
+        // Out AND up. `App` wraps everything in `Container size="sm" py="xl"`,
+        // and cancelling only the side padding left a strip of page above the
+        // panel at rest — which then vanished the moment `top={0}` took hold
+        // and the panel came up flush. Inset in one state and flush in the
+        // other is the mismatch; the band is drawn sitting at the top.
+        marginInline: 'calc(var(--mantine-spacing-md) * -1)',
+        marginTop: 'calc(var(--mantine-spacing-xl) * -1)',
         backgroundColor: PLUM_PANEL,
         color: 'var(--mantine-color-white)',
       }}
@@ -112,8 +118,14 @@ export function AppHeader({ onHome }: Props) {
 
         {/* Three buttons of the same size and shape, not two blocks of text and
             a button. Theme and language are set once and then never touched;
-            they should not take a line of the header to say so. */}
-        <Group gap="xs" wrap="nowrap">
+            they should not take a line of the header to say so.
+
+            `marginLeft: auto` and not just the parent's `space-between`: once
+            these wrap to a line of their own they are the only thing on it,
+            and `space-between` puts a lone item at the start — so on the
+            narrow screen the wrap was for, they landed on the left. The auto
+            margin holds them right on both lines. */}
+        <Group gap="xs" wrap="nowrap" style={{ marginLeft: 'auto' }}>
           <ThemeControl />
           <LanguageControl />
           <AboutMenu />

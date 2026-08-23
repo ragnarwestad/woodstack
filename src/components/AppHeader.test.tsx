@@ -24,6 +24,25 @@ function renderHeader() {
 }
 
 describe('AppHeader', () => {
+  /* NOT TESTED HERE, and it should be: the panel cancels both of the
+     container's paddings — `marginInline` and `marginTop`, each the negative
+     of a Mantine spacing token — so the band sits at the top of the screen and
+     bleeds to its edges instead of being inset at rest and flush the moment
+     `top={0}` takes hold. `happy-dom` drops every `calc(var(...))` value out of
+     the style attribute (the panel's own `background-color` goes the same way),
+     so there is nothing left to read. It is the code comment on the margins
+     that protects them, and a look at a real narrow screen. */
+
+  /** The reported bug: on a narrow screen the three icon buttons wrap to a line
+   *  of their own, where they are the only item — and `space-between` puts a
+   *  lone item at the start, so they went left. They belong right on both
+   *  lines. */
+  it('holds the icon buttons right when they wrap to their own line', () => {
+    renderHeader()
+    const icons = screen.getByRole('button', { name: nb['app.theme'] }).parentElement as HTMLElement
+    expect(icons.style.marginLeft).toBe('auto')
+  })
+
   // Both the language and Mantine's colour scheme are stored, so a choice
   // made in one test would otherwise decide the next one's starting point.
   beforeEach(() => localStorage.clear())
