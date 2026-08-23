@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { AddStackForm } from './AddStackForm'
 import { renderWithMantine } from '../test/render'
+import { StorageQuotaError } from '../storage/stacksRepo'
 import { ENGLISH_TEST_LANGUAGE, setTestLanguage } from '../test/language'
 
 const geocodeFn = vi.fn().mockResolvedValue([
@@ -10,6 +11,18 @@ const geocodeFn = vi.fn().mockResolvedValue([
 
 function fill(label: RegExp, value: string) {
   fireEvent.change(screen.getByLabelText(label), { target: { value } })
+}
+
+const PHOTO = 'data:image/jpeg;base64,shrunk'
+
+function resizeTo(dataUrl: string) {
+  return vi.fn().mockResolvedValue(dataUrl)
+}
+
+async function takePhoto(container: HTMLElement) {
+  const input = container.querySelector('input[type="file"]') as HTMLInputElement
+  fireEvent.change(input, { target: { files: [new File(['bytes'], 'stabel.jpg', { type: 'image/jpeg' })] } })
+  await waitFor(() => expect(screen.getByAltText(/bilde av vedstabelen/i)).toBeInTheDocument())
 }
 
 async function pickOslo() {
@@ -101,6 +114,55 @@ describe('AddStackForm', () => {
 
     expect(onAdd).toHaveBeenCalledTimes(1)
     expect(onAdd.mock.calls[0][0]).not.toHaveProperty('initialVolume')
+  })
+
+  it('hands over the photo the visitor took', async () => {
+    const onAdd = vi.fn()
+    const { container } = renderWithMantine(
+      <AddStackForm onAdd={onAdd} onCancel={vi.fn()} geocodeFn={geocodeFn} resizeFn={resizeTo(PHOTO)} />,
+    )
+
+    fill(/navn/i, 'Bjørk ved veggen')
+    await takePhoto(container)
+    await pickOslo()
+    fireEvent.click(screen.getByRole('button', { name: /lagre/i }))
+
+    expect(onAdd).toHaveBeenCalledWith(expect.objectContaining({ photo: PHOTO }))
+  })
+
+  // Same rule as the opening amount: a field nobody filled in is left out of
+  // the payload entirely rather than sent along as an empty one.
+  it('leaves the photo out entirely when none was taken', async () => {
+    const onAdd = vi.fn()
+    renderWithMantine(<AddStackForm onAdd={onAdd} onCancel={vi.fn()} geocodeFn={geocodeFn} />)
+
+    fill(/navn/i, 'Bjørk ved veggen')
+    await pickOslo()
+    fireEvent.click(screen.getByRole('button', { name: /lagre/i }))
+
+    expect(onAdd).toHaveBeenCalledTimes(1)
+    expect(onAdd.mock.calls[0][0]).not.toHaveProperty('photo')
+  })
+
+  /** The storage refusing the write is the one failure a photo makes likely,
+   *  and the visitor has just typed a whole form: it stays on screen, with the
+   *  reason, rather than disappearing into a crash. */
+  it('says the browser is full instead of throwing, and keeps the typed fields', async () => {
+    const onAdd = vi.fn(() => {
+      throw new StorageQuotaError()
+    })
+    const { container } = renderWithMantine(
+      <AddStackForm onAdd={onAdd} onCancel={vi.fn()} geocodeFn={geocodeFn} resizeFn={resizeTo(PHOTO)} />,
+    )
+
+    fill(/navn/i, 'Bjørk ved veggen')
+    await takePhoto(container)
+    await pickOslo()
+    fireEvent.click(screen.getByRole('button', { name: /lagre/i }))
+
+    expect(screen.getByText(/ikke plass/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/navn/i)).toHaveValue('Bjørk ved veggen')
+    expect(screen.getByAltText(/bilde av vedstabelen/i)).toBeInTheDocument()
   })
 
   it('says so when the place search finds nothing', async () => {

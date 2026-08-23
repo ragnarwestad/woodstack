@@ -1,4 +1,4 @@
-import { Button, Group, Paper, Stack as MantineStack, Text, UnstyledButton } from '@mantine/core'
+import { Button, Group, Image, Paper, Stack as MantineStack, Text, UnstyledButton } from '@mantine/core'
 import type { ClimateNormals, Stack } from '../storage/schema'
 import { estimateWindow, windowProgress } from '../model/simulate'
 import { formatWindow } from '../model/units'
@@ -65,6 +65,11 @@ function StackRow({
       <Paper withBorder p="md" radius="md">
         <Group wrap="nowrap">
           <ProgressRing value={window ? windowProgress(window, today) : 0} />
+          {/* Names are what a visitor has to hold in their head to tell three
+              woodpiles apart; a photo of the pile does that at a glance. Only
+              for the stacks that have one — a placeholder would take the same
+              room and say nothing. */}
+          {stack.photo && <Image src={stack.photo} alt={t('photo.alt')} w={56} h={56} radius="sm" fit="cover" />}
           <MantineStack gap={2}>
             <Text fw={600}>{stack.name}</Text>
             <Text size="sm" c="dimmed">

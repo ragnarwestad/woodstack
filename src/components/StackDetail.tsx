@@ -4,6 +4,7 @@ import {
   Button,
   Divider,
   Group,
+  Image,
   Stack as MantineStack,
   Tabs,
   Text,
@@ -164,6 +165,11 @@ export function StackDetail({ stackId, onBack, onEdit, getNormalsFn = getNormals
           place: stack.location.name,
         })}
       </Text>
+
+      {/* Under the meta line and above the drying window: the photo says which
+          pile this is, which is the question asked on the way in, not one of
+          the numbers below. */}
+      {stack.photo && <Image src={stack.photo} alt={t('photo.alt')} radius="md" maw={320} />}
 
       {loading && <Text>{t('common.loadingClimate')}</Text>}
 

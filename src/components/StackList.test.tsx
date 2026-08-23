@@ -34,6 +34,17 @@ describe('StackList', () => {
     expect(onSelect).toHaveBeenCalledWith('b')
   })
 
+  it('shows the photo of a stack that has one, and nothing extra for one that has not', () => {
+    const withPhoto = makeStack({ id: 'c', name: 'Bak fjøset', photo: 'data:image/jpeg;base64,thumb' })
+    renderWithMantine(
+      <StackList stacks={[stacks[0], withPhoto]} normalsFor={() => OSLO_NORMALS} onSelect={vi.fn()} onAdd={vi.fn()} />,
+    )
+
+    const photos = screen.getAllByAltText(/bilde av vedstabelen/i)
+    expect(photos).toHaveLength(1)
+    expect(photos[0]).toHaveAttribute('src', 'data:image/jpeg;base64,thumb')
+  })
+
   it('invites the first stack when there are none', () => {
     renderWithMantine(<StackList stacks={[]} normalsFor={() => null} onSelect={vi.fn()} onAdd={vi.fn()} />)
     expect(screen.getByText(/ingen vedstabler/i)).toBeInTheDocument()
