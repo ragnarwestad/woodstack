@@ -136,7 +136,7 @@ describe('addStack', () => {
       unit: 'favn',
     })
     expect(created.volumeEntries?.[0].id).toBeTruthy()
-    expect(currentSolidLiters(getStack(created.id)?.volumeEntries)).toBeCloseTo(3300, 6)
+    expect(currentSolidLiters(getStack(created.id)?.volumeEntries)).toBeCloseTo(3200, 6)
   })
 
   it('never lets `initialVolume` itself land on the stored stack', () => {

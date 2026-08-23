@@ -52,7 +52,7 @@ describe('VolumeEntryForm', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /^lagre$/i }))
     expect(onLog).not.toHaveBeenCalled()
-    expect(screen.getByText(/mellom 0 og 606\./i)).toBeInTheDocument()
+    expect(screen.getByText(/mellom 0 og 625\./i)).toBeInTheDocument()
 
     fireEvent.change(screen.getByLabelText(/mengde/i), { target: { value: '0' } })
     fireEvent.click(screen.getByRole('button', { name: /^lagre$/i }))
@@ -73,7 +73,7 @@ describe('VolumeEntryForm', () => {
    *  one can read — and the entry cannot be edited away, only the whole
    *  stack deleted. */
   /** The number the field accepts depends on the unit chosen, so both the
-   *  label and the limit have to follow the select. Stating 606 while the
+   *  label and the limit have to follow the select. Stating 625 while the
    *  unit says sacks would be worse than saying nothing. */
   it('names the unit in the label and states the cap in that unit', () => {
     renderWithMantine(<VolumeEntryForm onLog={vi.fn()} />)
@@ -84,7 +84,7 @@ describe('VolumeEntryForm', () => {
 
     fireEvent.change(screen.getByLabelText(/mengde/i), { target: { value: '1e15' } })
     fireEvent.click(screen.getByRole('button', { name: /^lagre$/i }))
-    expect(screen.getByText(/mellom 0 og 36363\./i)).toBeInTheDocument()
+    expect(screen.getByText(/mellom 0 og 33000\./i)).toBeInTheDocument()
   })
 
   it('refuses an amount far beyond any real woodpile', () => {
@@ -93,7 +93,7 @@ describe('VolumeEntryForm', () => {
     fireEvent.change(screen.getByLabelText(/mengde/i), { target: { value: '1e15' } })
     fireEvent.click(screen.getByRole('button', { name: /^lagre$/i }))
     expect(onLog).not.toHaveBeenCalled()
-    expect(screen.getByText(/mellom 0 og 606\./i)).toBeInTheDocument()
+    expect(screen.getByText(/mellom 0 og 625\./i)).toBeInTheDocument()
   })
 
   /** The second way into the same choice: someone who logs a load without ever

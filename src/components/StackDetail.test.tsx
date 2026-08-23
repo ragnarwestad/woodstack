@@ -225,8 +225,8 @@ describe('StackDetail', () => {
       <StackDetail stackId="a" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
     )
 
-    // 2 favn = 3300 solid litres, less one storsekk at 500 = 2800.
-    await waitFor(() => expect(screen.getByText(/igjen nå: 2,8 m³ fast/i)).toBeInTheDocument())
+    // 2 favn = 3200 solid litres, less one storsekk at 500 = 2700.
+    await waitFor(() => expect(screen.getByText(/igjen nå: 2,7 m³ fast/i)).toBeInTheDocument())
   })
 
   it('shows zero, not a negative number, when more was taken out than was ever logged in', async () => {
@@ -259,7 +259,7 @@ describe('StackDetail', () => {
     fireEvent.change(screen.getByLabelText(/enhet/i), { target: { value: 'favn' } })
     fireEvent.click(within(volumePanel).getByRole('button', { name: /^lagre$/i }))
 
-    await waitFor(() => expect(screen.getByText(/igjen nå: 1,65 m³ fast/i)).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByText(/igjen nå: 1,6 m³ fast/i)).toBeInTheDocument())
     expect(getStack('a')?.volumeEntries).toHaveLength(1)
   })
 
