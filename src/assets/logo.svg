@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="28 104 456 304" role="img" aria-label="Woodstack">
+  <!-- The header mark: the same five split logs as icon-source.svg, but with
+       no background tile and cropped tight to the drawing. The app icon needs
+       a background of its own because a home-screen tile is opaque; on a page
+       that background is a dark square sitting next to the title, which shows
+       up plainly in the light theme.
+
+       The two browns are the manifest's theme_color (#8B4513) for the bark and
+       a lighter tone (#C68642) for the cut face. Both read against the light
+       theme's white and the dark theme's near-black, and the bright cut face
+       carries the mark where the bark alone would be muddy. -->
+  <g>
+    <g transform="translate(180 180)">
+      <circle r="76" fill="#8B4513"/>
+      <circle r="62" fill="#C68642"/>
+      <circle r="42" fill="none" stroke="#8B4513" stroke-width="6"/>
+      <circle r="22" fill="none" stroke="#8B4513" stroke-width="6"/>
+    </g>
+    <g transform="translate(332 180)">
+      <circle r="76" fill="#8B4513"/>
+      <circle r="62" fill="#C68642"/>
+      <circle r="42" fill="none" stroke="#8B4513" stroke-width="6"/>
+      <circle r="22" fill="none" stroke="#8B4513" stroke-width="6"/>
+    </g>
+    <g transform="translate(104 332)">
+      <circle r="76" fill="#8B4513"/>
+      <circle r="62" fill="#C68642"/>
+      <circle r="42" fill="none" stroke="#8B4513" stroke-width="6"/>
+      <circle r="22" fill="none" stroke="#8B4513" stroke-width="6"/>
+    </g>
+    <g transform="translate(256 332)">
+      <circle r="76" fill="#8B4513"/>
+      <circle r="62" fill="#C68642"/>
+      <circle r="42" fill="none" stroke="#8B4513" stroke-width="6"/>
+      <circle r="22" fill="none" stroke="#8B4513" stroke-width="6"/>
+    </g>
+    <g transform="translate(408 332)">
+      <circle r="76" fill="#8B4513"/>
+      <circle r="62" fill="#C68642"/>
+      <circle r="42" fill="none" stroke="#8B4513" stroke-width="6"/>
+      <circle r="22" fill="none" stroke="#8B4513" stroke-width="6"/>
+    </g>
+  </g>
+</svg>
