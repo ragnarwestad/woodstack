@@ -28,7 +28,7 @@ export const nb = {
     'Prosenten regnes av vekta veden ville hatt helt tørr. Mange fuktmålere viser prosent av våtvekt i stedet, og det gir et lavere tall for nøyaktig samme ved – fersk bjørk er 45 % våtvekt og 75 % tørrvekt.',
   'explain.volumeUnits.title': 'Favn, stablet eller fast kubikkmeter?',
   'explain.volumeUnits.body':
-    'De tre måler ikke det samme. Stablet kubikkmeter teller med luften mellom kubbene, fast kubikkmeter er bare selve veden, og en favn er 2,4 m³ stablet – altså 1,65 m³ fast. Samme vedhaug gir tre ulike tall, alt etter hvilken enhet du velger.',
+    'De tre måler ikke det samme. Stablet kubikkmeter teller med luften mellom kubbene, fast kubikkmeter er bare selve veden, og en favn er 2,4 m³ stablet – altså 1,6 m³ fast. Samme vedhaug gir tre ulike tall, alt etter hvilken enhet du velger.',
 
   /* The dialog behind the header's three dots. The same explaining voice as
      the «?» marks above, at the scale of the whole app rather than one field. */
@@ -177,19 +177,31 @@ export const nb = {
   'volume.kind.withdrawal': 'Tok ut ved',
 
   'volume.unit.fastKubikk': 'Fast kubikkmeter',
+  // Ikke lenger til å velge for en ny føring, men beholdt fordi eldre
+  // føringer fortsatt står i den — se VolumeUnit i storage/schema.ts.
   'volume.unit.stablet': 'Stablet kubikkmeter',
+  'volume.unit.stablet60': 'Stablet kubikkmeter (60 cm)',
+  'volume.unit.stablet30': 'Stablet kubikkmeter (30 cm)',
   'volume.unit.losKubikk': 'Løs kubikkmeter',
   'volume.unit.favn': 'Favn (2,4 m³ stablet)',
+  'volume.unit.storfavn': 'Storfavn',
+  'volume.unit.cord': 'Cord',
   'volume.unit.storsekk': 'Storsekk (1000 liter)',
   'volume.unit.sekk40': 'Sekk (40 liter)',
   'volume.unit.sekk60': 'Sekk (60 liter)',
+  'volume.unit.sekk80': 'Sekk (80 liter)',
   'volume.unitShort.fastKubikk': 'm³ fast',
   'volume.unitShort.stablet': 'm³ stablet',
+  'volume.unitShort.stablet60': 'm³ stablet 60 cm',
+  'volume.unitShort.stablet30': 'm³ stablet 30 cm',
   'volume.unitShort.losKubikk': 'm³ løs',
   'volume.unitShort.favn': 'favner',
+  'volume.unitShort.storfavn': 'storfavner',
+  'volume.unitShort.cord': 'cord',
   'volume.unitShort.storsekk': 'storsekker',
   'volume.unitShort.sekk40': '40-liters sekker',
   'volume.unitShort.sekk60': '60-liters sekker',
+  'volume.unitShort.sekk80': '80-liters sekker',
 
   'units.moistureBasis': 'tørrvekt',
   'units.monthPart.beginning': 'begynnelsen',

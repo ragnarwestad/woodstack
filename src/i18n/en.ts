@@ -27,7 +27,7 @@ export const en: Record<TranslationKey, string> = {
     'The percentage is measured against what the wood would weigh bone dry. Many moisture meters show wet-basis percent instead, which gives a lower number for exactly the same wood – fresh birch is 45 % wet basis and 75 % dry basis.',
   'explain.volumeUnits.title': 'Favn, stacked or solid cubic metres?',
   'explain.volumeUnits.body':
-    'The three do not measure the same thing. A stacked cubic metre counts the air between the logs, a solid cubic metre is the wood alone, and a favn is 2.4 m³ stacked – that is 1.65 m³ solid. The same pile of firewood gives three different numbers depending on the unit you pick.',
+    'The three do not measure the same thing. A stacked cubic metre counts the air between the logs, a solid cubic metre is the wood alone, and a favn is 2.4 m³ stacked – that is 1.6 m³ solid. The same pile of firewood gives three different numbers depending on the unit you pick.',
 
   'about.menuLabel': 'More',
   'about.menuItem': 'About Woodstack',
@@ -170,19 +170,31 @@ export const en: Record<TranslationKey, string> = {
   'volume.kind.withdrawal': 'Took out wood',
 
   'volume.unit.fastKubikk': 'Solid cubic metre',
+  // No longer offered for a new entry, but kept because older entries are
+  // still stored in it — see VolumeUnit in storage/schema.ts.
   'volume.unit.stablet': 'Stacked cubic metre',
+  'volume.unit.stablet60': 'Stacked cubic metre (60 cm)',
+  'volume.unit.stablet30': 'Stacked cubic metre (30 cm)',
   'volume.unit.losKubikk': 'Loose cubic metre',
   'volume.unit.favn': 'Favn (2.4 m³ stacked)',
+  'volume.unit.storfavn': 'Storfavn',
+  'volume.unit.cord': 'Cord',
   'volume.unit.storsekk': 'Bulk bag (1000 litres)',
   'volume.unit.sekk40': 'Sack (40 litres)',
   'volume.unit.sekk60': 'Sack (60 litres)',
+  'volume.unit.sekk80': 'Sack (80 litres)',
   'volume.unitShort.fastKubikk': 'm³ solid',
   'volume.unitShort.stablet': 'm³ stacked',
+  'volume.unitShort.stablet60': 'm³ stacked 60 cm',
+  'volume.unitShort.stablet30': 'm³ stacked 30 cm',
   'volume.unitShort.losKubikk': 'm³ loose',
   'volume.unitShort.favn': 'favn',
+  'volume.unitShort.storfavn': 'storfavn',
+  'volume.unitShort.cord': 'cords',
   'volume.unitShort.storsekk': 'bulk bags',
   'volume.unitShort.sekk40': '40-litre sacks',
   'volume.unitShort.sekk60': '60-litre sacks',
+  'volume.unitShort.sekk80': '80-litre sacks',
 
   'units.moistureBasis': 'dry basis',
   'units.monthPart.beginning': 'beginning',

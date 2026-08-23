@@ -6,39 +6,51 @@ import type { Translator } from '../i18n/useTranslation'
  *  Nothing in this file feeds the drying model. Split size, cover and exposure
  *  decide how fast wood dries; how much of it there is does not. */
 
-/** How big one unit is in litres, and what share of that is actually wood
- *  rather than air between the pieces. `fastKubikk` is the reference — solid
- *  wood, no air — and every other unit converts through it.
+/** Solid litres per unit — the one number `Tabeller 2` gives for each, so it
+ *  is stored directly rather than decomposed into a raw size and a wood-to-air
+ *  fraction: storfavn and cord have no independently meaningful "raw litres"
+ *  figure of their own, only the solid result.
  *
- *  Source: ved3.no/hovedmeny/vedfakta (1 løs kubikkmeter = 0,5 fast
- *  kubikkmeter; 1 favn = 2,4 m³ stablet = 3,3 m³ løs = 1,65 fast
- *  kubikkmeter), cross-checked against ved-fra-ble.com/malenheter (sack sizes,
- *  Norsk Standard NS 4414) and oslovedsentral.no/fakta-tips/hvor-mye-ved-er-det
- *  (favn, storsekk and sack counts), all read 2026-08-22. These are published
- *  rule-of-thumb figures, not lab measurements — the sources disagree at the
- *  second decimal depending on log length and how tightly a sack is packed.
- *  The same standing as the species table in `species.ts`: do not chase more
- *  precision than the sources have. */
-const VOLUME_UNIT_INFO: Record<VolumeUnit, { litersPerUnit: number; solidFraction: number }> = {
-  fastKubikk: { litersPerUnit: 1000, solidFraction: 1 },
-  stablet: { litersPerUnit: 1000, solidFraction: 11 / 16 },
-  losKubikk: { litersPerUnit: 1000, solidFraction: 0.5 },
-  favn: { litersPerUnit: 2400, solidFraction: 11 / 16 },
-  storsekk: { litersPerUnit: 1000, solidFraction: 0.5 },
-  sekk40: { litersPerUnit: 40, solidFraction: 11 / 16 },
-  sekk60: { litersPerUnit: 60, solidFraction: 11 / 16 },
+ *  Source: Ved4.xlsx, sheet `Tabeller 2`, kept beside
+ *  `specs/woodstack/18-what-wood-is-worth/1-description.md`. These are the
+ *  figures of the person this app is built for, and where they disagree with
+ *  the published rules of thumb this table used to cite (ved3.no and others),
+ *  his win — he is the one who buys and sells the wood. That is why a favn is
+ *  1600 solid litres here and not the 1650 those sources give.
+ *
+ *  The 40-litre sack is the one entry worth checking with him again: 30.3
+ *  solid litres means three quarters of the sack is wood, which is denser than
+ *  split firewood usually packs.
+ *
+ *  `stablet` is frozen at the app's old, pre-spreadsheet figure (11/16) and
+ *  kept only so a ledger entry logged before `stablet60`/`stablet30` existed
+ *  still converts to the volume it always did — see `VolumeUnit` in
+ *  `storage/schema.ts`. */
+const VOLUME_UNIT_INFO: Record<VolumeUnit, { solidLitersPerUnit: number }> = {
+  fastKubikk: { solidLitersPerUnit: 1000 },
+  stablet60: { solidLitersPerUnit: 650 },
+  stablet30: { solidLitersPerUnit: 740 },
+  losKubikk: { solidLitersPerUnit: 500 },
+  favn: { solidLitersPerUnit: 1600 },
+  storsekk: { solidLitersPerUnit: 500 },
+  sekk40: { solidLitersPerUnit: 30.303 },
+  sekk60: { solidLitersPerUnit: 41.667 },
+  sekk80: { solidLitersPerUnit: 50 },
+  storfavn: { solidLitersPerUnit: 6800 },
+  cord: { solidLitersPerUnit: 2678.8 },
+  stablet: { solidLitersPerUnit: 687.5 },
 }
 
 /** Solid litres — the one measure that stays additive when a ledger mixes
  *  sacks, favner and cubic metres. */
 export function toSolidLiters(amount: number, unit: VolumeUnit): number {
   const info = VOLUME_UNIT_INFO[unit]
-  return amount * info.litersPerUnit * info.solidFraction
+  return amount * info.solidLitersPerUnit
 }
 
 export function fromSolidLiters(solidLiters: number, unit: VolumeUnit): number {
   const info = VOLUME_UNIT_INFO[unit]
-  return solidLiters / (info.litersPerUnit * info.solidFraction)
+  return solidLiters / info.solidLitersPerUnit
 }
 
 /** The running total, worked out from the whole ledger every time rather than

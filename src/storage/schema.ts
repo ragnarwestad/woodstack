@@ -45,12 +45,38 @@ export type Reading = {
   moisture: number
 }
 
-/** The units firewood is actually traded in here. `fastKubikk` is solid wood
- *  with no air in it; everything else is a stack, a pile or a sack, so a
- *  declared litre of it is only partly wood. `sekk40`/`sekk60` are the two
- *  sack sizes in Norsk Standard NS 4414. */
-export const VOLUME_UNITS = ['fastKubikk', 'stablet', 'losKubikk', 'favn', 'storsekk', 'sekk40', 'sekk60'] as const
-export type VolumeUnit = (typeof VOLUME_UNITS)[number]
+/** The units firewood is actually traded in here, as offered when logging a
+ *  NEW entry. `fastKubikk` is solid wood with no air in it; everything else is
+ *  a stack, a pile or a sack, so a declared litre of it is only partly wood.
+ *  `sekk40`/`sekk60`/`sekk80` are sack sizes; `cord` is the North American
+ *  one, along for the ride because the table it comes from lists it.
+ *
+ *  `'stablet'` is deliberately absent: it split into `stablet60`/`stablet30`
+ *  (see `VolumeUnit` below), because 30 cm splits stack tighter than 60 cm
+ *  ones and firewood is sold in both lengths here. */
+export const VOLUME_UNITS = [
+  'fastKubikk',
+  'stablet60',
+  'stablet30',
+  'losKubikk',
+  'favn',
+  'storsekk',
+  'sekk40',
+  'sekk60',
+  'sekk80',
+  'storfavn',
+  'cord',
+] as const
+
+/** `'stablet'` is not in `VOLUME_UNITS` — a new entry can no longer be logged
+ *  in it — but a stack stacked before that split still has ledger entries
+ *  stored in it, and those must keep converting to the same solid volume they
+ *  always did (see `VOLUME_UNIT_INFO` in `model/volume.ts`).
+ *
+ *  No `SCHEMA_VERSION` bump for this: the guard in `stacksRepo.ts` empties the
+ *  store for any version it does not recognise, so widening the type is the
+ *  only change here that cannot lose a real visitor's stacks. */
+export type VolumeUnit = (typeof VOLUME_UNITS)[number] | 'stablet'
 
 export const VOLUME_ENTRY_KINDS = ['addition', 'withdrawal'] as const
 export type VolumeEntryKind = (typeof VOLUME_ENTRY_KINDS)[number]
