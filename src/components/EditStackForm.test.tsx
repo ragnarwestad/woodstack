@@ -17,7 +17,7 @@ function fill(label: RegExp, value: string) {
 }
 
 async function pickBergen() {
-  fill(/^sted$/i, 'Bergen')
+  fill(/^nærmeste sted$/i, 'Bergen')
   fireEvent.click(screen.getByRole('button', { name: /søk/i }))
   await waitFor(() => screen.getByRole('button', { name: /Bergen/ }))
   fireEvent.click(screen.getByRole('button', { name: /Bergen/ }))
@@ -225,7 +225,7 @@ describe('EditStackForm', () => {
       <EditStackForm stackId="a" onSave={onSave} onCancel={vi.fn()} geocodeFn={geocodeBergen()} />,
     )
 
-    fill(/^sted$/i, 'Bergen')
+    fill(/^nærmeste sted$/i, 'Bergen')
     fireEvent.click(screen.getByRole('button', { name: /søk/i }))
     await waitFor(() => screen.getByRole('button', { name: /Bergen/ }))
     fireEvent.click(screen.getByRole('button', { name: /^lagre$/i }))
@@ -245,7 +245,7 @@ describe('EditStackForm', () => {
       />,
     )
 
-    fill(/^sted$/i, 'Xyzzy')
+    fill(/^nærmeste sted$/i, 'Xyzzy')
     fireEvent.click(screen.getByRole('button', { name: /søk/i }))
     await waitFor(() => expect(screen.getByText(/fant ingen steder/i)).toBeInTheDocument())
   })

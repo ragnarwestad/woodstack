@@ -13,6 +13,22 @@ function fill(label: RegExp, value: string) {
   fireEvent.change(screen.getByLabelText(label), { target: { value } })
 }
 
+/** The place field is an Autocomplete, so its label belongs to both the input
+ *  and the listbox beside it — `getByLabelText` finds two. The input is the one
+ *  with the combobox role. */
+function placeField(name: RegExp = /nærmeste sted/i) {
+  return screen.getByRole('combobox', { name })
+}
+
+/** The matches sit in a floating dropdown that Mantine positions with a layout
+ *  library. `happy-dom` computes no layout, so the dropdown keeps
+ *  `display: none` and the accessibility tree treats its options as hidden —
+ *  hence `hidden: true`. The wiring is what these tests check; that the
+ *  dropdown is actually visible is a browser fact, checked by eye. */
+function match(name: RegExp) {
+  return screen.getByRole('option', { name, hidden: true })
+}
+
 const PHOTO = 'data:image/jpeg;base64,shrunk'
 
 function resizeTo(dataUrl: string) {
@@ -25,11 +41,13 @@ async function takePhoto(container: HTMLElement) {
   await waitFor(() => expect(screen.getByAltText(/bilde av vedstabelen/i)).toBeInTheDocument())
 }
 
+/** The matches come back as a dropdown that replaces the input, so picking one
+ *  is a select change, not a click on a list item. */
 async function pickOslo() {
-  fill(/sted/i, 'Oslo')
+  fireEvent.change(placeField(), { target: { value: 'Oslo' } })
   fireEvent.click(screen.getByRole('button', { name: /søk/i }))
-  await waitFor(() => screen.getByRole('button', { name: /Oslo/ }))
-  fireEvent.click(screen.getByRole('button', { name: /Oslo/ }))
+  await waitFor(() => expect(match(/Oslo/)).toBeInTheDocument())
+  fireEvent.click(match(/Oslo/))
 }
 
 describe('AddStackForm', () => {
@@ -41,7 +59,31 @@ describe('AddStackForm', () => {
     expect(screen.getByLabelText(/kløyvd/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/tak/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/sol og vind/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/sted/i)).toBeInTheDocument()
+    expect(placeField()).toBeInTheDocument()
+  })
+
+  /** There is no <form> around these fields, so Enter does nothing unless it
+   *  is handled. A search box that ignores Enter reads as broken. */
+  it('searches when Enter is pressed in the place field', async () => {
+    renderWithMantine(<AddStackForm onAdd={vi.fn()} onCancel={vi.fn()} geocodeFn={geocodeFn} />)
+
+    fireEvent.change(placeField(), { target: { value: 'Oslo' } })
+    fireEvent.keyDown(placeField(), { key: 'Enter' })
+
+    await waitFor(() => expect(match(/Oslo/)).toBeInTheDocument())
+  })
+
+  /** It used to fall back to the species name, so two unnamed birch piles both
+   *  became "Bjørk" — indistinguishable in the only list that shows them. */
+  it('will not save without a name', async () => {
+    const onAdd = vi.fn()
+    renderWithMantine(<AddStackForm onAdd={onAdd} onCancel={vi.fn()} geocodeFn={geocodeFn} />)
+    await pickOslo()
+
+    fireEvent.click(screen.getByRole('button', { name: /^lagre$/i }))
+
+    expect(onAdd).not.toHaveBeenCalled()
+    expect(screen.getByText(/gi stabelen et navn/i)).toBeInTheDocument()
   })
 
   it('will not save before a place has been picked', () => {
@@ -81,11 +123,36 @@ describe('AddStackForm', () => {
   /** Open-Meteo has no Norwegian name for every admin region and falls back to
    *  English per field, so showing it gave "Oslo, Oslo County, Norge" — half
    *  one language, half the other. Name and country only. */
+  /** A search for "Oslo" really does return several Norwegian Oslos, and with
+   *  the region left out they all read "Oslo, Norge". Identical labels are not
+   *  merely confusing: the dropdown refuses duplicate options by throwing, and
+   *  the whole page went blank. The region comes back only where it is needed
+   *  to tell two matches apart. */
+  it('tells matches apart that would otherwise read alike', async () => {
+    const manyOslos = vi.fn().mockResolvedValue([
+      { name: 'Oslo', latitude: 59.91, longitude: 10.75, country: 'Norge', admin1: 'Oslo' },
+      { name: 'Oslo', latitude: 59.75, longitude: 10.2, country: 'Norge', admin1: 'Viken' },
+      { name: 'Bergen', latitude: 60.39, longitude: 5.32, country: 'Norge', admin1: 'Vestland' },
+    ])
+    renderWithMantine(<AddStackForm onAdd={vi.fn()} onCancel={vi.fn()} geocodeFn={manyOslos} />)
+
+    fireEvent.change(placeField(), { target: { value: 'Oslo' } })
+    fireEvent.click(screen.getByRole('button', { name: /søk/i }))
+
+    await waitFor(() => expect(match(/Oslo, Oslo, Norge/)).toBeInTheDocument())
+    expect(match(/Oslo, Viken, Norge/)).toBeInTheDocument()
+    // Bergen stands alone, so it keeps the short form.
+    expect(match(/^Bergen, Norge$/)).toBeInTheDocument()
+    expect(placeField()).toBeInTheDocument()
+  })
+
   it('names the place and the country, and leaves the region out', async () => {
     renderWithMantine(<AddStackForm onAdd={vi.fn()} onCancel={vi.fn()} geocodeFn={geocodeFn} />)
     await pickOslo()
 
-    expect(screen.getByText(/Valgt sted: Oslo, Norge$/)).toBeInTheDocument()
+    // The chosen place goes back into the field itself, so the row keeps its
+    // height instead of gaining a "Valgt sted: …" line under it.
+    expect(placeField()).toHaveValue('Oslo, Norge')
     expect(screen.queryByText(/Oslo County/)).not.toBeInTheDocument()
   })
 
@@ -155,13 +222,16 @@ describe('AddStackForm', () => {
     expect(onAdd.mock.calls[0][0]).not.toHaveProperty('photo')
   })
 
-  it('asks how much of the second wood there is only once one has been picked', () => {
+  /** The share field stays put and greys out instead of appearing and
+   *  disappearing: a field that comes and goes moves everything under it and
+   *  makes the form a different shape each time it is answered. */
+  it('greys out how much of the second wood there is until one has been picked', () => {
     renderWithMantine(<AddStackForm onAdd={vi.fn()} onCancel={vi.fn()} geocodeFn={geocodeFn} />)
     expect(screen.getByLabelText(/blandet/i)).toBeInTheDocument()
-    expect(screen.queryByLabelText(/hvor mye/i)).not.toBeInTheDocument()
+    expect(screen.getByLabelText(/hvor mye/i)).toBeDisabled()
 
     fill(/blandet/i, 'gran')
-    expect(screen.getByLabelText(/hvor mye/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/hvor mye/i)).toBeEnabled()
   })
 
   it('hands over the second wood and roughly how much of it there is', async () => {
@@ -198,7 +268,7 @@ describe('AddStackForm', () => {
 
     fill(/blandet/i, 'gran')
     fill(/treslag/i, 'gran')
-    expect(screen.queryByLabelText(/hvor mye/i)).not.toBeInTheDocument()
+    expect(screen.getByLabelText(/hvor mye/i)).toBeDisabled()
 
     fill(/navn/i, 'Granstabelen')
     await pickOslo()
@@ -229,7 +299,7 @@ describe('AddStackForm', () => {
 
   it('says so when the place search finds nothing', async () => {
     renderWithMantine(<AddStackForm onAdd={vi.fn()} onCancel={vi.fn()} geocodeFn={vi.fn().mockResolvedValue([])} />)
-    fill(/sted/i, 'Xyzzy')
+    fireEvent.change(placeField(), { target: { value: 'Xyzzy' } })
     fireEvent.click(screen.getByRole('button', { name: /søk/i }))
     await waitFor(() => expect(screen.getByText(/fant ingen steder/i)).toBeInTheDocument())
   })
@@ -249,7 +319,7 @@ describe('AddStackForm in English', () => {
     expect(screen.queryByText(/treslag/i)).not.toBeInTheDocument()
   })
 
-  it('names the species in English in the select and in the default stack name', async () => {
+  it('names the species in English in the select', async () => {
     setTestLanguage(ENGLISH_TEST_LANGUAGE)
     const onAdd = vi.fn()
     renderWithMantine(<AddStackForm onAdd={onAdd} onCancel={vi.fn()} geocodeFn={geocodeFn} />)
@@ -259,12 +329,13 @@ describe('AddStackForm in English', () => {
     expect(species).toHaveTextContent('Spruce')
     expect(species).not.toHaveTextContent('Bjørk')
 
-    fill(/location/i, 'Oslo')
+    fill(/name of the woodpile/i, 'By the barn')
+    fireEvent.change(placeField(/nearest place/i), { target: { value: 'Oslo' } })
     fireEvent.click(screen.getByRole('button', { name: /^search$/i }))
-    await waitFor(() => screen.getByRole('button', { name: /Oslo/ }))
-    fireEvent.click(screen.getByRole('button', { name: /Oslo/ }))
+    await waitFor(() => expect(match(/Oslo/)).toBeInTheDocument())
+    fireEvent.click(match(/Oslo/))
     fireEvent.click(screen.getByRole('button', { name: /^save$/i }))
 
-    expect(onAdd).toHaveBeenCalledWith(expect.objectContaining({ name: 'Birch', species: 'bjork' }))
+    expect(onAdd).toHaveBeenCalledWith(expect.objectContaining({ name: 'By the barn', species: 'bjork' }))
   })
 })

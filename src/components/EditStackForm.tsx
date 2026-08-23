@@ -178,6 +178,14 @@ export function EditStackForm({
           description={t('editStack.placeDescription')}
           value={query}
           onChange={(event) => setQuery(event.currentTarget.value)}
+          onKeyDown={(event) => {
+            if (event.key !== 'Enter') return
+            // The field sits in a form-shaped page without a <form>, so Enter
+            // does nothing unless it is handled. A search box that ignores it
+            // reads as broken.
+            event.preventDefault()
+            void search()
+          }}
           style={{ flex: 1 }}
         />
         <Button variant="default" onClick={search}>

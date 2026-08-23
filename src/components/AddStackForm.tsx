@@ -1,14 +1,13 @@
 import { useState } from 'react'
 import {
+  Autocomplete,
   Alert,
   Button,
   Group,
   NativeSelect,
-  Paper,
   Stack as MantineStack,
   Text,
   TextInput,
-  UnstyledButton,
 } from '@mantine/core'
 import {
   COVERS,
@@ -28,6 +27,7 @@ import { SPECIES_IDS } from '../model/species'
 import { StorageQuotaError } from '../storage/stacksRepo'
 import { geocode, type GeocodeResult } from '../climate/openMeteo'
 import { useTranslation } from '../i18n/useTranslation'
+import { FieldRow } from './FieldRow'
 import { PhotoField } from './PhotoField'
 
 function today(): string {
@@ -63,7 +63,15 @@ export function AddStackForm({ onAdd, onCancel, geocodeFn, resizeFn }: Props) {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<GeocodeResult[] | null>(null)
   const [place, setPlace] = useState<GeocodeResult | null>(null)
+  /** The exact text the chosen match was shown as. Kept because a label may
+   *  carry the region when two matches would otherwise read alike, so it
+   *  cannot be recomputed from the result alone. */
+  const [placeText, setPlaceText] = useState('')
   const [error, setError] = useState<string | null>(null)
+
+  /** The matches drop down over the page, so nothing below them moves. */
+  const matchLabels = placeLabels(results ?? [])
+  const showMatches = matchLabels.length > 0
 
   async function search() {
     setError(null)
@@ -76,8 +84,20 @@ export function AddStackForm({ onAdd, onCancel, geocodeFn, resizeFn }: Props) {
     }
   }
 
+  /** The place counts as chosen only while the field still says what was
+   *  picked. Type over it and the coordinates no longer match the words, which
+   *  would save the stack somewhere the visitor never chose. */
+  const chosenPlace = place && placeText === query ? place : null
+
   function submit() {
-    if (!place) {
+    // Required, and no fallback to the species name: two unnamed birch piles
+    // would both be called "Bjørk", and the name is the only thing the list
+    // has to tell them apart with.
+    if (name.trim() === '') {
+      setError(t('addStack.needName'))
+      return
+    }
+    if (!chosenPlace) {
       setError(t('addStack.pickPlace'))
       return
     }
@@ -93,14 +113,14 @@ export function AddStackForm({ onAdd, onCancel, geocodeFn, resizeFn }: Props) {
 
     try {
       onAdd({
-        name: name.trim() || t(`species.${species}`),
+        name: name.trim(),
         species,
         ...(secondSpecies ? { secondSpecies } : {}),
         stackedDate,
         splitSize,
         cover,
         exposure,
-        location: { name: place.name, latitude: place.latitude, longitude: place.longitude },
+        location: { name: chosenPlace.name, latitude: chosenPlace.latitude, longitude: chosenPlace.longitude },
         ...(initialVolume ? { initialVolume } : {}),
         ...(photo ? { photo } : {}),
       })
@@ -120,118 +140,156 @@ export function AddStackForm({ onAdd, onCancel, geocodeFn, resizeFn }: Props) {
     <MantineStack gap="md">
       <Text fw={600}>{t('addStack.heading')}</Text>
 
-      <TextInput label={t('addStack.name')} value={name} onChange={(event) => setName(event.currentTarget.value)} />
+      {/* Name and date: what this pile is and when it went up. */}
+      <FieldRow>
+        <TextInput label={t('addStack.name')} value={name} onChange={(event) => setName(event.currentTarget.value)} />
 
-      <NativeSelect
-        label={t('addStack.species')}
-        value={species}
-        onChange={(event) => {
-          const chosen = event.currentTarget.value as Species
-          setSpecies(chosen)
-          // Birch mixed with birch is not a mix; picking the second wood as
-          // the first one clears it rather than leaving that standing.
-          if (secondSpeciesId === chosen) setSecondSpeciesId('')
-        }}
-        data={SPECIES_IDS.map((id) => ({ value: id, label: t(`species.${id}`) }))}
-      />
+        <TextInput
+          type="date"
+          label={t('addStack.stackedDate')}
+          value={stackedDate}
+          onChange={(event) => setStackedDate(event.currentTarget.value)}
+        />
+      </FieldRow>
 
-      <NativeSelect
-        label={t('addStack.secondSpecies')}
-        value={secondSpeciesId}
-        onChange={(event) => setSecondSpeciesId(event.currentTarget.value as Species | '')}
-        data={[
-          { value: '', label: t('addStack.secondSpeciesNone') },
-          ...SPECIES_IDS.filter((id) => id !== species).map((id) => ({ value: id, label: t(`species.${id}`) })),
-        ]}
-      />
+      {/* The wood itself. */}
+      <FieldRow>
+        <NativeSelect
+          label={t('addStack.species')}
+          value={species}
+          onChange={(event) => {
+            const chosen = event.currentTarget.value as Species
+            setSpecies(chosen)
+            // Birch mixed with birch is not a mix; picking the second wood as
+            // the first one clears it rather than leaving that standing.
+            if (secondSpeciesId === chosen) setSecondSpeciesId('')
+          }}
+          data={SPECIES_IDS.map((id) => ({ value: id, label: t(`species.${id}`) }))}
+        />
 
-      {secondSpeciesId && (
+        <NativeSelect
+          label={t('addStack.splitSize')}
+          value={splitSize}
+          onChange={(event) => setSplitSize(event.currentTarget.value as SplitSize)}
+          data={SPLIT_SIZES.map((value) => ({ value, label: t(`splitSize.${value}`) }))}
+        />
+      </FieldRow>
+
+      {/* The mix: what else is in the pile, and how much of it. */}
+      <FieldRow>
+        <NativeSelect
+          label={t('addStack.secondSpecies')}
+          value={secondSpeciesId}
+          onChange={(event) => setSecondSpeciesId(event.currentTarget.value as Species | '')}
+          data={[
+            { value: '', label: t('addStack.secondSpeciesNone') },
+            ...SPECIES_IDS.filter((id) => id !== species).map((id) => ({ value: id, label: t(`species.${id}`) })),
+          ]}
+        />
+
+        {/* Always here, disabled until there is a second wood to have a share
+            of. A field that appears and disappears moves everything under it
+            and makes the form a different shape each time. */}
         <NativeSelect
           label={t('addStack.secondSpeciesShare')}
           value={secondShare}
           onChange={(event) => setSecondShare(event.currentTarget.value as SpeciesShare)}
           data={SPECIES_SHARES.map((value) => ({ value, label: t(`species.share.${value}`) }))}
+          disabled={!secondSpeciesId}
         />
-      )}
+      </FieldRow>
 
-      <TextInput
-        type="date"
-        label={t('addStack.stackedDate')}
-        value={stackedDate}
-        onChange={(event) => setStackedDate(event.currentTarget.value)}
-      />
+      {/* Where it stands. */}
+      <FieldRow>
+        <NativeSelect
+          label={t('addStack.cover')}
+          value={cover}
+          onChange={(event) => setCover(event.currentTarget.value as Cover)}
+          data={COVERS.map((value) => ({ value, label: t(`cover.${value}`) }))}
+        />
 
-      <NativeSelect
-        label={t('addStack.splitSize')}
-        value={splitSize}
-        onChange={(event) => setSplitSize(event.currentTarget.value as SplitSize)}
-        data={SPLIT_SIZES.map((value) => ({ value, label: t(`splitSize.${value}`) }))}
-      />
+        <NativeSelect
+          label={t('addStack.exposure')}
+          value={exposure}
+          onChange={(event) => setExposure(event.currentTarget.value as Exposure)}
+          data={EXPOSURES.map((value) => ({ value, label: t(`exposure.${value}`) }))}
+        />
+      </FieldRow>
 
-      <NativeSelect
-        label={t('addStack.cover')}
-        value={cover}
-        onChange={(event) => setCover(event.currentTarget.value as Cover)}
-        data={COVERS.map((value) => ({ value, label: t(`cover.${value}`) }))}
-      />
+      {/* How much, and in what. The unit names the amount's label, so it comes
+          first. */}
+      <FieldRow>
+        <NativeSelect
+          label={t('addStack.volumeUnit')}
+          value={volumeUnit}
+          onChange={(event) => setVolumeUnit(event.currentTarget.value as VolumeUnit)}
+          data={VOLUME_UNITS.map((value) => ({ value, label: t(`volume.unit.${value}`) }))}
+        />
 
-      <NativeSelect
-        label={t('addStack.exposure')}
-        value={exposure}
-        onChange={(event) => setExposure(event.currentTarget.value as Exposure)}
-        data={EXPOSURES.map((value) => ({ value, label: t(`exposure.${value}`) }))}
-      />
-
-      <TextInput
-        type="number"
-        label={t('addStack.volumeAmount', { unit: t(`volume.unitShort.${volumeUnit}`) })}
-        description={t('addStack.volumeAmountDescription')}
-        value={volumeAmount}
-        onChange={(event) => setVolumeAmount(event.currentTarget.value)}
-      />
-
-      <NativeSelect
-        label={t('addStack.volumeUnit')}
-        value={volumeUnit}
-        onChange={(event) => setVolumeUnit(event.currentTarget.value as VolumeUnit)}
-        data={VOLUME_UNITS.map((value) => ({ value, label: t(`volume.unit.${value}`) }))}
-      />
-
-      <PhotoField value={photo} onChange={setPhoto} resizeFn={resizeFn} />
-
-      <Group align="flex-end" gap="xs">
         <TextInput
-          label={t('addStack.place')}
-          description={t('addStack.placeDescription')}
-          value={query}
-          onChange={(event) => setQuery(event.currentTarget.value)}
-          style={{ flex: 1 }}
+          type="number"
+          label={t('addStack.volumeAmount', { unit: t(`volume.unitShort.${volumeUnit}`) })}
+          value={volumeAmount}
+          onChange={(event) => setVolumeAmount(event.currentTarget.value)}
         />
-        <Button variant="default" onClick={search}>
-          {t('addStack.search')}
-        </Button>
-      </Group>
+      </FieldRow>
 
-      {place ? (
-        <Text size="sm">{t('addStack.chosenPlace', { place: placeLabel(place) })}</Text>
-      ) : (
-        results?.length === 0 && <Text size="sm">{t('addStack.noPlaces')}</Text>
-      )}
+      {/* The place and the picture. The picture is second because its preview
+          is the one thing here that changes the row's height. */}
+      <FieldRow>
 
-      {!place &&
-        results?.map((result) => (
-          <UnstyledButton
-            key={`${result.latitude},${result.longitude}`}
-            onClick={() => {
-              setPlace(result)
+        {/* The typed text stays in the field and the matches drop down over the
+            page — nothing below moves, and searching again is just editing the
+            text and pressing Søk. `filter` returns every option untouched: the
+            list already IS the answer to what was typed, so filtering it again
+            against the same string would hide matches whose name differs from
+            the query. */}
+        <Group align="flex-end" gap="xs" wrap="nowrap">
+          <Autocomplete
+            label={t('addStack.place')}
+            description={t('addStack.placeDescription')}
+            value={query}
+            data={matchLabels}
+            filter={({ options }) => options}
+            openOnFocus={false}
+            // No fade: the matches are the answer to a button the visitor just
+            // pressed, and they should be there when the press finishes.
+            comboboxProps={{ transitionProps: { duration: 0 } }}
+            dropdownOpened={showMatches}
+            onChange={(value) => {
+              setQuery(value)
+              // Clearing the matches closes the dropdown: they answered a
+              // question that is no longer being asked. The chosen place is NOT
+              // cleared here — Autocomplete fires this on picking an option
+              // too, which would undo the pick in the same breath. Whether the
+              // field still says what was picked is worked out at save time.
+              setResults(null)
+            }}
+            onOptionSubmit={(label) => {
+              const picked = (results ?? [])[matchLabels.indexOf(label)]
+              if (!picked) return
+              setPlace(picked)
+              setPlaceText(label)
+              setQuery(label)
               setError(null)
             }}
-          >
-            <Paper withBorder p="xs" radius="sm">
-              <Text size="sm">{placeLabel(result)}</Text>
-            </Paper>
-          </UnstyledButton>
-        ))}
+            onKeyDown={(event) => {
+              if (event.key !== 'Enter') return
+              // The field sits in a form-shaped page without a <form>, so Enter
+              // does nothing unless it is handled. A search box that ignores it
+              // reads as broken.
+              event.preventDefault()
+              void search()
+            }}
+            error={results?.length === 0 ? t('addStack.noPlaces') : undefined}
+            style={{ flex: 1 }}
+          />
+          <Button variant="default" onClick={search}>
+            {t('addStack.search')}
+          </Button>
+        </Group>
+        <PhotoField value={photo} onChange={setPhoto} resizeFn={resizeFn} />
+      </FieldRow>
 
       {error && <Alert color="red">{error}</Alert>}
 
@@ -251,4 +309,21 @@ export function AddStackForm({ onAdd, onCancel, geocodeFn, resizeFn }: Props) {
  *  region is what a Norwegian would drop anyway. */
 function placeLabel(result: GeocodeResult): string {
   return [result.name, result.country].filter(Boolean).join(', ')
+}
+
+/** The labels for one set of matches, with the region added back ONLY where two
+ *  of them would otherwise read alike — a search for "Oslo" returns several
+ *  Norwegian Oslos, and dropping the region turned them all into "Oslo, Norge".
+ *  Identical labels are not merely confusing: the dropdown refuses duplicate
+ *  options and takes the whole page down with it. */
+function placeLabels(results: GeocodeResult[]): string[] {
+  const plain = results.map(placeLabel)
+  const seen = new Map<string, number>()
+  for (const label of plain) seen.set(label, (seen.get(label) ?? 0) + 1)
+
+  return results.map((result, index) => {
+    const label = plain[index]
+    if ((seen.get(label) ?? 0) < 2 || !result.admin1) return label
+    return [result.name, result.admin1, result.country].filter(Boolean).join(', ')
+  })
 }
