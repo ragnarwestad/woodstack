@@ -5,6 +5,7 @@ import { renderWithMantine } from '../test/render'
 import { ENGLISH_TEST_LANGUAGE, setTestLanguage } from '../test/language'
 import { LanguageProvider } from '../i18n/LanguageProvider'
 import { LANGUAGE_STORAGE_KEY, readLanguagePreference } from '../i18n/languagePreference'
+import { nb } from '../i18n/nb'
 import { AppHeader } from './AppHeader'
 
 function renderHeader() {
@@ -82,5 +83,24 @@ describe('AppHeader', () => {
   it('starts on auto, so the app follows the device until told otherwise', () => {
     renderHeader()
     expect(screen.getByRole('radio', { name: 'Auto' })).toBeChecked()
+  })
+
+  it('carries the menu about the app itself', () => {
+    renderHeader()
+    expect(screen.getByRole('button', { name: nb['about.menuLabel'] })).toBeInTheDocument()
+  })
+
+  /** Which group the dots sit in decides what a phone does with them. The
+   *  controls group is the one allowed to wrap onto a line of its own; the
+   *  wordmark group must not, so a control placed in there would push the
+   *  app's name around at narrow widths and nothing would say so. */
+  it('puts the dots in the group that wraps, not the one holding the name', () => {
+    renderHeader()
+    const controls = screen
+      .getByRole('button', { name: nb['about.menuLabel'] })
+      .closest('[class*="mantine-Group-root"]')
+
+    expect(controls).toContainElement(screen.getByRole('radio', { name: 'English' }))
+    expect(controls).not.toContainElement(screen.getByRole('heading', { name: 'Woodstack' }))
   })
 })

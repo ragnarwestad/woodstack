@@ -4,9 +4,15 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
 import { pwaIcons } from './src/pwaIcons.ts'
+import { computeAppVersion } from './src/appVersion.ts'
 
 // https://vite.dev/config/
 export default defineConfig({
+  // Read once, here, where git is still around to ask — the browser bundle
+  // has no way to find out which commit it was built from.
+  define: {
+    __APP_VERSION__: JSON.stringify(computeAppVersion()),
+  },
   plugins: [
     react(),
     VitePWA({

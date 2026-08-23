@@ -28,6 +28,20 @@ export const en: Record<TranslationKey, string> = {
   'explain.volumeUnits.body':
     'The three do not measure the same thing. A stacked cubic metre counts the air between the logs, a solid cubic metre is the wood alone, and a favn is 2.4 m³ stacked – that is 1.65 m³ solid. The same pile of firewood gives three different numbers depending on the unit you pick.',
 
+  'about.menuLabel': 'More',
+  'about.menuItem': 'About Woodstack',
+  'about.title': 'About Woodstack',
+  'about.tabWhat': 'About',
+  'about.tabHow': 'How we calculate',
+  'about.tabInfo': 'Info',
+  'about.what.body':
+    'Woodstack estimates when your woodpile is dry enough to burn. You enter the species, when it was stacked and a few other details, and the app works out a window – say the middle of September to the middle of October – rather than one exact date.\n\nIt is an estimate, not a measurement. Nobody can say what the weather will be day by day that far ahead, so the wood may be ready a little before or a little after the window.',
+  'about.how.body':
+    'Firewood dries towards an equilibrium set by the temperature and the humidity where the pile stands – rather like washing on a line, which eventually stops drying any further. How fast that goes depends on the species, how coarsely the wood is split, and whether it stands under a roof, in the sun or sheltered.\n\nWe use climate normals – the average weather across several years – instead of the forecast. Firewood dries over many months, so this year’s weather evens out towards the normal anyway. In return the app works without a network, and you do not have to keep checking in.\n\nBecause nobody can say exactly which day the pile is ready, we show a window rather than one date.\n\nMoisture is always given as a share of dry weight – what the wood would weigh bone dry – never of wet weight. The two give very different numbers for exactly the same wood.',
+  'about.info.body':
+    'Everything you enter in Woodstack stays in this browser and is never sent to any server: the app has no account and no backend to send it to. The only service outside the app it talks to is Open-Meteo, used to search for places and fetch climate data for them.',
+  'about.version': 'Version {value}',
+
   'stackList.heading': 'My woodpiles',
   'stackList.add': 'New woodpile',
   'stackList.empty': 'No woodpiles yet. Add the first one, and we will work out when it is dry.',

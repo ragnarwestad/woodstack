@@ -6,6 +6,7 @@ import type { MantineColorScheme } from '@mantine/core'
 import logo from '../assets/logo.svg'
 import type { Language } from '../i18n/language'
 import { useLanguageChoice, useTranslation } from '../i18n/useTranslation'
+import { AboutMenu } from './AboutMenu'
 
 /** Each language names itself. A visitor who landed on the wrong one cannot
  *  read the language they are trying to leave, so translating these two labels
@@ -57,6 +58,8 @@ export function AppHeader() {
           data={LANGUAGES}
           aria-label={t('app.language')}
         />
+
+        <AboutMenu />
       </Group>
     </Group>
   )

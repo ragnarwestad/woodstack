@@ -29,6 +29,22 @@ export const nb = {
   'explain.volumeUnits.body':
     'De tre måler ikke det samme. Stablet kubikkmeter teller med luften mellom kubbene, fast kubikkmeter er bare selve veden, og en favn er 2,4 m³ stablet – altså 1,65 m³ fast. Samme vedhaug gir tre ulike tall, alt etter hvilken enhet du velger.',
 
+  /* The dialog behind the header's three dots. The same explaining voice as
+     the «?» marks above, at the scale of the whole app rather than one field. */
+  'about.menuLabel': 'Mer',
+  'about.menuItem': 'Om Woodstack',
+  'about.title': 'Om Woodstack',
+  'about.tabWhat': 'Om',
+  'about.tabHow': 'Slik regner vi',
+  'about.tabInfo': 'Info',
+  'about.what.body':
+    'Woodstack anslår når vedstabelen din er tørr nok til å fyre med. Du legger inn treslag, når veden ble stablet og noen få andre opplysninger, og appen regner ut et vindu – for eksempel midten av september til midten av oktober – ikke én bestemt dato.\n\nDet er et anslag, ikke en måling. Ingen kan si hvordan været blir dag for dag så langt fram, så veden kan bli klar litt før eller litt etter vinduet.',
+  'about.how.body':
+    'Ved tørker mot en likevekt som bestemmes av temperaturen og luftfuktigheten der stabelen står – litt som klesvask på snora, som til slutt slutter å tørke mer. Hvor fort det går, avhenger av treslaget, hvor grovt veden er kløyvd, og om den står under tak, i sola eller i le.\n\nVi regner med klimanormaler – gjennomsnittsværet gjennom flere år – i stedet for værmeldingen. Ved tørker over mange måneder, så årets vær jevner seg uansett ut mot normalen. Til gjengjeld virker appen uten nett, og du slipper å følge med.\n\nFordi ingen kan si nøyaktig hvilken dag stabelen er klar, viser vi et vindu i stedet for én dato.\n\nFuktighet oppgis alltid som andel av tørrvekt – hva veden ville veid helt tørr – aldri av våtvekt. De to gir svært ulike tall for nøyaktig samme ved.',
+  'about.info.body':
+    'Alt du legger inn i Woodstack blir liggende i denne nettleseren, og sendes aldri til noen server: appen har verken konto eller noen bakside å sende det til. Den eneste tjenesten utenfor appen den snakker med, er Open-Meteo, som brukes til å søke opp steder og hente klimadata for dem.',
+  'about.version': 'Versjon {value}',
+
   'stackList.heading': 'Vedstablene mine',
   'stackList.add': 'Ny stabel',
   'stackList.empty': 'Ingen vedstabler ennå. Legg inn den første, så regner vi ut når den er tørr.',

@@ -8,6 +8,11 @@ import type { Language } from '../i18n/language'
  *  `relative_humidity_2m_mean` as daily aggregates, so nothing has to be
  *  reduced from hourly data. No API key is needed at one call per location. */
 
+/** The one outside service this app ever talks to. Named once, here beside the
+ *  calls themselves, so the About dialog's promise about it and the test that
+ *  guards that promise read the same string as the code that makes the call. */
+export const SERVICE_NAME = 'Open-Meteo'
+
 const ARCHIVE_URL = 'https://archive-api.open-meteo.com/v1/archive'
 const GEOCODING_URL = 'https://geocoding-api.open-meteo.com/v1/search'
 
