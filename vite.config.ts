@@ -40,6 +40,11 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
+        // The pattern above takes every png, and og-image.png is the one that
+        // must not be taken: it is fetched by Facebook's and Slack's servers
+        // when a link is pasted, never by the app. Precaching it made every
+        // visitor download 148 KiB they can never see.
+        globIgnores: ['**/og-image.png'],
       },
     }),
   ],

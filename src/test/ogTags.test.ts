@@ -78,3 +78,22 @@ describe('public/og-image.png', () => {
     expect(image().byteLength).toBe(151321)
   })
 })
+
+// The share image is the one asset in public/ that the app itself never
+// fetches: a crawler on Facebook's or Slack's side does, once, when someone
+// pastes a link. workbox's glob takes every png in the build, so without an
+// explicit exception every visitor downloaded 148 KiB they can never see, and
+// the service worker held on to it.
+describe('the share image stays out of the service worker', () => {
+  const viteConfig = repoFile('vite.config.ts')
+
+  it('is excluded from the precache by name', () => {
+    const file = repoFile('index.html')
+      .match(/<meta property="og:image" content="[^"]*\/([^"/]+)" ?\/>/)?.[1]
+    expect(file, 'og:image should point at a filename').toBeTruthy()
+
+    const ignores = viteConfig.match(/globIgnores:\s*\[([^\]]*)\]/)?.[1]
+    expect(ignores, 'vite.config.ts should set workbox.globIgnores').toBeTruthy()
+    expect(ignores).toContain(file!)
+  })
+})
