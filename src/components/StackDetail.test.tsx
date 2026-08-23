@@ -149,18 +149,31 @@ describe('StackDetail', () => {
     await waitFor(() => expect(screen.getByTestId('window-text').textContent).not.toBe(before))
   })
 
-  it('shows the photo of the stack that is open, and none when it has no photo', async () => {
+  /** The picture is a tab, not a band across the top. It answers "which pile is
+   *  this", which the name and the species line already answer — the drying
+   *  window is what the page is for, and a photo above it pushed the graph off
+   *  the first screen. */
+  it('keeps the photo behind its own tab, not above the drying window', async () => {
+    saveStacks([makeStack({ id: 'a', name: 'Bak fjøset', photo: 'data:image/jpeg;base64,bilde' })])
     renderWithMantine(
       <StackDetail stackId="a" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
     )
     await waitFor(() => screen.getByText(/klar mellom/i))
-    expect(screen.queryByAltText(/bilde av vedstabelen/i)).not.toBeInTheDocument()
 
-    saveStacks([makeStack({ id: 'b', name: 'Bak fjøset', photo: 'data:image/jpeg;base64,big' })])
+    // Mantine keeps inactive panels mounted, so the picture is in the DOM
+    // either way. What matters is WHERE: inside a tab panel, not in the page
+    // above the drying window.
+    const photo = screen.getByAltText(/bilde av vedstabelen/i)
+    expect(photo.closest('[role="tabpanel"]')).not.toBeNull()
+    expect(screen.getByRole('tab', { name: /^bilde$/i })).toBeInTheDocument()
+  })
+
+  it('offers no photo tab on a stack that has none', async () => {
     renderWithMantine(
-      <StackDetail stackId="b" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+      <StackDetail stackId="a" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
     )
-    expect(screen.getByAltText(/bilde av vedstabelen/i)).toHaveAttribute('src', 'data:image/jpeg;base64,big')
+    await waitFor(() => screen.getByText(/klar mellom/i))
+    expect(screen.queryByRole('tab', { name: /^bilde$/i })).not.toBeInTheDocument()
   })
 
   it('says the volume is not tracked yet rather than showing a bare zero', async () => {

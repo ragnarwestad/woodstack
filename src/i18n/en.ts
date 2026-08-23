@@ -32,6 +32,7 @@ export const en: Record<TranslationKey, string> = {
   'stackDetail.tabVolume': 'In/out',
   'stackDetail.tabReading': 'Reading',
   'stackDetail.tabHistory': 'History',
+  'stackDetail.tabPhoto': 'Photo',
   'stackDetail.volumeNone': 'No wood logged yet.',
   'stackDetail.edit': 'Edit',
   'stackDetail.delete': 'Delete',

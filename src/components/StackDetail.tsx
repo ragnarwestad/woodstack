@@ -218,11 +218,6 @@ export function StackDetail({
         })}
       </Text>
 
-      {/* Under the meta line and above the drying window: the photo says which
-          pile this is, which is the question asked on the way in, not one of
-          the numbers below. */}
-      {stack.photo && <Image src={stack.photo} alt={t('photo.alt')} radius="md" maw={320} />}
-
       {/* The moment to ask: the visitor has a stack open, so there is now
           something concrete to be told about. Not on arrival. */}
       <NotifyPrompt />
@@ -274,6 +269,7 @@ export function StackDetail({
           <Tabs.Tab value="volume">{t('stackDetail.tabVolume')}</Tabs.Tab>
           <Tabs.Tab value="reading">{t('stackDetail.tabReading')}</Tabs.Tab>
           <Tabs.Tab value="history">{t('stackDetail.tabHistory')}</Tabs.Tab>
+          {stack.photo && <Tabs.Tab value="photo">{t('stackDetail.tabPhoto')}</Tabs.Tab>}
         </Tabs.List>
 
         <Tabs.Panel value="volume" pt="md">
@@ -297,6 +293,18 @@ export function StackDetail({
             />
           </MantineStack>
         </Tabs.Panel>
+
+        {/* A tab rather than a band across the top of the page. The picture
+            answers "which pile is this", which the name and the species line
+            already answer — the drying window is what the page is FOR, and a
+            photo above it pushed the graph off the first screen. */}
+        {stack.photo && (
+          <Tabs.Panel value="photo" pt="md">
+            <MantineStack align="center">
+              <Image src={stack.photo} alt={t('photo.alt')} radius="md" maw={320} />
+            </MantineStack>
+          </Tabs.Panel>
+        )}
       </Tabs>
     </MantineStack>
   )

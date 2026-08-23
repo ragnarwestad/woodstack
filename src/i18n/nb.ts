@@ -31,6 +31,7 @@ export const nb = {
   'stackDetail.tabVolume': 'Inn/ut',
   'stackDetail.tabReading': 'Måling',
   'stackDetail.tabHistory': 'Historikk',
+  'stackDetail.tabPhoto': 'Bilde',
   'stackDetail.volumeNone': 'Ingen ved lagt inn ennå.',
   'stackDetail.edit': 'Endre',
   'stackDetail.delete': 'Slett',
