@@ -7,6 +7,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Når er veden tørr nok til å fyre med?" />
     <title>Woodstack</title>
+    <meta property="og:title" content="Woodstack" />
+    <meta property="og:description" content="Når er veden tørr nok til å fyre med?" />
+    <!-- Every other path in this file is root-relative and Vite rewrites it
+         against `base` at build time (vite.config.ts). Open Graph crawlers
+         never run the app, so they cannot resolve that base — this one has
+         to be a full URL. If the app ever moves host, this is the line that
+         moves with it. -->
+    <meta property="og:image" content="https://ragnarwestad.github.io/woodstack/og-image.png" />
+    <meta property="og:url" content="https://ragnarwestad.github.io/woodstack/" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
   </head>
   <body>
     <div id="root"></div>
