@@ -150,17 +150,24 @@ export function App({ today = new Date() }: Props = {}) {
     setAdding(false)
   }
 
+  // The list, and nothing standing on top of it. The two banners below belong
+  // here and nowhere else: on any other screen they push «← Tilbake» down the
+  // page and make the one way out the hardest thing on it to find.
+  const onList = !comparing && !needing && !selectedId && !adding
+
   return (
     <Container size="sm" py="xl">
       <Stack gap="lg">
         <AppHeader onHome={goHome} />
 
-        <InstallPrompt />
+        {onList && <InstallPrompt />}
 
-        {/* Above the screen conditional on purpose: a stack that became ready
-            is worth saying wherever the visitor happens to be standing, not
-            only on the list. */}
-        {justReady.map((stack) => (
+        {/* Nothing is lost by keeping this to the list: `justReady` is not
+            cleared by moving between screens, so a stack that became ready
+            while the visitor was deep inside another one still says so the
+            moment they come back out. The notification the phone shows does
+            not wait for that at all. */}
+        {onList && justReady.map((stack) => (
           <Alert
             key={stack.id}
             color="teal"

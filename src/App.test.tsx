@@ -307,6 +307,26 @@ describe('App telling the visitor a stack is ready', () => {
     expect(getStack('a')?.notifiedReadyAt).toBeTruthy()
   })
 
+  /** The reported bug: on a stack page the two banners stood above «← Tilbake»
+   *  and pushed the one way out down where it was the hardest thing on the
+   *  screen to find. They belong to the list.
+   *
+   *  Nothing is lost by that, and the second half of this is what says so: the
+   *  banner is still there when the visitor comes back out. */
+  it('keeps the ready banner to the list, and still has it on the way back', async () => {
+    const stack = makeStack({ id: 'a', name: 'Bjørk ved veggen' })
+    saveStacks([stack])
+    renderWithMantine(<App today={readyDay(stack)} />)
+    await waitFor(() => expect(screen.getByText(/bjørk ved veggen kan være klar/i)).toBeInTheDocument())
+
+    fireEvent.click(screen.getByRole('button', { name: /bjørk ved veggen/i }))
+    await waitFor(() => expect(screen.getByRole('heading', { name: 'Bjørk ved veggen' })).toBeInTheDocument())
+    expect(screen.queryByText(/bjørk ved veggen kan være klar/i)).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: /tilbake/i }))
+    await waitFor(() => expect(screen.getByText(/bjørk ved veggen kan være klar/i)).toBeInTheDocument())
+  })
+
   /** The one that would break silently: without the stored flag, every single
    *  app open from here to the end of the winter announces the same stack
    *  again. */
