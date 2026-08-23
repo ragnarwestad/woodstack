@@ -26,6 +26,7 @@ import { DRY_ENOUGH_MOISTURE, formatWindow } from '../model/units'
 import { currentSolidLiters, formatVolume } from '../model/volume'
 import { useTranslation } from '../i18n/useTranslation'
 import { DryingCurveChart } from './DryingCurveChart'
+import { BackLink } from './BackLink'
 import { EntryList } from './EntryList'
 import { LogReadingForm } from './LogReadingForm'
 import { NotifyPrompt } from './NotifyPrompt'
@@ -120,9 +121,7 @@ export function StackDetail({
       <MantineStack gap="md">
         <Text>{t('stackDetail.notFound')}</Text>
         <Group>
-          <Button variant="default" onClick={onBack}>
-            {t('common.back')}
-          </Button>
+          <BackLink onClick={onBack} />
         </Group>
       </MantineStack>
     )
@@ -176,27 +175,18 @@ export function StackDetail({
 
   return (
     <MantineStack gap="md">
-      <Group>
-        <Button variant="default" onClick={onBack}>
-          {t('common.back')}
+      {/* Back on the left, the one thing you can do to this stack on the
+          right. Deleting moved to the list, so "Endre" is alone up here and
+          does not need a line of its own. */}
+      <Group justify="space-between" align="center" wrap="nowrap">
+        <BackLink onClick={onBack} />
+        <Button variant="default" onClick={onEdit}>
+          {t('stackDetail.edit')}
         </Button>
       </Group>
 
       <Title order={2}>{stack.name}</Title>
 
-      {/* Edit and delete sit up here, under the name, because that is what they
-          act on — the whole stack, not one of the three jobs in the tabs below.
-          Below the tabs they moved every time the visitor switched to a taller
-          panel.
-
-          A line of their own, always: sharing the title's line and wrapping
-          only when the name happens to be long puts them somewhere different
-          every time you look for them. */}
-      <Group justify="flex-end" gap="xs" wrap="nowrap">
-        <Button variant="default" onClick={onEdit}>
-          {t('stackDetail.edit')}
-        </Button>
-      </Group>
       <Text c="dimmed">
         {t('stackDetail.meta', {
           species: speciesLabel(stack, t),

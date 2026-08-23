@@ -365,7 +365,7 @@ describe('StackDetail in English', () => {
     )
 
     await waitFor(() => expect(screen.getByText(/ready between/i)).toBeInTheDocument())
-    expect(screen.getByRole('button', { name: /^back$/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /back$/i })).toBeInTheDocument()
     expect(screen.getByText(/^Birch · stacked 2026-04-15 · Oslo$/)).toBeInTheDocument()
     expect(screen.queryByText(/bjørk ·/i)).not.toBeInTheDocument()
   })

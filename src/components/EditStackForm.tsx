@@ -24,6 +24,7 @@ import { geocode, type GeocodeResult } from '../climate/openMeteo'
 import { getNormals } from '../climate/normalsCache'
 import { labelledMatches, placeLabel } from '../climate/placeLabels'
 import { useTranslation } from '../i18n/useTranslation'
+import { BackLink } from './BackLink'
 import { FieldRow } from './FieldRow'
 import { PhotoField, PhotoPreview } from './PhotoField'
 
@@ -79,9 +80,7 @@ export function EditStackForm({
       <MantineStack gap="md">
         <Text>{t('stackDetail.notFound')}</Text>
         <Group>
-          <Button variant="default" onClick={onCancel}>
-            {t('common.back')}
-          </Button>
+          <BackLink onClick={onCancel} />
         </Group>
       </MantineStack>
     )
