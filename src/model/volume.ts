@@ -66,3 +66,16 @@ export function formatVolume(solidLiters: number, { t, language }: Translator): 
   const number = new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(cubicMeters)
   return `${number} ${t('volume.unitShort.fastKubikk')}`
 }
+
+/** The most one entry may add or remove, as solid litres — 1000 m³, roughly
+ *  600 favn or twenty truckloads. No woodpile anyone stacks by hand comes
+ *  near it, so it never stands in a real user's way; what it stops is a typo
+ *  or a pasted `1e15` turning "left now" into a number nobody can read.
+ *
+ *  Expressed in solid litres rather than per unit so the same limit applies
+ *  whichever unit the amount was entered in. */
+export const MAX_ENTRY_SOLID_LITERS = 1_000_000
+
+export function exceedsEntryCap(amount: number, unit: VolumeUnit): boolean {
+  return toSolidLiters(amount, unit) > MAX_ENTRY_SOLID_LITERS
+}

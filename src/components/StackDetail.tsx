@@ -1,5 +1,14 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Alert, Button, Divider, Group, Stack as MantineStack, Text, Title } from '@mantine/core'
+import {
+  Alert,
+  Button,
+  Divider,
+  Group,
+  Stack as MantineStack,
+  Tabs,
+  Text,
+  Title,
+} from '@mantine/core'
 import type { ClimateNormals, VolumeEntry } from '../storage/schema'
 import {
   addReading,
@@ -162,11 +171,28 @@ export function StackDetail({ stackId, onBack, getNormalsFn = getNormals }: Prop
             })
           : t('stackDetail.volumeNone')}
       </Text>
-      <VolumeEntryForm onLog={logVolume} />
+      {/* Two jobs on one stack — booking wood in or out, and noting a meter
+          reading — and nobody does both in the same visit. Tabs put them at
+          the same place instead of one below the other. Panels stay mounted,
+          so a half-typed entry survives a glance at the other tab. */}
+      <Tabs defaultValue="volume">
+        <Tabs.List>
+          <Tabs.Tab value="volume">{t('stackDetail.tabVolume')}</Tabs.Tab>
+          <Tabs.Tab value="reading">{t('stackDetail.tabReading')}</Tabs.Tab>
+        </Tabs.List>
 
-      <Divider />
-      <LogReadingForm onLog={log} />
+        <Tabs.Panel value="volume" pt="md">
+          <VolumeEntryForm onLog={logVolume} />
+        </Tabs.Panel>
 
+        <Tabs.Panel value="reading" pt="md">
+          <LogReadingForm onLog={log} />
+        </Tabs.Panel>
+      </Tabs>
+
+      {/* The history sits under both tabs rather than inside either: an entry
+          and a reading are two ways of saying what happened to this stack, and
+          deleting one is the same job whichever tab it was entered from. */}
       <Divider />
       <EntryList
         readings={stack.readings}

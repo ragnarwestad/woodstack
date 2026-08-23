@@ -1,5 +1,12 @@
 import { useState } from 'react'
-import { Alert, Button, Group, Stack as MantineStack, Text, TextInput } from '@mantine/core'
+import {
+  Alert,
+  Button,
+  Group,
+  SimpleGrid,
+  Stack as MantineStack,
+  TextInput,
+} from '@mantine/core'
 import { useTranslation } from '../i18n/useTranslation'
 
 /** A meter reading is worth more than any refinement of the species table,
@@ -31,22 +38,22 @@ export function LogReadingForm({ onLog }: Props) {
 
   return (
     <MantineStack gap="sm">
-      <Text fw={600}>{t('logReading.heading')}</Text>
+      {/* Side by side: a percentage and a date are both short. */}
+      <SimpleGrid cols={{ base: 1, xs: 2 }} spacing="sm" verticalSpacing="sm">
+        <TextInput
+          type="number"
+          label={t('logReading.moistureLabel', { basis: t('units.moistureBasis') })}
+          value={moisture}
+          onChange={(event) => setMoisture(event.currentTarget.value)}
+        />
 
-      <TextInput
-        type="number"
-        label={t('logReading.moistureLabel')}
-        description={t('logReading.moistureDescription', { basis: t('units.moistureBasis') })}
-        value={moisture}
-        onChange={(event) => setMoisture(event.currentTarget.value)}
-      />
-
-      <TextInput
-        type="date"
-        label={t('logReading.dateLabel')}
-        value={date}
-        onChange={(event) => setDate(event.currentTarget.value)}
-      />
+        <TextInput
+          type="date"
+          label={t('logReading.dateLabel')}
+          value={date}
+          onChange={(event) => setDate(event.currentTarget.value)}
+        />
+      </SimpleGrid>
 
       {error && <Alert color="red">{error}</Alert>}
 

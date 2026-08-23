@@ -50,6 +50,7 @@ describe('StackDetail', () => {
     await waitFor(() => screen.getByText(/klar mellom/i))
     const before = screen.getByTestId('window-text').textContent
 
+    fireEvent.click(screen.getByRole('tab', { name: /måling/i }))
     fireEvent.change(screen.getByLabelText(/fuktighet/i), { target: { value: '35' } })
     fireEvent.change(screen.getByLabelText(/målt/i), { target: { value: '2026-10-15' } })
     fireEvent.click(screen.getByRole('button', { name: /lagre måling/i }))

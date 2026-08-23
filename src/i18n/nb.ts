@@ -18,6 +18,8 @@ export const nb = {
   'stackDetail.offline':
     'Ingen nett, så klimadataene for {place} mangler ennå. Vi prøver igjen med en gang du er på nett.',
   'stackDetail.volumeCurrent': 'Igjen nå: {volume}',
+  'stackDetail.tabVolume': 'Inn/ut',
+  'stackDetail.tabReading': 'Måling',
   'stackDetail.volumeNone': 'Ingen ved lagt inn ennå.',
   'stackDetail.delete': 'Slett stabelen',
   'stackDetail.deleteConfirm': 'Ja, slett stabelen',
@@ -50,25 +52,17 @@ export const nb = {
   'addStack.save': 'Lagre',
   'addStack.cancel': 'Avbryt',
 
-  'logReading.heading': 'Har du målt stabelen?',
-  'logReading.moistureLabel': 'Fuktighet',
-  'logReading.moistureDescription': 'Prosent av {basis} – tallet måleren viser',
+  'logReading.moistureLabel': 'Fuktighet (% av {basis})',
   'logReading.dateLabel': 'Målt dato',
-  'logReading.rangeError': 'Fuktigheten må være mellom {min} og {max} %.',
+  'logReading.rangeError': 'Fuktigheten må være mellom {min} og {max}.',
   'logReading.save': 'Lagre måling',
 
-  'volumeEntry.heading': 'Har du lagt inn eller tatt ut ved?',
   'volumeEntry.kindLabel': 'Hva gjorde du?',
-  'volumeEntry.amountLabel': 'Mengde',
+  'volumeEntry.amountLabel': 'Mengde ({unit})',
   'volumeEntry.unitLabel': 'Enhet',
   'volumeEntry.dateLabel': 'Dato',
-  'volumeEntry.amountError': 'Mengden må være et tall større enn 0.',
+  'volumeEntry.amountRange': 'Mengden må være et tall mellom 0 og {max}.',
   'volumeEntry.save': 'Lagre mengde',
-
-  'exportImport.explanation':
-    'Alt ligger bare i denne nettleseren. Safari sletter det etter 7 dager uten besøk – ta vare på lenken, så har du stablene igjen.',
-  'exportImport.copy': 'Kopier lenken min',
-  'exportImport.copied': 'Kopiert.',
 
   'install.heading': 'Legg Woodstack på hjem-skjermen',
   'install.eviction': 'Safari sletter alt appen har lagret etter 7 dager uten besøk. Installerte apper slipper unna.',
@@ -110,6 +104,12 @@ export const nb = {
   'volume.unit.sekk40': 'Sekk (40 liter)',
   'volume.unit.sekk60': 'Sekk (60 liter)',
   'volume.unitShort.fastKubikk': 'm³ fast',
+  'volume.unitShort.stablet': 'm³ stablet',
+  'volume.unitShort.losKubikk': 'm³ løs',
+  'volume.unitShort.favn': 'favner',
+  'volume.unitShort.storsekk': 'storsekker',
+  'volume.unitShort.sekk40': '40-liters sekker',
+  'volume.unitShort.sekk60': '60-liters sekker',
 
   'units.moistureBasis': 'tørrvekt',
   'units.monthPart.beginning': 'begynnelsen',

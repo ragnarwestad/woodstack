@@ -19,6 +19,8 @@ export const en: Record<TranslationKey, string> = {
   'stackDetail.offline':
     'No network, so the climate data for {place} is still missing. We will try again the moment you are online.',
   'stackDetail.volumeCurrent': 'Left now: {volume}',
+  'stackDetail.tabVolume': 'In/out',
+  'stackDetail.tabReading': 'Reading',
   'stackDetail.volumeNone': 'No wood logged yet.',
   'stackDetail.delete': 'Delete this woodpile',
   'stackDetail.deleteConfirm': 'Yes, delete the woodpile',
@@ -51,25 +53,17 @@ export const en: Record<TranslationKey, string> = {
   'addStack.save': 'Save',
   'addStack.cancel': 'Cancel',
 
-  'logReading.heading': 'Have you measured the woodpile?',
-  'logReading.moistureLabel': 'Moisture',
-  'logReading.moistureDescription': 'Percent of {basis} – the number the meter shows',
+  'logReading.moistureLabel': 'Moisture (% {basis})',
   'logReading.dateLabel': 'Date measured',
-  'logReading.rangeError': 'The moisture has to be between {min} and {max} %.',
+  'logReading.rangeError': 'The moisture has to be between {min} and {max}.',
   'logReading.save': 'Save reading',
 
-  'volumeEntry.heading': 'Have you added or taken out wood?',
   'volumeEntry.kindLabel': 'What did you do?',
-  'volumeEntry.amountLabel': 'Amount',
+  'volumeEntry.amountLabel': 'Amount ({unit})',
   'volumeEntry.unitLabel': 'Unit',
   'volumeEntry.dateLabel': 'Date',
-  'volumeEntry.amountError': 'The amount has to be a number greater than 0.',
+  'volumeEntry.amountRange': 'The amount has to be a number between 0 and {max}.',
   'volumeEntry.save': 'Save amount',
-
-  'exportImport.explanation':
-    'Everything is kept in this browser only. Safari deletes it after 7 days without a visit – keep the link, and you have the woodpiles back.',
-  'exportImport.copy': 'Copy my link',
-  'exportImport.copied': 'Copied.',
 
   'install.heading': 'Add Woodstack to your home screen',
   'install.eviction':
@@ -112,6 +106,12 @@ export const en: Record<TranslationKey, string> = {
   'volume.unit.sekk40': 'Sack (40 litres)',
   'volume.unit.sekk60': 'Sack (60 litres)',
   'volume.unitShort.fastKubikk': 'm³ solid',
+  'volume.unitShort.stablet': 'm³ stacked',
+  'volume.unitShort.losKubikk': 'm³ loose',
+  'volume.unitShort.favn': 'favn',
+  'volume.unitShort.storsekk': 'bulk bags',
+  'volume.unitShort.sekk40': '40-litre sacks',
+  'volume.unitShort.sekk60': '60-litre sacks',
 
   'units.moistureBasis': 'dry basis',
   'units.monthPart.beginning': 'beginning',

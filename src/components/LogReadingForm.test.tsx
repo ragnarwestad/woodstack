@@ -39,7 +39,6 @@ describe('LogReadingForm in English', () => {
     setTestLanguage(ENGLISH_TEST_LANGUAGE)
     renderWithMantine(<LogReadingForm onLog={vi.fn()} />)
 
-    expect(screen.getByText(/have you measured the woodpile/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/moisture/i)).toBeInTheDocument()
     expect(screen.getByText(/dry basis/i)).toBeInTheDocument()
     expect(screen.queryByText(/tørrvekt/i)).not.toBeInTheDocument()

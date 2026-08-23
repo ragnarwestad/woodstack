@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import { VOLUME_UNITS } from '../storage/schema'
-import { currentSolidLiters, formatVolume, fromSolidLiters, toSolidLiters } from './volume'
+import {
+  currentSolidLiters,
+  exceedsEntryCap,
+  formatVolume,
+  fromSolidLiters,
+  MAX_ENTRY_SOLID_LITERS,
+  toSolidLiters,
+} from './volume'
 import { createTranslator } from '../i18n/useTranslation'
 
 const nb = createTranslator('nb')
@@ -78,5 +85,29 @@ describe('formatVolume', () => {
 
   it('says it in English when that is the language', () => {
     expect(formatVolume(1650, createTranslator('en'))).toBe('1.65 m³ solid')
+  })
+})
+
+describe('the cap on a single entry', () => {
+  /** Any cap is arbitrary; this one is chosen to be impossible to hit by
+   *  accident and impossible to miss by typo. 1000 m³ solid is roughly 600
+   *  favn — some twenty truckloads — so no woodpile a person stacks by hand
+   *  comes near it, while `1e15` in the amount field does not get through. */
+  it('is generous enough that a large private woodpile fits', () => {
+    expect(toSolidLiters(30, 'favn')).toBeLessThan(MAX_ENTRY_SOLID_LITERS)
+  })
+
+  it('is the same limit whichever unit the amount is given in', () => {
+    const favn = fromSolidLiters(MAX_ENTRY_SOLID_LITERS, 'favn')
+    const sacks = fromSolidLiters(MAX_ENTRY_SOLID_LITERS, 'sekk40')
+    expect(toSolidLiters(favn, 'favn')).toBeCloseTo(toSolidLiters(sacks, 'sekk40'), 6)
+  })
+
+  it('rejects an amount whose converted volume is over the cap', () => {
+    expect(exceedsEntryCap(1e15, 'favn')).toBe(true)
+  })
+
+  it('accepts an ordinary amount', () => {
+    expect(exceedsEntryCap(2, 'favn')).toBe(false)
   })
 })

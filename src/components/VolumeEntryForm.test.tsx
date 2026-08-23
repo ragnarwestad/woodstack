@@ -52,7 +52,7 @@ describe('VolumeEntryForm', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /lagre mengde/i }))
     expect(onLog).not.toHaveBeenCalled()
-    expect(screen.getByText(/større enn 0/i)).toBeInTheDocument()
+    expect(screen.getByText(/mellom 0 og 606\./i)).toBeInTheDocument()
 
     fireEvent.change(screen.getByLabelText(/mengde/i), { target: { value: '0' } })
     fireEvent.click(screen.getByRole('button', { name: /lagre mengde/i }))
@@ -66,6 +66,42 @@ describe('VolumeEntryForm', () => {
     fireEvent.click(screen.getByRole('button', { name: /lagre mengde/i }))
 
     expect(screen.getByLabelText(/mengde/i)).toHaveValue(null)
+  })
+
+  /** A number field takes anything the visitor can type, `1e15` included.
+   *  Without a cap that lands in storage and "left now" becomes a figure no
+   *  one can read — and the entry cannot be edited away, only the whole
+   *  stack deleted. */
+  /** The number the field accepts depends on the unit chosen, so both the
+   *  label and the limit have to follow the select. Stating 606 while the
+   *  unit says sacks would be worse than saying nothing. */
+  it('names the unit in the label and states the cap in that unit', () => {
+    renderWithMantine(<VolumeEntryForm onLog={vi.fn()} />)
+    expect(screen.getByLabelText(/mengde \(favner\)/i)).toBeInTheDocument()
+
+    fireEvent.change(screen.getByLabelText(/enhet/i), { target: { value: 'sekk40' } })
+    expect(screen.getByLabelText(/mengde \(40-liters sekker\)/i)).toBeInTheDocument()
+
+    fireEvent.change(screen.getByLabelText(/mengde/i), { target: { value: '1e15' } })
+    fireEvent.click(screen.getByRole('button', { name: /lagre mengde/i }))
+    expect(screen.getByText(/mellom 0 og 36363\./i)).toBeInTheDocument()
+  })
+
+  it('refuses an amount far beyond any real woodpile', () => {
+    const onLog = vi.fn()
+    renderWithMantine(<VolumeEntryForm onLog={onLog} />)
+    fireEvent.change(screen.getByLabelText(/mengde/i), { target: { value: '1e15' } })
+    fireEvent.click(screen.getByRole('button', { name: /lagre mengde/i }))
+    expect(onLog).not.toHaveBeenCalled()
+    expect(screen.getByText(/mellom 0 og 606\./i)).toBeInTheDocument()
+  })
+
+  it('still accepts an ordinary amount', () => {
+    const onLog = vi.fn()
+    renderWithMantine(<VolumeEntryForm onLog={onLog} />)
+    fireEvent.change(screen.getByLabelText(/mengde/i), { target: { value: '2' } })
+    fireEvent.click(screen.getByRole('button', { name: /lagre mengde/i }))
+    expect(onLog).toHaveBeenCalledWith(expect.objectContaining({ amount: 2, unit: 'favn' }))
   })
 })
 

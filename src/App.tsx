@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Container, Divider, Stack } from '@mantine/core'
+import { Container, Stack } from '@mantine/core'
 import type { NewStack, Stack as WoodStack } from './storage/schema'
 import { readStackId, stackHash } from './storage/appState'
 import { addStack, replaceStacks, useStacks } from './storage/stacksRepo'
@@ -9,7 +9,7 @@ import { StackList } from './components/StackList'
 import { StackDetail } from './components/StackDetail'
 import { AddStackForm } from './components/AddStackForm'
 import { InstallPrompt } from './components/InstallPrompt'
-import { ExportImport, useImportOnLoad } from './components/ExportImport'
+import { useImportOnLoad } from './storage/importOnLoad'
 import { useTranslation } from './i18n/useTranslation'
 
 /** Two screens and one hash. A router would be a dependency for something
@@ -75,13 +75,6 @@ export function App() {
             onSelect={select}
             onAdd={() => setAdding(true)}
           />
-        )}
-
-        {stacks.length > 0 && (
-          <>
-            <Divider />
-            <ExportImport stacks={stacks} />
-          </>
         )}
       </Stack>
     </Container>
