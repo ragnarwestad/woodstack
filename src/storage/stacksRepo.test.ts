@@ -10,6 +10,7 @@ import {
   removeVolumeEntry,
   replaceStacks,
   saveStacks,
+  updateStack,
 } from './stacksRepo'
 import { makeStack } from '../test/fixtures'
 import { SCHEMA_VERSION } from './schema'
@@ -327,5 +328,95 @@ describe('removeVolumeEntry', () => {
     saveStacks([makeStack({ id: 'a', volumeEntries: undefined })])
 
     expect(removeVolumeEntry('a', 'v1')?.volumeEntries).toEqual([])
+  })
+})
+
+describe('updateStack', () => {
+  const BERGEN = { name: 'Bergen', latitude: 60.39, longitude: 5.32 }
+
+  it('replaces the five editable fields and leaves everything else standing', () => {
+    saveStacks([
+      makeStack({
+        id: 'a',
+        readings: [{ id: 'r1', date: '2026-10-15', moisture: 28 }],
+        volumeEntries: [{ id: 'v1', date: '2026-04-15', kind: 'addition', amount: 2, unit: 'favn' }],
+      }),
+    ])
+
+    const updated = updateStack('a', {
+      name: 'Bjørk bak låven',
+      splitSize: 'small',
+      cover: 'none',
+      exposure: 'exposed',
+      location: BERGEN,
+    })
+
+    expect(updated?.name).toBe('Bjørk bak låven')
+    const stored = getStack('a')
+    expect(stored?.name).toBe('Bjørk bak låven')
+    expect(stored?.splitSize).toBe('small')
+    expect(stored?.cover).toBe('none')
+    expect(stored?.exposure).toBe('exposed')
+    expect(stored?.location).toEqual(BERGEN)
+  })
+
+  // Species and stacked date are what every reading was interpreted against,
+  // so an edit may not move them — and the readings themselves are logged
+  // history, not something a change of name touches.
+  it('leaves species, stacked date, readings and the ledger alone', () => {
+    saveStacks([
+      makeStack({
+        id: 'a',
+        readings: [{ id: 'r1', date: '2026-10-15', moisture: 28 }],
+        volumeEntries: [{ id: 'v1', date: '2026-04-15', kind: 'addition', amount: 2, unit: 'favn' }],
+      }),
+    ])
+
+    updateStack('a', {
+      name: 'Bjørk bak låven',
+      splitSize: 'small',
+      cover: 'none',
+      exposure: 'exposed',
+      location: BERGEN,
+    })
+
+    const stored = getStack('a')
+    expect(stored?.species).toBe('bjork')
+    expect(stored?.stackedDate).toBe('2026-04-15')
+    expect(stored?.readings).toEqual([{ id: 'r1', date: '2026-10-15', moisture: 28 }])
+    expect(stored?.volumeEntries).toEqual([
+      { id: 'v1', date: '2026-04-15', kind: 'addition', amount: 2, unit: 'favn' },
+    ])
+  })
+
+  it('changes only the named stack', () => {
+    saveStacks([makeStack({ id: 'a' }), makeStack({ id: 'b', name: 'Grana bak låven' })])
+
+    updateStack('a', {
+      name: 'Bjørk bak låven',
+      splitSize: 'small',
+      cover: 'none',
+      exposure: 'exposed',
+      location: BERGEN,
+    })
+
+    expect(getStack('b')?.name).toBe('Grana bak låven')
+    expect(getStack('b')?.cover).toBe('roof')
+  })
+
+  it('does nothing for an unknown stack', () => {
+    saveStacks([makeStack({ id: 'a' })])
+    const before = loadStacks()
+
+    expect(
+      updateStack('nope', {
+        name: 'Bjørk bak låven',
+        splitSize: 'small',
+        cover: 'none',
+        exposure: 'exposed',
+        location: BERGEN,
+      }),
+    ).toBeUndefined()
+    expect(loadStacks()).toEqual(before)
   })
 })

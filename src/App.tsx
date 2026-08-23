@@ -8,11 +8,12 @@ import { AppHeader } from './components/AppHeader'
 import { StackList } from './components/StackList'
 import { StackDetail } from './components/StackDetail'
 import { AddStackForm } from './components/AddStackForm'
+import { EditStackForm } from './components/EditStackForm'
 import { InstallPrompt } from './components/InstallPrompt'
 import { useImportOnLoad } from './storage/importOnLoad'
 import { useTranslation } from './i18n/useTranslation'
 
-/** Two screens and one hash. A router would be a dependency for something
+/** Three screens and one hash. A router would be a dependency for something
  *  `location.hash` already does: `#s=<id>` opens a stack, and `#i=<payload>`
  *  is a share link that `useImportOnLoad` consumes and clears. */
 export function App() {
@@ -20,6 +21,7 @@ export function App() {
   const stacks = useStacks()
   const [selectedId, setSelectedId] = useState<string | null>(() => readStackId(window.location.hash))
   const [adding, setAdding] = useState(false)
+  const [editing, setEditing] = useState(false)
 
   useImportOnLoad(useCallback((imported: WoodStack[]) => replaceStacks(imported), []))
 
@@ -46,6 +48,9 @@ export function App() {
   function back() {
     history.replaceState(null, '', window.location.pathname + window.location.search)
     setSelectedId(null)
+    // Otherwise the next stack the visitor opens lands on the edit screen
+    // unasked, because `editing` was left standing from the last one.
+    setEditing(false)
   }
 
   function create(input: NewStack) {
@@ -64,8 +69,14 @@ export function App() {
 
         <InstallPrompt />
 
-        {selectedId ? (
-          <StackDetail stackId={selectedId} onBack={back} />
+        {selectedId && editing ? (
+          <EditStackForm
+            stackId={selectedId}
+            onSave={() => setEditing(false)}
+            onCancel={() => setEditing(false)}
+          />
+        ) : selectedId ? (
+          <StackDetail stackId={selectedId} onBack={back} onEdit={() => setEditing(true)} />
         ) : adding ? (
           <AddStackForm onAdd={create} onCancel={() => setAdding(false)} />
         ) : (

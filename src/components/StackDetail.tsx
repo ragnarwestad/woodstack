@@ -39,10 +39,11 @@ type NormalsResult = { key: string; normals: ClimateNormals | null }
 type Props = {
   stackId: string
   onBack: () => void
+  onEdit: () => void
   getNormalsFn?: (latitude: number, longitude: number) => Promise<ClimateNormals>
 }
 
-export function StackDetail({ stackId, onBack, getNormalsFn = getNormals }: Props) {
+export function StackDetail({ stackId, onBack, onEdit, getNormalsFn = getNormals }: Props) {
   const translator = useTranslation()
   const { t } = translator
   const [stack, setStack] = useState(() => getStack(stackId))
@@ -134,18 +135,23 @@ export function StackDetail({ stackId, onBack, getNormalsFn = getNormals }: Prop
         </Button>
       </Group>
 
-      {/* The delete button sits on the title line because that is what it
-          acts on — the whole stack, not one of the three jobs in the tabs
-          below. It also stops it moving: down there it shifted every time the
+      {/* Edit and delete sit on the title line because that is what they act
+          on — the whole stack, not one of the three jobs in the tabs below. It
+          also stops them moving: down there they shifted every time the
           visitor switched to a taller panel. */}
       <Group justify="space-between" align="flex-start" wrap="nowrap">
         <Title order={2}>{stack.name}</Title>
-        <ConfirmButton
-          label={t('stackDetail.delete')}
-          confirmLabel={t('stackDetail.deleteConfirm')}
-          cancelLabel={t('stackDetail.deleteCancel')}
-          onConfirm={deleteStack}
-        />
+        <Group gap="xs" wrap="nowrap">
+          <Button variant="default" onClick={onEdit}>
+            {t('stackDetail.edit')}
+          </Button>
+          <ConfirmButton
+            label={t('stackDetail.delete')}
+            confirmLabel={t('stackDetail.deleteConfirm')}
+            cancelLabel={t('stackDetail.deleteCancel')}
+            onConfirm={deleteStack}
+          />
+        </Group>
       </Group>
       <Text c="dimmed">
         {t('stackDetail.meta', {

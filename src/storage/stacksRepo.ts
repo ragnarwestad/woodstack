@@ -72,6 +72,25 @@ export function removeStack(id: string): void {
   saveStacks(loadStacks().filter((stack) => stack.id !== id))
 }
 
+/** The five fields a stack can be changed on after the fact. `species` and
+ *  `stackedDate` are deliberately absent: every reading was measured against
+ *  the drying curve those two fix, so moving them would reinterpret history
+ *  the visitor never re-measured. */
+export type StackEdit = Pick<Stack, 'name' | 'splitSize' | 'cover' | 'exposure' | 'location'>
+
+/** Overwrite those five and nothing else. Last-write-wins on the whole stored
+ *  array, exactly like every other mutator here — a later sync layer has
+ *  nothing extra to unwind. */
+export function updateStack(id: string, edit: StackEdit): Stack | undefined {
+  const stacks = loadStacks()
+  const target = stacks.find((stack) => stack.id === id)
+  if (!target) return undefined
+
+  const updated: Stack = { ...target, ...edit }
+  saveStacks(stacks.map((stack) => (stack.id === id ? updated : stack)))
+  return updated
+}
+
 /** Swap the whole set — what importing a share link does. */
 export function replaceStacks(stacks: Stack[]): void {
   saveStacks(stacks)

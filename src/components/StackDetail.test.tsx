@@ -14,7 +14,7 @@ beforeEach(() => {
 describe('StackDetail', () => {
   it('shows the window and the curve once the climate data is there', async () => {
     renderWithMantine(
-      <StackDetail stackId="a" onBack={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+      <StackDetail stackId="a" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
     )
     await waitFor(() => expect(screen.getByText(/klar mellom/i)).toBeInTheDocument())
     expect(screen.getByRole('img', { name: /tørkekurve/i })).toBeInTheDocument()
@@ -22,7 +22,7 @@ describe('StackDetail', () => {
 
   it('shows an explicit fetching state before the climate data arrives', () => {
     renderWithMantine(
-      <StackDetail stackId="a" onBack={vi.fn()} getNormalsFn={() => new Promise(() => {})} />,
+      <StackDetail stackId="a" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={() => new Promise(() => {})} />,
     )
     expect(screen.getByText(/henter klimadata/i)).toBeInTheDocument()
     expect(screen.queryByText(/klar mellom/i)).not.toBeInTheDocument()
@@ -34,7 +34,7 @@ describe('StackDetail', () => {
       .mockRejectedValueOnce(new Error('offline'))
       .mockResolvedValue(OSLO_NORMALS)
 
-    renderWithMantine(<StackDetail stackId="a" onBack={vi.fn()} getNormalsFn={getNormalsFn} />)
+    renderWithMantine(<StackDetail stackId="a" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={getNormalsFn} />)
     await waitFor(() => expect(screen.getByText(/ingen nett/i)).toBeInTheDocument())
 
     fireEvent(window, new Event('online'))
@@ -45,7 +45,7 @@ describe('StackDetail', () => {
 
   it('narrows the window when a reading is logged', async () => {
     renderWithMantine(
-      <StackDetail stackId="a" onBack={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+      <StackDetail stackId="a" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
     )
     await waitFor(() => screen.getByText(/klar mellom/i))
     const before = screen.getByTestId('window-text').textContent
@@ -60,7 +60,7 @@ describe('StackDetail', () => {
 
   it('says the volume is not tracked yet rather than showing a bare zero', async () => {
     renderWithMantine(
-      <StackDetail stackId="a" onBack={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+      <StackDetail stackId="a" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
     )
     await waitFor(() => screen.getByText(/klar mellom/i))
     expect(screen.getByText(/ingen ved lagt inn ennå/i)).toBeInTheDocument()
@@ -78,7 +78,7 @@ describe('StackDetail', () => {
       }),
     ])
     renderWithMantine(
-      <StackDetail stackId="a" onBack={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+      <StackDetail stackId="a" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
     )
 
     // 2 favn = 3300 solid litres, less one storsekk at 500 = 2800.
@@ -96,7 +96,7 @@ describe('StackDetail', () => {
       }),
     ])
     renderWithMantine(
-      <StackDetail stackId="a" onBack={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+      <StackDetail stackId="a" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
     )
 
     await waitFor(() => expect(screen.getByText(/igjen nå: 0 m³ fast/i)).toBeInTheDocument())
@@ -106,7 +106,7 @@ describe('StackDetail', () => {
 
   it('adds a logged entry to the running total', async () => {
     renderWithMantine(
-      <StackDetail stackId="a" onBack={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+      <StackDetail stackId="a" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
     )
     await waitFor(() => screen.getByText(/klar mellom/i))
 
@@ -121,7 +121,7 @@ describe('StackDetail', () => {
   it('goes back to the list', () => {
     const onBack = vi.fn()
     renderWithMantine(
-      <StackDetail stackId="a" onBack={onBack} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+      <StackDetail stackId="a" onBack={onBack} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
     )
     fireEvent.click(screen.getByRole('button', { name: /tilbake/i }))
     expect(onBack).toHaveBeenCalled()
@@ -136,7 +136,7 @@ describe('StackDetail', () => {
       }),
     ])
     renderWithMantine(
-      <StackDetail stackId="a" onBack={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+      <StackDetail stackId="a" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
     )
     await waitFor(() => screen.getByText(/klar mellom/i))
 
@@ -146,7 +146,7 @@ describe('StackDetail', () => {
   it('deletes the stack and goes back to the list once the visitor confirms', async () => {
     const onBack = vi.fn()
     renderWithMantine(
-      <StackDetail stackId="a" onBack={onBack} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+      <StackDetail stackId="a" onBack={onBack} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
     )
     await waitFor(() => screen.getByText(/klar mellom/i))
 
@@ -157,10 +157,27 @@ describe('StackDetail', () => {
     expect(onBack).toHaveBeenCalled()
   })
 
+  it('hands the visitor over to the edit screen', async () => {
+    const onEdit = vi.fn()
+    renderWithMantine(
+      <StackDetail
+        stackId="a"
+        onBack={vi.fn()}
+        onEdit={onEdit}
+        getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)}
+      />,
+    )
+    await waitFor(() => screen.getByText(/klar mellom/i))
+
+    fireEvent.click(screen.getByRole('button', { name: /^endre stabelen$/i }))
+
+    expect(onEdit).toHaveBeenCalled()
+  })
+
   it('keeps the stack when the visitor backs out of deleting it', async () => {
     const onBack = vi.fn()
     renderWithMantine(
-      <StackDetail stackId="a" onBack={onBack} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+      <StackDetail stackId="a" onBack={onBack} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
     )
     await waitFor(() => screen.getByText(/klar mellom/i))
 
@@ -184,7 +201,7 @@ describe('StackDetail', () => {
       }),
     ])
     renderWithMantine(
-      <StackDetail stackId="a" onBack={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+      <StackDetail stackId="a" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
     )
     await waitFor(() => screen.getByText(/klar mellom/i))
 
@@ -209,7 +226,7 @@ describe('StackDetail', () => {
       }),
     ])
     renderWithMantine(
-      <StackDetail stackId="a" onBack={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+      <StackDetail stackId="a" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
     )
     await waitFor(() => expect(screen.getByText(/igjen nå: 3 m³ fast/i)).toBeInTheDocument())
 
@@ -225,7 +242,7 @@ describe('StackDetail', () => {
   it('says so when the stack is gone', () => {
     localStorage.clear()
     renderWithMantine(
-      <StackDetail stackId="nope" onBack={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+      <StackDetail stackId="nope" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
     )
     expect(screen.getByText(/finner ikke/i)).toBeInTheDocument()
   })
@@ -235,7 +252,7 @@ describe('StackDetail in English', () => {
   it('translates the detail chrome and the species in the heading line', async () => {
     setTestLanguage(ENGLISH_TEST_LANGUAGE)
     renderWithMantine(
-      <StackDetail stackId="a" onBack={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+      <StackDetail stackId="a" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
     )
 
     await waitFor(() => expect(screen.getByText(/ready between/i)).toBeInTheDocument())
@@ -248,7 +265,7 @@ describe('StackDetail in English', () => {
     setTestLanguage(ENGLISH_TEST_LANGUAGE)
     localStorage.clear()
     renderWithMantine(
-      <StackDetail stackId="nope" onBack={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+      <StackDetail stackId="nope" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
     )
     expect(screen.getByText(/cannot find this woodpile/i)).toBeInTheDocument()
   })
