@@ -21,12 +21,12 @@ export const en: Record<TranslationKey, string> = {
   'stackDetail.volumeCurrent': 'Left now: {volume}',
   'stackDetail.tabVolume': 'In/out',
   'stackDetail.tabReading': 'Reading',
+  'stackDetail.tabHistory': 'History',
   'stackDetail.volumeNone': 'No wood logged yet.',
   'stackDetail.delete': 'Delete this woodpile',
   'stackDetail.deleteConfirm': 'Yes, delete the woodpile',
   'stackDetail.deleteCancel': 'Cancel',
 
-  'entryList.heading': 'What has been logged',
   'entryList.empty': 'Nothing logged yet.',
   'entryList.volumeDetail': '{kind}: {amount} {unit}',
   'entryList.delete': 'Delete',

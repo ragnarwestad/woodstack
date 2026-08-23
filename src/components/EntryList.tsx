@@ -31,8 +31,6 @@ export function EntryList({ readings, volumeEntries, onDeleteReading, onDeleteVo
 
   return (
     <MantineStack gap="xs">
-      <Text fw={600}>{t('entryList.heading')}</Text>
-
       {rows.length === 0 ? (
         <Text c="dimmed">{t('entryList.empty')}</Text>
       ) : (

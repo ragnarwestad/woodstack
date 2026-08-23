@@ -134,7 +134,19 @@ export function StackDetail({ stackId, onBack, getNormalsFn = getNormals }: Prop
         </Button>
       </Group>
 
-      <Title order={2}>{stack.name}</Title>
+      {/* The delete button sits on the title line because that is what it
+          acts on — the whole stack, not one of the three jobs in the tabs
+          below. It also stops it moving: down there it shifted every time the
+          visitor switched to a taller panel. */}
+      <Group justify="space-between" align="flex-start" wrap="nowrap">
+        <Title order={2}>{stack.name}</Title>
+        <ConfirmButton
+          label={t('stackDetail.delete')}
+          confirmLabel={t('stackDetail.deleteConfirm')}
+          cancelLabel={t('stackDetail.deleteCancel')}
+          onConfirm={deleteStack}
+        />
+      </Group>
       <Text c="dimmed">
         {t('stackDetail.meta', {
           species: t(`species.${stack.species}`),
@@ -179,6 +191,7 @@ export function StackDetail({ stackId, onBack, getNormalsFn = getNormals }: Prop
         <Tabs.List>
           <Tabs.Tab value="volume">{t('stackDetail.tabVolume')}</Tabs.Tab>
           <Tabs.Tab value="reading">{t('stackDetail.tabReading')}</Tabs.Tab>
+          <Tabs.Tab value="history">{t('stackDetail.tabHistory')}</Tabs.Tab>
         </Tabs.List>
 
         <Tabs.Panel value="volume" pt="md">
@@ -188,28 +201,21 @@ export function StackDetail({ stackId, onBack, getNormalsFn = getNormals }: Prop
         <Tabs.Panel value="reading" pt="md">
           <LogReadingForm onLog={log} />
         </Tabs.Panel>
+        {/* The history is a tab of its own, and it scrolls inside its panel.
+            A list that grows with every entry would otherwise push everything
+            below it — "slett stabelen" included — further down the page each
+            time the visitor logs something. */}
+        <Tabs.Panel value="history" pt="md">
+          <MantineStack mah={260} style={{ overflowY: 'auto' }} gap="xs">
+            <EntryList
+              readings={stack.readings}
+              volumeEntries={stack.volumeEntries ?? []}
+              onDeleteReading={deleteReading}
+              onDeleteVolumeEntry={deleteVolumeEntry}
+            />
+          </MantineStack>
+        </Tabs.Panel>
       </Tabs>
-
-      {/* The history sits under both tabs rather than inside either: an entry
-          and a reading are two ways of saying what happened to this stack, and
-          deleting one is the same job whichever tab it was entered from. */}
-      <Divider />
-      <EntryList
-        readings={stack.readings}
-        volumeEntries={stack.volumeEntries ?? []}
-        onDeleteReading={deleteReading}
-        onDeleteVolumeEntry={deleteVolumeEntry}
-      />
-
-      <Divider />
-      <Group>
-        <ConfirmButton
-          label={t('stackDetail.delete')}
-          confirmLabel={t('stackDetail.deleteConfirm')}
-          cancelLabel={t('stackDetail.deleteCancel')}
-          onConfirm={deleteStack}
-        />
-      </Group>
     </MantineStack>
   )
 }

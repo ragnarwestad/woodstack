@@ -20,12 +20,12 @@ export const nb = {
   'stackDetail.volumeCurrent': 'Igjen nå: {volume}',
   'stackDetail.tabVolume': 'Inn/ut',
   'stackDetail.tabReading': 'Måling',
+  'stackDetail.tabHistory': 'Historikk',
   'stackDetail.volumeNone': 'Ingen ved lagt inn ennå.',
   'stackDetail.delete': 'Slett stabelen',
   'stackDetail.deleteConfirm': 'Ja, slett stabelen',
   'stackDetail.deleteCancel': 'Avbryt',
 
-  'entryList.heading': 'Det som er lagt inn',
   'entryList.empty': 'Ingenting lagt inn ennå.',
   'entryList.volumeDetail': '{kind}: {amount} {unit}',
   'entryList.delete': 'Slett',

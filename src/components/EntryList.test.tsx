@@ -83,7 +83,6 @@ describe('EntryList in English', () => {
     setTestLanguage(ENGLISH_TEST_LANGUAGE)
     renderList()
 
-    expect(screen.getByText(/what has been logged/i)).toBeInTheDocument()
     expect(screen.getAllByTestId('entry-row')[0]).toHaveTextContent(/added wood: 2 favn/i)
     expect(screen.getAllByRole('button', { name: /^delete$/i })).toHaveLength(3)
   })

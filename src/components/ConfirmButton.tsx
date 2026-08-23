@@ -21,7 +21,10 @@ export function ConfirmButton({ label, confirmLabel, cancelLabel, onConfirm }: P
 
   if (!confirming) {
     return (
-      <Button variant="subtle" color="red" onClick={() => setConfirming(true)}>
+      // `light`, not `subtle`: a subtle button is text on nothing, and red
+      // text on the dark theme's near-black background is hard to see at all.
+      // The tinted face makes it read as a button in both colour schemes.
+      <Button variant="light" color="red" onClick={() => setConfirming(true)}>
         {label}
       </Button>
     )

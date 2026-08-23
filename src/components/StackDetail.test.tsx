@@ -188,6 +188,7 @@ describe('StackDetail', () => {
     )
     await waitFor(() => screen.getByText(/klar mellom/i))
 
+    fireEvent.click(screen.getByRole('tab', { name: /historikk/i }))
     const row = screen.getAllByTestId('entry-row')[1]
     fireEvent.click(within(row).getByRole('button', { name: /^slett$/i }))
     fireEvent.click(within(row).getByRole('button', { name: /^ja, slett$/i }))
@@ -212,6 +213,7 @@ describe('StackDetail', () => {
     )
     await waitFor(() => expect(screen.getByText(/igjen nå: 3 m³ fast/i)).toBeInTheDocument())
 
+    fireEvent.click(screen.getByRole('tab', { name: /historikk/i }))
     const row = screen.getAllByTestId('entry-row')[1]
     fireEvent.click(within(row).getByRole('button', { name: /^slett$/i }))
     fireEvent.click(within(row).getByRole('button', { name: /^ja, slett$/i }))
