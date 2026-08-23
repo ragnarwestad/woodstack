@@ -28,6 +28,7 @@ import { useTranslation } from '../i18n/useTranslation'
 import { DryingCurveChart } from './DryingCurveChart'
 import { BackLink } from './BackLink'
 import { EntryList } from './EntryList'
+import { ExplainButton } from './ExplainButton'
 import { LogReadingForm } from './LogReadingForm'
 import { NotifyPrompt } from './NotifyPrompt'
 import { VolumeEntryForm } from './VolumeEntryForm'
@@ -207,9 +208,17 @@ export function StackDetail({
 
       {dryWindow && (
         <>
-          <Text data-testid="window-text" fw={600}>
-            {t('common.readyBetween', { window: formatWindow(dryWindow, translator) })}
-          </Text>
+          {/* The mark sits beside the line, not inside it: `window-text` is the
+              window and nothing else. */}
+          <Group gap={4} wrap="nowrap">
+            <Text data-testid="window-text" fw={600}>
+              {t('common.readyBetween', { window: formatWindow(dryWindow, translator) })}
+            </Text>
+            <ExplainButton
+              title={t('explain.readyWindow.title')}
+              body={t('explain.readyWindow.body')}
+            />
+          </Group>
           {correction && (
             <Text size="sm" c="dimmed" data-testid="correction-caption">
               {t(

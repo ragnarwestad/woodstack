@@ -18,6 +18,16 @@ export const en: Record<TranslationKey, string> = {
   'common.storageFull':
     'The browser has no room left, so nothing was saved. Try removing the photo, or delete a woodpile you no longer need.',
 
+  'explain.readyWindow.title': 'Why a window, and not one date?',
+  'explain.readyWindow.body':
+    'Nobody can know the weather that far ahead day by day. So the stack is estimated to be ready sometime within this window, rather than on one date that would miss anyway.',
+  'explain.moisture.title': 'Why “dry basis”?',
+  'explain.moisture.body':
+    'The percentage is measured against what the wood would weigh bone dry. Many moisture meters show wet-basis percent instead, which gives a lower number for exactly the same wood – fresh birch is 45 % wet basis and 75 % dry basis.',
+  'explain.volumeUnits.title': 'Favn, stacked or solid cubic metres?',
+  'explain.volumeUnits.body':
+    'The three do not measure the same thing. A stacked cubic metre counts the air between the logs, a solid cubic metre is the wood alone, and a favn is 2.4 m³ stacked – that is 1.65 m³ solid. The same pile of firewood gives three different numbers depending on the unit you pick.',
+
   'stackList.heading': 'My woodpiles',
   'stackList.add': 'New woodpile',
   'stackList.empty': 'No woodpiles yet. Add the first one, and we will work out when it is dry.',

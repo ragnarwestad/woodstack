@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { fireEvent, screen } from '@testing-library/react'
+import { fireEvent, screen, within } from '@testing-library/react'
 import { VolumeEntryForm } from './VolumeEntryForm'
 import { renderWithMantine } from '../test/render'
 import { ENGLISH_TEST_LANGUAGE, setTestLanguage } from '../test/language'
@@ -96,6 +96,15 @@ describe('VolumeEntryForm', () => {
     expect(screen.getByText(/mellom 0 og 606\./i)).toBeInTheDocument()
   })
 
+  /** The second way into the same choice: someone who logs a load without ever
+   *  having opened the add-stack form still gets the answer. */
+  it('explains the volume units here too', () => {
+    renderWithMantine(<VolumeEntryForm onLog={vi.fn()} />)
+
+    fireEvent.click(screen.getByRole('button', { name: /favn, stablet/i }))
+    expect(within(screen.getByRole('dialog')).getByText(/luften mellom kubbene/i)).toBeInTheDocument()
+  })
+
   it('still accepts an ordinary amount', () => {
     const onLog = vi.fn()
     renderWithMantine(<VolumeEntryForm onLog={onLog} />)
@@ -106,6 +115,16 @@ describe('VolumeEntryForm', () => {
 })
 
 describe('VolumeEntryForm in English', () => {
+  it('explains the units in English', () => {
+    setTestLanguage(ENGLISH_TEST_LANGUAGE)
+    renderWithMantine(<VolumeEntryForm onLog={vi.fn()} />)
+
+    fireEvent.click(screen.getByRole('button', { name: /favn, stacked/i }))
+    const dialog = screen.getByRole('dialog')
+    expect(within(dialog).getByText(/air between the logs/i)).toBeInTheDocument()
+    expect(within(dialog).queryByText(/luften mellom kubbene/i)).not.toBeInTheDocument()
+  })
+
   it('translates the fields and the unit names', () => {
     setTestLanguage(ENGLISH_TEST_LANGUAGE)
     renderWithMantine(<VolumeEntryForm onLog={vi.fn()} />)

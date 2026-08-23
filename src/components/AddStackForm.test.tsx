@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { fireEvent, screen, waitFor } from '@testing-library/react'
+import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { AddStackForm } from './AddStackForm'
 import { renderWithMantine } from '../test/render'
 import { StorageQuotaError } from '../storage/stacksRepo'
@@ -55,7 +55,7 @@ describe('AddStackForm', () => {
     renderWithMantine(<AddStackForm onAdd={vi.fn()} onCancel={vi.fn()} geocodeFn={geocodeFn} />)
     expect(screen.getByLabelText(/navn/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/treslag/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/stablet/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/stablet dato/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/kløyvd/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/tak/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/sol og vind/i)).toBeInTheDocument()
@@ -101,7 +101,7 @@ describe('AddStackForm', () => {
 
     fill(/navn/i, 'Bjørk ved veggen')
     fill(/treslag/i, 'bjork')
-    fill(/stablet/i, '2026-04-15')
+    fill(/stablet dato/i, '2026-04-15')
     fill(/kløyvd/i, 'small')
     fill(/tak/i, 'roof')
     fill(/sol og vind/i, 'exposed')
@@ -194,6 +194,15 @@ describe('AddStackForm', () => {
     expect(onAdd).toHaveBeenCalledWith(
       expect.objectContaining({ initialVolume: { amount: 2, unit: 'favn' } }),
     )
+  })
+
+  /** Favn, stablet and fast are three different amounts of the same wood, and
+   *  the picker says nothing about that on its own. */
+  it('explains that the volume units are not the same amount', () => {
+    renderWithMantine(<AddStackForm onAdd={vi.fn()} onCancel={vi.fn()} geocodeFn={geocodeFn} />)
+
+    fireEvent.click(screen.getByRole('button', { name: /favn, stablet/i }))
+    expect(within(screen.getByRole('dialog')).getByText(/luften mellom kubbene/i)).toBeInTheDocument()
   })
 
   it('leaves the opening amount out entirely when it was not filled in', async () => {

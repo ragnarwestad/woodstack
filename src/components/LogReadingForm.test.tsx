@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { fireEvent, screen } from '@testing-library/react'
+import { fireEvent, screen, within } from '@testing-library/react'
 import { LogReadingForm } from './LogReadingForm'
 import { renderWithMantine } from '../test/render'
 import { ENGLISH_TEST_LANGUAGE, setTestLanguage } from '../test/language'
@@ -22,6 +22,15 @@ describe('LogReadingForm', () => {
     expect(onLog).toHaveBeenCalledWith({ date: '2026-10-15', moisture: 28 })
   })
 
+  /** The label names the basis but never says why it matters: a pin meter
+   *  usually reads the other one, and the two differ by thirty points. */
+  it('explains what the dry basis is measured against', () => {
+    renderWithMantine(<LogReadingForm onLog={vi.fn()} />)
+
+    fireEvent.click(screen.getByRole('button', { name: /tørrvekt/i }))
+    expect(within(screen.getByRole('dialog')).getByText(/våtvekt/i)).toBeInTheDocument()
+  })
+
   it('rejects a reading outside a plausible range', () => {
     const onLog = vi.fn()
     renderWithMantine(<LogReadingForm onLog={onLog} />)
@@ -42,6 +51,16 @@ describe('LogReadingForm in English', () => {
     expect(screen.getByLabelText(/moisture/i)).toBeInTheDocument()
     expect(screen.getByText(/dry basis/i)).toBeInTheDocument()
     expect(screen.queryByText(/tørrvekt/i)).not.toBeInTheDocument()
+  })
+
+  it('explains the basis in English too', () => {
+    setTestLanguage(ENGLISH_TEST_LANGUAGE)
+    renderWithMantine(<LogReadingForm onLog={vi.fn()} />)
+
+    fireEvent.click(screen.getByRole('button', { name: /dry basis/i }))
+    const dialog = screen.getByRole('dialog')
+    expect(within(dialog).getByText(/wet-basis/i)).toBeInTheDocument()
+    expect(within(dialog).queryByText(/våtvekt/i)).not.toBeInTheDocument()
   })
 
   it('keeps both bounds inside the translated range error', () => {

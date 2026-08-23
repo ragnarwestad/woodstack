@@ -17,6 +17,18 @@ export const nb = {
   'common.storageFull':
     'Nettleseren har ikke plass til mer, så ingenting ble lagret. Prøv å fjerne bildet, eller slett en stabel du ikke trenger.',
 
+  /* The «?» marks. Sparingly: an explanation behind every field is the same
+     wall of text with an extra click in front of it. */
+  'explain.readyWindow.title': 'Hvorfor et vindu, og ikke én dato?',
+  'explain.readyWindow.body':
+    'Været så langt fram kan ingen vite dag for dag. Derfor anslås stabelen å bli klar en gang i dette vinduet, i stedet for på én dato som uansett ville bomma.',
+  'explain.moisture.title': 'Hvorfor «tørrvekt»?',
+  'explain.moisture.body':
+    'Prosenten regnes av vekta veden ville hatt helt tørr. Mange fuktmålere viser prosent av våtvekt i stedet, og det gir et lavere tall for nøyaktig samme ved – fersk bjørk er 45 % våtvekt og 75 % tørrvekt.',
+  'explain.volumeUnits.title': 'Favn, stablet eller fast kubikkmeter?',
+  'explain.volumeUnits.body':
+    'De tre måler ikke det samme. Stablet kubikkmeter teller med luften mellom kubbene, fast kubikkmeter er bare selve veden, og en favn er 2,4 m³ stablet – altså 1,65 m³ fast. Samme vedhaug gir tre ulike tall, alt etter hvilken enhet du velger.',
+
   'stackList.heading': 'Vedstablene mine',
   'stackList.add': 'Ny stabel',
   'stackList.empty': 'Ingen vedstabler ennå. Legg inn den første, så regner vi ut når den er tørr.',

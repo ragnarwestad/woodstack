@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import {
   Alert,
   Button,
@@ -11,6 +11,7 @@ import {
 import { VOLUME_ENTRY_KINDS, VOLUME_UNITS, type VolumeEntryKind, type VolumeUnit } from '../storage/schema'
 import { exceedsEntryCap, fromSolidLiters, MAX_ENTRY_SOLID_LITERS } from '../model/volume'
 import { useTranslation } from '../i18n/useTranslation'
+import { ExplainedLabel } from './ExplainButton'
 
 /** Wood goes in and wood goes out, and both are the same four fields: what you
  *  did, how much, in which unit, and when. Kept as short as the reading form
@@ -23,6 +24,7 @@ type Props = {
 
 export function VolumeEntryForm({ onLog }: Props) {
   const { t } = useTranslation()
+  const unitId = useId()
   const [kind, setKind] = useState<VolumeEntryKind>('addition')
   const [amount, setAmount] = useState('')
   const [unit, setUnit] = useState<VolumeUnit>('favn')
@@ -74,12 +76,20 @@ export function VolumeEntryForm({ onLog }: Props) {
           onChange={(event) => setDate(event.currentTarget.value)}
         />
 
-        <NativeSelect
-          label={t('volumeEntry.unitLabel')}
-          value={unit}
-          onChange={(event) => setUnit(event.currentTarget.value as VolumeUnit)}
-          data={VOLUME_UNITS.map((value) => ({ value, label: t(`volume.unit.${value}`) }))}
-        />
+        <div>
+          <ExplainedLabel
+            htmlFor={unitId}
+            label={t('volumeEntry.unitLabel')}
+            title={t('explain.volumeUnits.title')}
+            body={t('explain.volumeUnits.body')}
+          />
+          <NativeSelect
+            id={unitId}
+            value={unit}
+            onChange={(event) => setUnit(event.currentTarget.value as VolumeUnit)}
+            data={VOLUME_UNITS.map((value) => ({ value, label: t(`volume.unit.${value}`) }))}
+          />
+        </div>
 
         <TextInput
           type="number"

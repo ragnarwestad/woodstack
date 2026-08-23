@@ -44,6 +44,18 @@ describe('StackDetail', () => {
     expect(screen.getByRole('img', { name: /tørkekurve/i })).toBeInTheDocument()
   })
 
+  /** The window is a range and not a date for a reason the screen never
+   *  states. The mark next to it does. */
+  it('explains why the window is a range and not a date', async () => {
+    renderWithMantine(
+      <StackDetail stackId="a" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+    )
+    await waitFor(() => expect(screen.getByText(/klar mellom/i)).toBeInTheDocument())
+
+    fireEvent.click(screen.getByRole('button', { name: /hvorfor et vindu/i }))
+    expect(within(screen.getByRole('dialog')).getByText(/dag for dag/i)).toBeInTheDocument()
+  })
+
   /** The correction is an extra, never a precondition: with no actual
    *  weather the screen is exactly what it was before this existed. */
   it('shows the plain normals window, and no caption, when there is no actual weather', async () => {

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import {
   Alert,
   Button,
@@ -8,6 +8,7 @@ import {
   TextInput,
 } from '@mantine/core'
 import { useTranslation } from '../i18n/useTranslation'
+import { ExplainedLabel } from './ExplainButton'
 
 /** A meter reading is worth more than any refinement of the species table,
  *  so entering one is two fields and a button. */
@@ -21,6 +22,7 @@ type Props = {
 
 export function LogReadingForm({ onLog }: Props) {
   const { t } = useTranslation()
+  const moistureId = useId()
   const [moisture, setMoisture] = useState('')
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10))
   const [error, setError] = useState<string | null>(null)
@@ -40,12 +42,20 @@ export function LogReadingForm({ onLog }: Props) {
     <MantineStack gap="sm">
       {/* Side by side: a percentage and a date are both short. */}
       <SimpleGrid cols={{ base: 1, xs: 2 }} spacing="sm" verticalSpacing="sm">
-        <TextInput
-          type="number"
-          label={t('logReading.moistureLabel', { basis: t('units.moistureBasis') })}
-          value={moisture}
-          onChange={(event) => setMoisture(event.currentTarget.value)}
-        />
+        <div>
+          <ExplainedLabel
+            htmlFor={moistureId}
+            label={t('logReading.moistureLabel', { basis: t('units.moistureBasis') })}
+            title={t('explain.moisture.title')}
+            body={t('explain.moisture.body')}
+          />
+          <TextInput
+            id={moistureId}
+            type="number"
+            value={moisture}
+            onChange={(event) => setMoisture(event.currentTarget.value)}
+          />
+        </div>
 
         <TextInput
           type="date"

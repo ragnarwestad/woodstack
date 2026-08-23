@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import {
   Autocomplete,
   Alert,
@@ -28,6 +28,7 @@ import { StorageQuotaError } from '../storage/stacksRepo'
 import { geocode, type GeocodeResult } from '../climate/openMeteo'
 import { labelledMatches } from '../climate/placeLabels'
 import { useTranslation } from '../i18n/useTranslation'
+import { ExplainedLabel } from './ExplainButton'
 import { FieldRow } from './FieldRow'
 import { PhotoField, PhotoPreview } from './PhotoField'
 
@@ -59,6 +60,7 @@ export function AddStackForm({ onAdd, onCancel, geocodeFn, resizeFn }: Props) {
   const [exposure, setExposure] = useState<Exposure>('normal')
   const [volumeAmount, setVolumeAmount] = useState('')
   const [volumeUnit, setVolumeUnit] = useState<VolumeUnit>('favn')
+  const volumeUnitId = useId()
   const [photo, setPhoto] = useState<string | undefined>(undefined)
 
   const [query, setQuery] = useState('')
@@ -220,12 +222,20 @@ export function AddStackForm({ onAdd, onCancel, geocodeFn, resizeFn }: Props) {
       {/* How much, and in what. The unit names the amount's label, so it comes
           first. */}
       <FieldRow>
-        <NativeSelect
-          label={t('addStack.volumeUnit')}
-          value={volumeUnit}
-          onChange={(event) => setVolumeUnit(event.currentTarget.value as VolumeUnit)}
-          data={VOLUME_UNITS.map((value) => ({ value, label: t(`volume.unit.${value}`) }))}
-        />
+        <div>
+          <ExplainedLabel
+            htmlFor={volumeUnitId}
+            label={t('addStack.volumeUnit')}
+            title={t('explain.volumeUnits.title')}
+            body={t('explain.volumeUnits.body')}
+          />
+          <NativeSelect
+            id={volumeUnitId}
+            value={volumeUnit}
+            onChange={(event) => setVolumeUnit(event.currentTarget.value as VolumeUnit)}
+            data={VOLUME_UNITS.map((value) => ({ value, label: t(`volume.unit.${value}`) }))}
+          />
+        </div>
 
         <TextInput
           type="number"
