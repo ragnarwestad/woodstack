@@ -28,7 +28,7 @@ describe('VolumeEntryForm', () => {
     fireEvent.change(screen.getByLabelText(/mengde/i), { target: { value: '2' } })
     fireEvent.change(screen.getByLabelText(/enhet/i), { target: { value: 'favn' } })
     fireEvent.change(screen.getByLabelText(/dato/i), { target: { value: '2026-10-15' } })
-    fireEvent.click(screen.getByRole('button', { name: /lagre mengde/i }))
+    fireEvent.click(screen.getByRole('button', { name: /^lagre$/i }))
 
     expect(onLog).toHaveBeenCalledWith({ date: '2026-10-15', kind: 'addition', amount: 2, unit: 'favn' })
   })
@@ -41,7 +41,7 @@ describe('VolumeEntryForm', () => {
     fireEvent.change(screen.getByLabelText(/mengde/i), { target: { value: '3' } })
     fireEvent.change(screen.getByLabelText(/enhet/i), { target: { value: 'sekk60' } })
     fireEvent.change(screen.getByLabelText(/dato/i), { target: { value: '2027-01-10' } })
-    fireEvent.click(screen.getByRole('button', { name: /lagre mengde/i }))
+    fireEvent.click(screen.getByRole('button', { name: /^lagre$/i }))
 
     expect(onLog).toHaveBeenCalledWith({ date: '2027-01-10', kind: 'withdrawal', amount: 3, unit: 'sekk60' })
   })
@@ -50,12 +50,12 @@ describe('VolumeEntryForm', () => {
     const onLog = vi.fn()
     renderWithMantine(<VolumeEntryForm onLog={onLog} />)
 
-    fireEvent.click(screen.getByRole('button', { name: /lagre mengde/i }))
+    fireEvent.click(screen.getByRole('button', { name: /^lagre$/i }))
     expect(onLog).not.toHaveBeenCalled()
     expect(screen.getByText(/mellom 0 og 606\./i)).toBeInTheDocument()
 
     fireEvent.change(screen.getByLabelText(/mengde/i), { target: { value: '0' } })
-    fireEvent.click(screen.getByRole('button', { name: /lagre mengde/i }))
+    fireEvent.click(screen.getByRole('button', { name: /^lagre$/i }))
     expect(onLog).not.toHaveBeenCalled()
   })
 
@@ -63,7 +63,7 @@ describe('VolumeEntryForm', () => {
     renderWithMantine(<VolumeEntryForm onLog={vi.fn()} />)
 
     fireEvent.change(screen.getByLabelText(/mengde/i), { target: { value: '2' } })
-    fireEvent.click(screen.getByRole('button', { name: /lagre mengde/i }))
+    fireEvent.click(screen.getByRole('button', { name: /^lagre$/i }))
 
     expect(screen.getByLabelText(/mengde/i)).toHaveValue(null)
   })
@@ -83,7 +83,7 @@ describe('VolumeEntryForm', () => {
     expect(screen.getByLabelText(/mengde \(40-liters sekker\)/i)).toBeInTheDocument()
 
     fireEvent.change(screen.getByLabelText(/mengde/i), { target: { value: '1e15' } })
-    fireEvent.click(screen.getByRole('button', { name: /lagre mengde/i }))
+    fireEvent.click(screen.getByRole('button', { name: /^lagre$/i }))
     expect(screen.getByText(/mellom 0 og 36363\./i)).toBeInTheDocument()
   })
 
@@ -91,7 +91,7 @@ describe('VolumeEntryForm', () => {
     const onLog = vi.fn()
     renderWithMantine(<VolumeEntryForm onLog={onLog} />)
     fireEvent.change(screen.getByLabelText(/mengde/i), { target: { value: '1e15' } })
-    fireEvent.click(screen.getByRole('button', { name: /lagre mengde/i }))
+    fireEvent.click(screen.getByRole('button', { name: /^lagre$/i }))
     expect(onLog).not.toHaveBeenCalled()
     expect(screen.getByText(/mellom 0 og 606\./i)).toBeInTheDocument()
   })
@@ -100,7 +100,7 @@ describe('VolumeEntryForm', () => {
     const onLog = vi.fn()
     renderWithMantine(<VolumeEntryForm onLog={onLog} />)
     fireEvent.change(screen.getByLabelText(/mengde/i), { target: { value: '2' } })
-    fireEvent.click(screen.getByRole('button', { name: /lagre mengde/i }))
+    fireEvent.click(screen.getByRole('button', { name: /^lagre$/i }))
     expect(onLog).toHaveBeenCalledWith(expect.objectContaining({ amount: 2, unit: 'favn' }))
   })
 })
@@ -112,7 +112,7 @@ describe('VolumeEntryForm in English', () => {
 
     expect(screen.getByLabelText(/what did you do/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/amount/i)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /save amount/i })).toBeInTheDocument()
-    expect(screen.queryByText(/lagre mengde/i)).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^save$/i })).toBeInTheDocument()
+    expect(screen.queryByText(/^lagre$/i)).not.toBeInTheDocument()
   })
 })

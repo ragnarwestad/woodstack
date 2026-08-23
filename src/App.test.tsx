@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { fireEvent, screen, waitFor } from '@testing-library/react'
+import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { App } from './App'
 import { renderWithMantine } from './test/render'
 import { OSLO_NORMALS, makeStack } from './test/fixtures'
@@ -67,10 +67,10 @@ describe('App', () => {
     renderWithMantine(<App />)
 
     fireEvent.click(screen.getByRole('button', { name: /bjørk ved veggen/i }))
-    await waitFor(() => expect(screen.getByRole('button', { name: /^slett stabelen$/i })).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByRole('button', { name: /^slett$/i })).toBeInTheDocument())
 
-    fireEvent.click(screen.getByRole('button', { name: /^slett stabelen$/i }))
-    fireEvent.click(screen.getByRole('button', { name: /^ja, slett stabelen$/i }))
+    fireEvent.click(screen.getByRole('button', { name: /^slett$/i }))
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^ok$/i }))
 
     await waitFor(() => expect(screen.getByText('Grana bak låven')).toBeInTheDocument())
     expect(screen.queryByText('Bjørk ved veggen')).not.toBeInTheDocument()
@@ -88,7 +88,7 @@ describe('App', () => {
     await waitFor(() => screen.getByTestId('window-text'))
     const before = windowThirds(screen.getByTestId('window-text').textContent ?? '')
 
-    fireEvent.click(screen.getByRole('button', { name: /^endre stabelen$/i }))
+    fireEvent.click(screen.getByRole('button', { name: /^endre$/i }))
     fireEvent.change(screen.getByLabelText(/tak/i), { target: { value: 'none' } })
     fireEvent.click(screen.getByRole('button', { name: /^lagre$/i }))
 
@@ -104,9 +104,9 @@ describe('App', () => {
     renderWithMantine(<App />)
 
     fireEvent.click(screen.getByRole('button', { name: /bjørk ved veggen/i }))
-    await waitFor(() => screen.getByRole('button', { name: /^endre stabelen$/i }))
+    await waitFor(() => screen.getByRole('button', { name: /^endre$/i }))
 
-    fireEvent.click(screen.getByRole('button', { name: /^endre stabelen$/i }))
+    fireEvent.click(screen.getByRole('button', { name: /^endre$/i }))
     fireEvent.change(screen.getByLabelText(/navn/i), { target: { value: 'Grana bak låven' } })
     fireEvent.click(screen.getByRole('button', { name: /^avbryt$/i }))
 

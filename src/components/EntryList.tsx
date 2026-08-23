@@ -48,8 +48,9 @@ export function EntryList({ readings, volumeEntries, onDeleteReading, onDeleteVo
             </Text>
             <ConfirmButton
               label={t('entryList.delete')}
-              confirmLabel={t('entryList.deleteConfirm')}
-              cancelLabel={t('entryList.deleteCancel')}
+              question={t('entryList.deleteQuestion')}
+              confirmLabel={t('common.ok')}
+              cancelLabel={t('common.cancel')}
               onConfirm={() => (row.type === 'reading' ? onDeleteReading(row.id) : onDeleteVolumeEntry(row.id))}
             />
           </Group>

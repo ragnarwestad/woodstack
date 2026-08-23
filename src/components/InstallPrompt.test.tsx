@@ -33,15 +33,20 @@ describe('InstallPrompt', () => {
     expect(screen.getByRole('button', { name: /installer/i })).toBeInTheDocument()
   })
 
-  it('names the seven-day storage eviction, not just "install this app" — iOS copy', () => {
+  /** The box has to say what installing gets you, not just ask for it. It used
+   *  to argue from Safari's storage eviction, which is an iOS problem told to
+   *  an audience that mostly is not on iOS. */
+  it('says what installing gets you — iOS copy', () => {
     renderWithMantine(<InstallPrompt standalone={false} ios />)
-    expect(screen.getByText(/7 dager/i)).toBeInTheDocument()
+    expect(screen.getByText(/virker uten nett/i)).toBeInTheDocument()
+    expect(screen.queryByText(/safari/i)).not.toBeInTheDocument()
   })
 
-  it('names the seven-day storage eviction in the browser banner too', () => {
+  it('says the same in the browser banner', () => {
     renderWithMantine(<InstallPrompt standalone={false} ios={false} />)
     fireInstallPrompt()
-    expect(screen.getByText(/7 dager/i)).toBeInTheDocument()
+    expect(screen.getByText(/virker uten nett/i)).toBeInTheDocument()
+    expect(screen.queryByText(/safari/i)).not.toBeInTheDocument()
   })
 
   it('can be dismissed', () => {
@@ -57,7 +62,7 @@ describe('InstallPrompt in English', () => {
     renderWithMantine(<InstallPrompt standalone={false} ios />)
 
     expect(screen.getByText(/add woodstack to your home screen/i)).toBeInTheDocument()
-    expect(screen.getByText(/7 days without a visit/i)).toBeInTheDocument()
+    expect(screen.getByText(/works offline/i)).toBeInTheDocument()
     expect(screen.getByText(/add to home screen/i)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /^close$/i })).toBeInTheDocument()
   })

@@ -135,23 +135,27 @@ export function StackDetail({ stackId, onBack, onEdit, getNormalsFn = getNormals
         </Button>
       </Group>
 
-      {/* Edit and delete sit on the title line because that is what they act
-          on — the whole stack, not one of the three jobs in the tabs below. It
-          also stops them moving: down there they shifted every time the
-          visitor switched to a taller panel. */}
-      <Group justify="space-between" align="flex-start" wrap="nowrap">
-        <Title order={2}>{stack.name}</Title>
-        <Group gap="xs" wrap="nowrap">
-          <Button variant="default" onClick={onEdit}>
-            {t('stackDetail.edit')}
-          </Button>
-          <ConfirmButton
-            label={t('stackDetail.delete')}
-            confirmLabel={t('stackDetail.deleteConfirm')}
-            cancelLabel={t('stackDetail.deleteCancel')}
-            onConfirm={deleteStack}
-          />
-        </Group>
+      <Title order={2}>{stack.name}</Title>
+
+      {/* Edit and delete sit up here, under the name, because that is what they
+          act on — the whole stack, not one of the three jobs in the tabs below.
+          Below the tabs they moved every time the visitor switched to a taller
+          panel.
+
+          A line of their own, always: sharing the title's line and wrapping
+          only when the name happens to be long puts them somewhere different
+          every time you look for them. */}
+      <Group justify="flex-end" gap="xs" wrap="nowrap">
+        <Button variant="default" onClick={onEdit}>
+          {t('stackDetail.edit')}
+        </Button>
+        <ConfirmButton
+          label={t('stackDetail.delete')}
+          question={t('stackDetail.deleteQuestion', { name: stack.name })}
+          confirmLabel={t('common.ok')}
+          cancelLabel={t('common.cancel')}
+          onConfirm={deleteStack}
+        />
       </Group>
       <Text c="dimmed">
         {t('stackDetail.meta', {
@@ -209,7 +213,7 @@ export function StackDetail({ stackId, onBack, onEdit, getNormalsFn = getNormals
         </Tabs.Panel>
         {/* The history is a tab of its own, and it scrolls inside its panel.
             A list that grows with every entry would otherwise push everything
-            below it — "slett stabelen" included — further down the page each
+            below it — the delete button included — further down the page each
             time the visitor logs something. */}
         <Tabs.Panel value="history" pt="md">
           <MantineStack mah={260} style={{ overflowY: 'auto' }} gap="xs">

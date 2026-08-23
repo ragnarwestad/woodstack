@@ -13,6 +13,8 @@ export const en: Record<TranslationKey, string> = {
   'common.readyBetween': 'Ready between {window}',
   'common.loadingClimate': 'Fetching climate data for the location …',
   'common.back': 'Back',
+  'common.ok': 'OK',
+  'common.cancel': 'Cancel',
 
   'stackList.heading': 'My woodpiles',
   'stackList.add': 'New woodpile',
@@ -27,16 +29,14 @@ export const en: Record<TranslationKey, string> = {
   'stackDetail.tabReading': 'Reading',
   'stackDetail.tabHistory': 'History',
   'stackDetail.volumeNone': 'No wood logged yet.',
-  'stackDetail.edit': 'Edit this woodpile',
-  'stackDetail.delete': 'Delete this woodpile',
-  'stackDetail.deleteConfirm': 'Yes, delete the woodpile',
-  'stackDetail.deleteCancel': 'Cancel',
+  'stackDetail.edit': 'Edit',
+  'stackDetail.delete': 'Delete',
+  'stackDetail.deleteQuestion': 'Delete “{name}”? Every entry and reading goes with it, and this cannot be undone.',
 
   'entryList.empty': 'Nothing logged yet.',
   'entryList.volumeDetail': '{kind}: {amount} {unit}',
   'entryList.delete': 'Delete',
-  'entryList.deleteConfirm': 'Yes, delete',
-  'entryList.deleteCancel': 'Cancel',
+  'entryList.deleteQuestion': 'Delete this entry? This cannot be undone.',
 
   'addStack.heading': 'New woodpile',
   'addStack.name': 'Name of the woodpile',
@@ -78,19 +78,18 @@ export const en: Record<TranslationKey, string> = {
   'logReading.moistureLabel': 'Moisture (% {basis})',
   'logReading.dateLabel': 'Date measured',
   'logReading.rangeError': 'The moisture has to be between {min} and {max}.',
-  'logReading.save': 'Save reading',
+  'logReading.save': 'Save',
 
   'volumeEntry.kindLabel': 'What did you do?',
   'volumeEntry.amountLabel': 'Amount ({unit})',
   'volumeEntry.unitLabel': 'Unit',
   'volumeEntry.dateLabel': 'Date',
   'volumeEntry.amountRange': 'The amount has to be a number between 0 and {max}.',
-  'volumeEntry.save': 'Save amount',
+  'volumeEntry.save': 'Save',
 
   'install.heading': 'Add Woodstack to your home screen',
-  'install.eviction':
-    'Safari deletes everything the app has stored after 7 days without a visit. Installed apps are spared.',
-  'install.ios': 'Tap the Share button in Safari and choose “Add to Home Screen”.',
+  'install.reason': 'It then opens from the home screen like any other app, and works offline.',
+  'install.ios': 'Tap the Share button and choose “Add to Home Screen”.',
   'install.install': 'Install',
   'install.close': 'Close',
 

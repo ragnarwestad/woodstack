@@ -2,14 +2,17 @@ import { useEffect, useState } from 'react'
 import { Alert, Button, Group, Stack as MantineStack, Text } from '@mantine/core'
 import { useTranslation } from '../i18n/useTranslation'
 
-/** Safari throws away a site's storage after seven days without a visit — and
- *  a firewood app is visited every few months, which is exactly the pattern
- *  that punishes. Installed apps on the home screen are exempt, so this asks
- *  to be installed and says why.
+/** Offers to put the app on the home screen, and says what that gets you: it
+ *  opens like any other app and works without a connection.
  *
- *  iOS never fires `beforeinstallprompt`, so waiting for that event there
- *  would show iOS visitors nothing at all. They get the static instruction
- *  instead. */
+ *  It used to argue from Safari's seven-day storage eviction. That is real, but
+ *  it is an iOS problem, and this web app exists for the people who do NOT have
+ *  the iOS app — so the warning spoke past almost everyone who reads it.
+ *
+ *  iOS never fires `beforeinstallprompt`, so waiting for that event there would
+ *  show iOS visitors nothing at all. They get the static instruction instead —
+ *  which names the share sheet rather than Safari, since every browser on iOS
+ *  installs the same way. */
 
 type InstallEvent = Event & { prompt?: () => Promise<unknown> }
 
@@ -51,7 +54,7 @@ export function InstallPrompt({ standalone = isStandalone(), ios = isIos() }: Pr
     <Alert color="orange">
       <MantineStack gap="xs">
         <Text fw={600}>{t('install.heading')}</Text>
-        <Text size="sm">{t('install.eviction')}</Text>
+        <Text size="sm">{t('install.reason')}</Text>
         {ios ? (
           <Text size="sm">{t('install.ios')}</Text>
         ) : null}

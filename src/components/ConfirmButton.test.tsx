@@ -1,11 +1,17 @@
 import { describe, expect, it, vi } from 'vitest'
-import { fireEvent, screen } from '@testing-library/react'
+import { fireEvent, screen, within } from '@testing-library/react'
 import { ConfirmButton } from './ConfirmButton'
 import { renderWithMantine } from '../test/render'
 
 function renderButton(onConfirm = vi.fn()) {
   renderWithMantine(
-    <ConfirmButton label="Slett" confirmLabel="Ja, slett" cancelLabel="Avbryt" onConfirm={onConfirm} />,
+    <ConfirmButton
+      label="Slett"
+      question="Slette denne? Det kan ikke angres."
+      confirmLabel="Ja, slett"
+      cancelLabel="Avbryt"
+      onConfirm={onConfirm}
+    />,
   )
   return onConfirm
 }
@@ -43,5 +49,17 @@ describe('ConfirmButton', () => {
     expect(onConfirm).not.toHaveBeenCalled()
     expect(screen.getByRole('button', { name: 'Slett' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Ja, slett' })).not.toBeInTheDocument()
+  })
+
+  /** The question used to appear in the page, where the two buttons took the
+   *  place of the one and pushed everything below them down. It is a dialog
+   *  now, and it names what is about to go. */
+  it('asks in a dialog, and says what will happen', () => {
+    renderButton()
+    fireEvent.click(screen.getByRole('button', { name: 'Slett' }))
+
+    const dialog = screen.getByRole('dialog')
+    expect(dialog).toHaveTextContent('Slette denne? Det kan ikke angres.')
+    expect(within(dialog).getByRole('button', { name: 'Ja, slett' })).toBeInTheDocument()
   })
 })

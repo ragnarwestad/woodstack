@@ -17,7 +17,7 @@ describe('LogReadingForm', () => {
 
     fireEvent.change(screen.getByLabelText(/fuktighet/i), { target: { value: '28' } })
     fireEvent.change(screen.getByLabelText(/målt/i), { target: { value: '2026-10-15' } })
-    fireEvent.click(screen.getByRole('button', { name: /lagre måling/i }))
+    fireEvent.click(screen.getByRole('button', { name: /^lagre$/i }))
 
     expect(onLog).toHaveBeenCalledWith({ date: '2026-10-15', moisture: 28 })
   })
@@ -27,7 +27,7 @@ describe('LogReadingForm', () => {
     renderWithMantine(<LogReadingForm onLog={onLog} />)
 
     fireEvent.change(screen.getByLabelText(/fuktighet/i), { target: { value: '400' } })
-    fireEvent.click(screen.getByRole('button', { name: /lagre måling/i }))
+    fireEvent.click(screen.getByRole('button', { name: /^lagre$/i }))
 
     expect(onLog).not.toHaveBeenCalled()
     expect(screen.getByText(/mellom 5 og 200/i)).toBeInTheDocument()
@@ -49,7 +49,7 @@ describe('LogReadingForm in English', () => {
     renderWithMantine(<LogReadingForm onLog={vi.fn()} />)
 
     fireEvent.change(screen.getByLabelText(/moisture/i), { target: { value: '400' } })
-    fireEvent.click(screen.getByRole('button', { name: /save reading/i }))
+    fireEvent.click(screen.getByRole('button', { name: /^save$/i }))
 
     const error = screen.getByText(/between/i)
     expect(error).toHaveTextContent('5')

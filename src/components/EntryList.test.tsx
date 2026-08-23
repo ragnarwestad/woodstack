@@ -49,7 +49,7 @@ describe('EntryList', () => {
     const row = screen.getAllByTestId('entry-row')[1]
 
     fireEvent.click(within(row).getByRole('button', { name: /^slett$/i }))
-    fireEvent.click(within(row).getByRole('button', { name: /^ja, slett$/i }))
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^ok$/i }))
 
     expect(onDeleteReading).toHaveBeenCalledWith('r1')
     expect(onDeleteVolumeEntry).not.toHaveBeenCalled()
@@ -60,7 +60,7 @@ describe('EntryList', () => {
     const row = screen.getAllByTestId('entry-row')[0]
 
     fireEvent.click(within(row).getByRole('button', { name: /^slett$/i }))
-    fireEvent.click(within(row).getByRole('button', { name: /^ja, slett$/i }))
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^ok$/i }))
 
     expect(onDeleteVolumeEntry).toHaveBeenCalledWith('v1')
     expect(onDeleteReading).not.toHaveBeenCalled()
@@ -71,7 +71,7 @@ describe('EntryList', () => {
     const row = screen.getAllByTestId('entry-row')[1]
 
     fireEvent.click(within(row).getByRole('button', { name: /^slett$/i }))
-    fireEvent.click(within(row).getByRole('button', { name: /^avbryt$/i }))
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^avbryt$/i }))
 
     expect(onDeleteReading).not.toHaveBeenCalled()
     expect(within(row).getByRole('button', { name: /^slett$/i })).toBeInTheDocument()

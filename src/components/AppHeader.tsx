@@ -1,6 +1,9 @@
 import { Group, Image, SegmentedControl, Stack, Text, Title, useMantineColorScheme } from '@mantine/core'
 import type { MantineColorScheme } from '@mantine/core'
-import logo from '../assets/icon-source.svg'
+// The header mark, not the app icon: the icon carries an opaque background
+// because a home-screen tile needs one, and on the page that reads as a dark
+// square beside the title in the light theme.
+import logo from '../assets/logo.svg'
 import type { Language } from '../i18n/language'
 import { useLanguageChoice, useTranslation } from '../i18n/useTranslation'
 
@@ -31,7 +34,7 @@ export function AppHeader() {
     // their own — not the app's name.
     <Group justify="space-between" align="flex-start" wrap="wrap" gap="sm">
       <Group gap="sm" wrap="nowrap">
-        <Image src={logo} alt="" w={44} h={44} />
+        <Image src={logo} alt="" h={38} w={57} />
         <Stack gap={2}>
           <Title order={1}>Woodstack</Title>
           <Text c="dimmed">{t('app.tagline')}</Text>

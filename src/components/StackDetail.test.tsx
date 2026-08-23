@@ -51,9 +51,10 @@ describe('StackDetail', () => {
     const before = screen.getByTestId('window-text').textContent
 
     fireEvent.click(screen.getByRole('tab', { name: /måling/i }))
+    const readingPanel = screen.getByLabelText(/fuktighet/i).closest('[role="tabpanel"]') as HTMLElement
     fireEvent.change(screen.getByLabelText(/fuktighet/i), { target: { value: '35' } })
     fireEvent.change(screen.getByLabelText(/målt/i), { target: { value: '2026-10-15' } })
-    fireEvent.click(screen.getByRole('button', { name: /lagre måling/i }))
+    fireEvent.click(within(readingPanel).getByRole('button', { name: /^lagre$/i }))
 
     await waitFor(() => expect(screen.getByTestId('window-text').textContent).not.toBe(before))
   })
@@ -110,9 +111,10 @@ describe('StackDetail', () => {
     )
     await waitFor(() => screen.getByText(/klar mellom/i))
 
+    const volumePanel = screen.getByLabelText(/enhet/i).closest('[role="tabpanel"]') as HTMLElement
     fireEvent.change(screen.getByLabelText(/mengde/i), { target: { value: '1' } })
     fireEvent.change(screen.getByLabelText(/enhet/i), { target: { value: 'favn' } })
-    fireEvent.click(screen.getByRole('button', { name: /lagre mengde/i }))
+    fireEvent.click(within(volumePanel).getByRole('button', { name: /^lagre$/i }))
 
     await waitFor(() => expect(screen.getByText(/igjen nå: 1,65 m³ fast/i)).toBeInTheDocument())
     expect(getStack('a')?.volumeEntries).toHaveLength(1)
@@ -150,8 +152,8 @@ describe('StackDetail', () => {
     )
     await waitFor(() => screen.getByText(/klar mellom/i))
 
-    fireEvent.click(screen.getByRole('button', { name: /^slett stabelen$/i }))
-    fireEvent.click(screen.getByRole('button', { name: /^ja, slett stabelen$/i }))
+    fireEvent.click(screen.getByRole('button', { name: /^slett$/i }))
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^ok$/i }))
 
     expect(getStack('a')).toBeUndefined()
     expect(onBack).toHaveBeenCalled()
@@ -169,7 +171,7 @@ describe('StackDetail', () => {
     )
     await waitFor(() => screen.getByText(/klar mellom/i))
 
-    fireEvent.click(screen.getByRole('button', { name: /^endre stabelen$/i }))
+    fireEvent.click(screen.getByRole('button', { name: /^endre$/i }))
 
     expect(onEdit).toHaveBeenCalled()
   })
@@ -181,12 +183,12 @@ describe('StackDetail', () => {
     )
     await waitFor(() => screen.getByText(/klar mellom/i))
 
-    fireEvent.click(screen.getByRole('button', { name: /^slett stabelen$/i }))
+    fireEvent.click(screen.getByRole('button', { name: /^slett$/i }))
     fireEvent.click(screen.getAllByRole('button', { name: /^avbryt$/i })[0])
 
     expect(getStack('a')).toBeDefined()
     expect(onBack).not.toHaveBeenCalled()
-    expect(screen.getByRole('button', { name: /^slett stabelen$/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^slett$/i })).toBeInTheDocument()
   })
 
   it('deletes one reading and leaves the rest of the stack alone', async () => {
@@ -208,7 +210,7 @@ describe('StackDetail', () => {
     fireEvent.click(screen.getByRole('tab', { name: /historikk/i }))
     const row = screen.getAllByTestId('entry-row')[1]
     fireEvent.click(within(row).getByRole('button', { name: /^slett$/i }))
-    fireEvent.click(within(row).getByRole('button', { name: /^ja, slett$/i }))
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^ok$/i }))
 
     await waitFor(() => expect(screen.getAllByTestId('entry-row')).toHaveLength(2))
     expect(getStack('a')?.readings.map((r) => r.id)).toEqual(['r2'])
@@ -233,7 +235,7 @@ describe('StackDetail', () => {
     fireEvent.click(screen.getByRole('tab', { name: /historikk/i }))
     const row = screen.getAllByTestId('entry-row')[1]
     fireEvent.click(within(row).getByRole('button', { name: /^slett$/i }))
-    fireEvent.click(within(row).getByRole('button', { name: /^ja, slett$/i }))
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^ok$/i }))
 
     await waitFor(() => expect(screen.getByText(/igjen nå: 2 m³ fast/i)).toBeInTheDocument())
     expect(getStack('a')?.volumeEntries?.map((entry) => entry.id)).toEqual(['v1'])
