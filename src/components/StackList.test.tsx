@@ -19,6 +19,17 @@ describe('StackList', () => {
     expect(screen.getByText('Granstabelen')).toBeInTheDocument()
   })
 
+  /** Bungee is a display face with a single weight. Asking the browser for a
+   *  bold it does not have makes it synthesise one, which a signage face wears
+   *  badly — so the name asks for 400 and gets the drawn shapes. */
+  it('sets stack names in Bungee, and does not ask for a weight it lacks', () => {
+    renderWithMantine(<StackList stacks={[stacks[0]]} normalsFor={() => OSLO_NORMALS} onSelect={vi.fn()}
+      onDelete={vi.fn()} onAdd={vi.fn()} />)
+    const name = screen.getByText('Bjørk ved veggen')
+    expect(getComputedStyle(name).fontFamily).toContain('Bungee')
+    expect(getComputedStyle(name).fontWeight).toBe('400')
+  })
+
   it('shows a window, not a single date', () => {
     renderWithMantine(<StackList stacks={[stacks[0]]} normalsFor={() => OSLO_NORMALS} onSelect={vi.fn()}
       onDelete={vi.fn()} onAdd={vi.fn()} />)

@@ -12,3 +12,8 @@
 # when there is a source image to generate them from.
 onlyBuiltDependencies:
   - esbuild
+
+# sharp arrives as an optional transitive of vite-plugin-pwa and asks to run a
+# build script. The rule above is what answers it: it is not esbuild, so no.
+allowBuilds:
+  sharp: false

@@ -11,6 +11,13 @@ describe('the favicon is the project’s own mark', () => {
     expect(repoFile('public/favicon.svg')).not.toContain('#863bff')
   })
 
+  // Woodstack '26: the tile is plum, and the browns it replaced are gone.
+  it('carries the Woodstack ’26 palette, not the brown it replaced', () => {
+    const mark = repoFile('src/assets/icon-source.svg')
+    expect(mark).toContain('#3A1A38')
+    expect(mark).not.toContain('#8B4513')
+  })
+
   it('is the same mark the icon set is generated from', () => {
     expect(repoFile('public/favicon.svg')).toBe(repoFile('src/assets/icon-source.svg'))
   })
@@ -22,6 +29,16 @@ describe('vite.config.ts', () => {
   it('takes the manifest icons from src/pwaIcons.ts', () => {
     expect(viteConfig).toMatch(/import \{ pwaIcons \} from '\.\/src\/pwaIcons(\.ts)?'/)
     expect(viteConfig).toMatch(/icons:\s*pwaIcons/)
+  })
+
+  // The install chrome is the first thing a visitor sees of the app, before a
+  // line of its CSS has loaded, so it is the mark's own plum and not a brown
+  // left over from the icon that came before it.
+  it('paints the install chrome in the mark’s plum', () => {
+    expect(viteConfig).toMatch(/theme_color: '#3A1A38'/)
+    expect(viteConfig).toMatch(/background_color: '#3A1A38'/)
+    expect(viteConfig).not.toContain('#8B4513')
+    expect(viteConfig).not.toContain('#1A1512')
   })
 
   // Two hand-kept copies of the same list is exactly what pwaIcons.ts exists

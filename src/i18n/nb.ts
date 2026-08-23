@@ -2,6 +2,7 @@
  *  `en.ts` is type-checked against it, so a key added here and forgotten there
  *  fails the build rather than the visitor. */
 export const nb = {
+  'app.slogan': 'Fred, kjærlighet og tørr ved',
   'app.tagline': 'Når er veden tørr nok til å fyre med?',
   'app.language': 'Språk',
   'app.theme': 'Fargetema',

@@ -23,8 +23,18 @@ describe('AppHeader', () => {
 
   it('shows the app name and the tagline in the current language', () => {
     renderHeader()
-    expect(screen.getByRole('heading', { name: 'Woodstack' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: "Woodstack '26" })).toBeInTheDocument()
     expect(screen.getByText('Når er veden tørr nok til å fyre med?')).toBeInTheDocument()
+  })
+
+  /** The slogan is the joke the whole restyle is named after, so it has to
+   *  survive a language switch like any other string. */
+  it('shows the slogan, and switches it with the language', () => {
+    renderHeader()
+    expect(screen.getByText('Fred, kjærlighet og tørr ved')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('radio', { name: 'English' }))
+    expect(screen.getByText('Peace, love and dry firewood')).toBeInTheDocument()
   })
 
   /** Each option is written in its own language. A visitor who has landed on
