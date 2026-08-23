@@ -1,8 +1,8 @@
-import { Group, Image, Stack, Text, Title } from '@mantine/core'
+import { Group, Stack, Text, Title } from '@mantine/core'
 // The header mark, not the app icon: the icon carries an opaque background
 // because a home-screen tile needs one, and on the page that reads as a dark
 // square beside the title in the light theme.
-import logo from '../assets/logo.svg'
+import { Logo } from './Logo'
 import { useTranslation } from '../i18n/useTranslation'
 import { AboutMenu } from './AboutMenu'
 import { LanguageControl, ThemeControl } from './ViewControls'
@@ -38,7 +38,7 @@ export function AppHeader() {
       style={{ zIndex: 2, backgroundColor: 'var(--mantine-color-body)' }}
     >
       <Group gap="sm" wrap="nowrap">
-        <Image src={logo} alt="" h={52} w={78} />
+        <Logo h={52} w={78} />
         <Stack gap={2}>
           <Title order={1} lh={0.9}>
             Woodstack{' '}
