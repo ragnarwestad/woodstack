@@ -22,12 +22,15 @@ describe('StackList', () => {
   /** Bungee is a display face with a single weight. Asking the browser for a
    *  bold it does not have makes it synthesise one, which a signage face wears
    *  badly — so the name asks for 400 and gets the drawn shapes. */
-  it('sets stack names in Bungee, and does not ask for a weight it lacks', () => {
+  /** Bungee draws capitals only, so it turned "Bjørk ved veggen" into a
+   *  shout — and a stack's name is the visitor's own words, often a whole
+   *  sentence. Bungee keeps the wordmark, the headings, the buttons and the
+   *  tabs, all of which are short and none of which anyone wrote. */
+  it('sets stack names in the body face, not the display one', () => {
     renderWithMantine(<StackList stacks={[stacks[0]]} normalsFor={() => OSLO_NORMALS} onSelect={vi.fn()}
       onDelete={vi.fn()} onAdd={vi.fn()} />)
     const name = screen.getByText('Bjørk ved veggen')
-    expect(getComputedStyle(name).fontFamily).toContain('Bungee')
-    expect(getComputedStyle(name).fontWeight).toBe('400')
+    expect(getComputedStyle(name).fontFamily).not.toContain('Bungee')
   })
 
   it('shows a window, not a single date', () => {

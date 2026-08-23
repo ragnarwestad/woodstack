@@ -111,6 +111,9 @@ describe('AppHeader', () => {
       .closest('[class*="mantine-Group-root"]')
 
     expect(controls).toContainElement(screen.getByRole('radio', { name: 'English' }))
-    expect(controls).not.toContainElement(screen.getByRole('heading', { name: 'Woodstack' }))
+    // The wordmark carries the year now, so an exact match on the name alone
+// misses it — which is how this landed red: spec 13 renamed the heading
+// while spec 14's test was written against the old one.
+    expect(controls).not.toContainElement(screen.getByRole('heading', { name: /Woodstack/ }))
   })
 })

@@ -186,7 +186,11 @@ export function StackDetail({
         </Button>
       </Group>
 
-      <Title order={2}>{stack.name}</Title>
+      {/* The name in the body face for the same reason as in the list: it is
+          a sentence the visitor wrote, and Bungee has no lower case. */}
+      <Title order={2} ff="Outfit, sans-serif" fw={700}>
+        {stack.name}
+      </Title>
 
       <Text c="dimmed">
         {t('stackDetail.meta', {
