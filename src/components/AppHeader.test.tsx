@@ -8,6 +8,13 @@ import { LANGUAGE_STORAGE_KEY, readLanguagePreference } from '../i18n/languagePr
 import { nb } from '../i18n/nb'
 import { AppHeader } from './AppHeader'
 
+/** Theme and language are icon buttons with a menu under them, the way
+ *  paceup's header does it. Opening the menu is part of choosing now. */
+function pick(control: string, choice: RegExp) {
+  fireEvent.click(screen.getByRole('button', { name: control }))
+  fireEvent.click(screen.getByRole('menuitem', { name: choice }))
+}
+
 function renderHeader() {
   return renderWithMantine(
     <LanguageProvider>
@@ -33,7 +40,7 @@ describe('AppHeader', () => {
     renderHeader()
     expect(screen.getByText('Fred, kjærlighet og tørr ved')).toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('radio', { name: 'English' }))
+    pick(nb['app.language'], /English/)
     expect(screen.getByText('Peace, love and dry firewood')).toBeInTheDocument()
   })
 
@@ -42,13 +49,14 @@ describe('AppHeader', () => {
    *  "English" must say English rather than "Engelsk". */
   it('names each language in that language', () => {
     renderHeader()
-    expect(screen.getByRole('radio', { name: 'Norsk' })).toBeInTheDocument()
-    expect(screen.getByRole('radio', { name: 'English' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: nb['app.language'] }))
+    expect(screen.getByRole('menuitem', { name: /Norsk/ })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: /English/ })).toBeInTheDocument()
   })
 
   it('switches the visible text when the other language is picked', () => {
     renderHeader()
-    fireEvent.click(screen.getByRole('radio', { name: 'English' }))
+    pick(nb['app.language'], /English/)
     expect(
       screen.getByText('When is the firewood dry enough to burn?'),
     ).toBeInTheDocument()
@@ -56,7 +64,7 @@ describe('AppHeader', () => {
 
   it('remembers the choice for the next visit', () => {
     renderHeader()
-    fireEvent.click(screen.getByRole('radio', { name: 'English' }))
+    pick(nb['app.language'], /English/)
     expect(readLanguagePreference()).toBe('en')
   })
 
@@ -83,16 +91,17 @@ describe('AppHeader', () => {
 
     expect(screen.getByTestId('scheme')).toHaveTextContent('auto')
 
-    fireEvent.click(screen.getByRole('radio', { name: 'Mørk' }))
+    pick(nb['app.theme'], /Mørk/)
     expect(screen.getByTestId('scheme')).toHaveTextContent('dark')
 
-    fireEvent.click(screen.getByRole('radio', { name: 'Lys' }))
+    pick(nb['app.theme'], /Lys/)
     expect(screen.getByTestId('scheme')).toHaveTextContent('light')
   })
 
   it('starts on auto, so the app follows the device until told otherwise', () => {
     renderHeader()
-    expect(screen.getByRole('radio', { name: 'Auto' })).toBeChecked()
+    fireEvent.click(screen.getByRole('button', { name: nb['app.theme'] }))
+    expect(screen.getByRole('menuitem', { name: /Auto/ })).toHaveAttribute('aria-checked', 'true')
   })
 
   it('carries the menu about the app itself', () => {
@@ -104,16 +113,18 @@ describe('AppHeader', () => {
    *  controls group is the one allowed to wrap onto a line of its own; the
    *  wordmark group must not, so a control placed in there would push the
    *  app's name around at narrow widths and nothing would say so. */
-  it('puts the dots in the group that wraps, not the one holding the name', () => {
+  /** The three buttons — theme, language, about — belong together, away from
+   *  the wordmark. The heading match is loose because the wordmark carries the
+   *  year: an exact "Woodstack" once landed this test red when spec 13 renamed
+   *  it under spec 14's feet. */
+  it('keeps the three buttons together, away from the name', () => {
     renderHeader()
     const controls = screen
       .getByRole('button', { name: nb['about.menuLabel'] })
       .closest('[class*="mantine-Group-root"]')
 
-    expect(controls).toContainElement(screen.getByRole('radio', { name: 'English' }))
-    // The wordmark carries the year now, so an exact match on the name alone
-// misses it — which is how this landed red: spec 13 renamed the heading
-// while spec 14's test was written against the old one.
+    expect(controls).toContainElement(screen.getByRole('button', { name: nb['app.language'] }))
+    expect(controls).toContainElement(screen.getByRole('button', { name: nb['app.theme'] }))
     expect(controls).not.toContainElement(screen.getByRole('heading', { name: /Woodstack/ }))
   })
 })
