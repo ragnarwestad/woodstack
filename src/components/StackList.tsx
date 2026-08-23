@@ -127,11 +127,6 @@ function StackRow({
         <UnstyledButton onClick={onSelect} style={{ flex: 1, minWidth: 0 }}>
           <Group wrap="nowrap">
             <ProgressRing value={progress} />
-            {/* Names are what a visitor has to hold in their head to tell three
-                woodpiles apart; a photo of the pile does that at a glance. Only
-              for the stacks that have one — a placeholder would take the same
-                room and say nothing. */}
-            {stack.photo && <Image src={stack.photo} alt={t('photo.alt')} w={56} h={56} radius="sm" fit="cover" />}
             <MantineStack gap={2}>
               {/* Not Bungee. It draws capitals only, so "Test Stabel, søsteren
                   til Fredrik" came out shouting — and a stack's name is the
@@ -169,6 +164,12 @@ function StackRow({
             </MantineStack>
           </Group>
         </UnstyledButton>
+
+        {/* On the right, not beside the ring. A photo of the pile tells three
+            woodpiles apart at a glance, and only the stacks that have one get
+            it — which on the left pushed their names in and left the list
+            unaligned. Here the names all start in the same place. */}
+        {stack.photo && <Image src={stack.photo} alt={t('photo.alt')} w={56} h={56} radius="sm" fit="cover" />}
 
         <ConfirmButton
           label={t('stackList.delete')}
