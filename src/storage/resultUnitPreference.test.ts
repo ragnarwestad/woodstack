@@ -18,8 +18,19 @@ describe('the result unit preference', () => {
     expect(readResultUnitPreference()).toBe('losKubikk')
   })
 
-  it('ignores a stored value that is not a unit this app knows', () => {
-    localStorage.setItem(RESULT_UNIT_STORAGE_KEY, 'cord')
+  /** «kg» stands in for anything a later version of the app might store here
+   *  that this one cannot read back: it is a real unit wood is priced in
+   *  (`PRICE_UNITS` in `model/lot.ts`), but not one an amount can be restated
+   *  in, so it must never come back out of this function. */
+  it('ignores a stored value that is not a unit this app can restate an amount in', () => {
+    localStorage.setItem(RESULT_UNIT_STORAGE_KEY, 'kg')
+    expect(readResultUnitPreference()).toBe('favn')
+  })
+
+  /** `stablet` is the retired stacked cubic metre — readable in an old ledger
+   *  entry, never offered as a choice (see `VolumeUnit` in `schema.ts`). */
+  it('ignores the retired stacked unit', () => {
+    localStorage.setItem(RESULT_UNIT_STORAGE_KEY, 'stablet')
     expect(readResultUnitPreference()).toBe('favn')
   })
 

@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { Group, Menu, Modal, Tabs, Text, UnstyledButton } from '@mantine/core'
-import { VOLUME_UNITS, type VolumeUnit } from '../storage/schema'
+import { VOLUME_UNITS } from '../storage/schema'
 import { compareHash } from '../storage/appState'
-import { readResultUnitPreference, writeResultUnitPreference } from '../storage/resultUnitPreference'
+import { readResultUnitPreference, writeResultUnitPreference, type ResultUnit } from '../storage/resultUnitPreference'
 import { useTranslation } from '../i18n/useTranslation'
 import { Choice } from './ViewControls'
 
@@ -44,9 +44,9 @@ export function AboutMenu() {
   const [opened, setOpened] = useState(false)
   // Held in state as well as in storage so the tick moves the moment it is
   // clicked, the same way `useLanguageChoice` keeps the language.
-  const [resultUnit, setResultUnit] = useState<VolumeUnit>(readResultUnitPreference)
+  const [resultUnit, setResultUnit] = useState<ResultUnit>(readResultUnitPreference)
 
-  function chooseResultUnit(unit: VolumeUnit) {
+  function chooseResultUnit(unit: ResultUnit) {
     writeResultUnitPreference(unit)
     setResultUnit(unit)
   }
