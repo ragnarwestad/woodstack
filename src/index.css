@@ -1,5 +1,16 @@
 /* Mantine brings its own reset and theming; this file holds only what the
    document itself needs. */
+
+/* The two faces the theme asks for, bundled rather than fetched: the app works
+   offline and calls nobody but Open-Meteo, and a font CDN would break both.
+   Bungee ships a single weight, so it has no per-weight file to pick from. */
+@import '@fontsource/bungee';
+@import '@fontsource/outfit/300.css';
+@import '@fontsource/outfit/400.css';
+@import '@fontsource/outfit/500.css';
+@import '@fontsource/outfit/600.css';
+@import '@fontsource/outfit/700.css';
+
 body {
   margin: 0;
 }

@@ -64,7 +64,8 @@ pnpm test           # unit tests, single run
 ## The icon
 
 `src/assets/icon-source.svg` is the mark: five split logs seen end-on, in the
-PWA manifest's own `theme_color` and `background_color`. `public/favicon.svg`
+Woodstack '26 palette, on a tile of the PWA manifest's own `theme_color` and
+`background_color`. `public/favicon.svg`
 is the same file, kept there because the generator writes its output next to
 the image it is given:
 

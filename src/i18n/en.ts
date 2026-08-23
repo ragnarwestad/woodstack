@@ -3,6 +3,7 @@ import type { TranslationKey } from './nb'
 /** Typed against `nb.ts`'s key union, so a key missing from either file is a
  *  compile error rather than a blank on screen. */
 export const en: Record<TranslationKey, string> = {
+  'app.slogan': 'Peace, love and dry firewood',
   'app.tagline': 'When is the firewood dry enough to burn?',
   'app.language': 'Language',
   'app.theme': 'Colour theme',

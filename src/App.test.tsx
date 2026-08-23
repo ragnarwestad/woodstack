@@ -36,7 +36,7 @@ function windowThirds(text: string): number[] {
 describe('App', () => {
   it('renders inside a Mantine provider', () => {
     renderWithMantine(<App />)
-    expect(screen.getByRole('heading', { name: 'Woodstack' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: "Woodstack '26" })).toBeInTheDocument()
   })
 
   it('shows the stack list when no stack is selected', () => {
@@ -184,7 +184,7 @@ describe('App in English', () => {
     saveStacks([makeStack({ id: 'a', name: 'Bjørk ved veggen' })])
     renderWithMantine(<App />)
 
-    expect(screen.getByRole('heading', { name: 'Woodstack' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: "Woodstack '26" })).toBeInTheDocument()
     expect(screen.getByText(/when is the firewood dry enough to burn/i)).toBeInTheDocument()
     expect(screen.getByText('My woodpiles')).toBeInTheDocument()
     expect(screen.queryByText(/vedstablene mine/i)).not.toBeInTheDocument()

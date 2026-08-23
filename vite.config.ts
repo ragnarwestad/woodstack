@@ -20,8 +20,8 @@ export default defineConfig({
         // A manifest carries one language. Norwegian is the first market;
         // the app itself is bilingual (nb/en) regardless of this value.
         lang: 'nb',
-        theme_color: '#8B4513',
-        background_color: '#1A1512',
+        theme_color: '#3A1A38',
+        background_color: '#3A1A38',
         display: 'standalone',
         icons: pwaIcons,
       },

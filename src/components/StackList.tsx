@@ -82,7 +82,9 @@ function StackRow({
                 room and say nothing. */}
             {stack.photo && <Image src={stack.photo} alt={t('photo.alt')} w={56} h={56} radius="sm" fit="cover" />}
             <MantineStack gap={2}>
-              <Text fw={600}>{stack.name}</Text>
+              {/* Bungee is a display face with one drawn weight; asking for a
+                  bold it does not have would leave the browser to fake one. */}
+              <Text ff="Bungee, sans-serif" fw={400}>{stack.name}</Text>
                 <Text size="sm" c="dimmed">
                 {speciesLabel(stack, t)}
                 </Text>
