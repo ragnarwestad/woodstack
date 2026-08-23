@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Alert, Container, Stack } from '@mantine/core'
 import type { NewStack, Stack as WoodStack } from './storage/schema'
 import { readStackId, stackHash } from './storage/appState'
-import { addStack, markStackReadyNotified, replaceStacks, useStacks } from './storage/stacksRepo'
+import { addStack, markStackReadyNotified, removeStack, replaceStacks, useStacks } from './storage/stacksRepo'
 import { getCachedNormals, getNormals } from './climate/normalsCache'
 import { AppHeader } from './components/AppHeader'
 import { StackList } from './components/StackList'
@@ -137,6 +137,7 @@ export function App({ today = new Date() }: Props = {}) {
             stacks={stacks}
             normalsFor={(stack) => getCachedNormals(stack.location.latitude, stack.location.longitude)}
             onSelect={select}
+            onDelete={(id) => removeStack(id)}
             onAdd={() => setAdding(true)}
           />
         )}

@@ -35,8 +35,8 @@ export const en: Record<TranslationKey, string> = {
   'stackDetail.tabPhoto': 'Photo',
   'stackDetail.volumeNone': 'No wood logged yet.',
   'stackDetail.edit': 'Edit',
-  'stackDetail.delete': 'Delete',
-  'stackDetail.deleteQuestion': 'Delete “{name}”? Every entry and reading goes with it, and this cannot be undone.',
+  'stackList.delete': 'Delete',
+  'stackList.deleteQuestion': 'Delete “{name}”? Every entry and reading goes with it, and this cannot be undone.',
 
   'entryList.empty': 'Nothing logged yet.',
   'entryList.volumeDetail': '{kind}: {amount} {unit}',

@@ -16,7 +16,6 @@ import {
   addVolumeEntry,
   getStack,
   removeReading,
-  removeStack,
   removeVolumeEntry,
 } from '../storage/stacksRepo'
 import { getNormals } from '../climate/normalsCache'
@@ -26,7 +25,6 @@ import { speciesLabel } from '../model/species'
 import { DRY_ENOUGH_MOISTURE, formatWindow } from '../model/units'
 import { currentSolidLiters, formatVolume } from '../model/volume'
 import { useTranslation } from '../i18n/useTranslation'
-import { ConfirmButton } from './ConfirmButton'
 import { DryingCurveChart } from './DryingCurveChart'
 import { EntryList } from './EntryList'
 import { LogReadingForm } from './LogReadingForm'
@@ -140,10 +138,6 @@ export function StackDetail({
     if (updated) setStack(updated)
   }
 
-  function deleteStack() {
-    removeStack(stackId)
-    onBack()
-  }
 
   function deleteReading(readingId: string) {
     const updated = removeReading(stackId, readingId)
@@ -202,13 +196,6 @@ export function StackDetail({
         <Button variant="default" onClick={onEdit}>
           {t('stackDetail.edit')}
         </Button>
-        <ConfirmButton
-          label={t('stackDetail.delete')}
-          question={t('stackDetail.deleteQuestion', { name: stack.name })}
-          confirmLabel={t('common.ok')}
-          cancelLabel={t('common.cancel')}
-          onConfirm={deleteStack}
-        />
       </Group>
       <Text c="dimmed">
         {t('stackDetail.meta', {

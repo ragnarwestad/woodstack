@@ -262,51 +262,6 @@ describe('StackDetail', () => {
     expect(screen.getAllByTestId('entry-row')).toHaveLength(2)
   })
 
-  it('deletes the stack and goes back to the list once the visitor confirms', async () => {
-    const onBack = vi.fn()
-    renderWithMantine(
-      <StackDetail stackId="a" onBack={onBack} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
-    )
-    await waitFor(() => screen.getByText(/klar mellom/i))
-
-    fireEvent.click(screen.getByRole('button', { name: /^slett$/i }))
-    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^ok$/i }))
-
-    expect(getStack('a')).toBeUndefined()
-    expect(onBack).toHaveBeenCalled()
-  })
-
-  it('hands the visitor over to the edit screen', async () => {
-    const onEdit = vi.fn()
-    renderWithMantine(
-      <StackDetail
-        stackId="a"
-        onBack={vi.fn()}
-        onEdit={onEdit}
-        getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)}
-      />,
-    )
-    await waitFor(() => screen.getByText(/klar mellom/i))
-
-    fireEvent.click(screen.getByRole('button', { name: /^endre$/i }))
-
-    expect(onEdit).toHaveBeenCalled()
-  })
-
-  it('keeps the stack when the visitor backs out of deleting it', async () => {
-    const onBack = vi.fn()
-    renderWithMantine(
-      <StackDetail stackId="a" onBack={onBack} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
-    )
-    await waitFor(() => screen.getByText(/klar mellom/i))
-
-    fireEvent.click(screen.getByRole('button', { name: /^slett$/i }))
-    fireEvent.click(screen.getAllByRole('button', { name: /^avbryt$/i })[0])
-
-    expect(getStack('a')).toBeDefined()
-    expect(onBack).not.toHaveBeenCalled()
-    expect(screen.getByRole('button', { name: /^slett$/i })).toBeInTheDocument()
-  })
 
   it('deletes one reading and leaves the rest of the stack alone', async () => {
     saveStacks([

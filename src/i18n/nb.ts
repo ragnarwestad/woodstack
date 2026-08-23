@@ -34,8 +34,8 @@ export const nb = {
   'stackDetail.tabPhoto': 'Bilde',
   'stackDetail.volumeNone': 'Ingen ved lagt inn ennå.',
   'stackDetail.edit': 'Endre',
-  'stackDetail.delete': 'Slett',
-  'stackDetail.deleteQuestion': 'Slette «{name}»? Alle føringer og målinger forsvinner med den, og det kan ikke angres.',
+  'stackList.delete': 'Slett',
+  'stackList.deleteQuestion': 'Slette «{name}»? Alle føringer og målinger forsvinner med den, og det kan ikke angres.',
 
   'entryList.empty': 'Ingenting lagt inn ennå.',
   'entryList.volumeDetail': '{kind}: {amount} {unit}',

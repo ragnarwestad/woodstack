@@ -67,10 +67,10 @@ describe('App', () => {
     saveStacks([makeStack({ id: 'a', name: 'Bjørk ved veggen' }), makeStack({ id: 'b', name: 'Grana bak låven' })])
     renderWithMantine(<App />)
 
-    fireEvent.click(screen.getByRole('button', { name: /bjørk ved veggen/i }))
-    await waitFor(() => expect(screen.getByRole('button', { name: /^slett$/i })).toBeInTheDocument())
-
-    fireEvent.click(screen.getByRole('button', { name: /^slett$/i }))
+    // Deleting happens on the list, beside the pile it removes — not two
+    // screens in, where nothing shows which one is about to go.
+    const row = screen.getByText('Bjørk ved veggen').closest('[class*="Paper"]') as HTMLElement
+    fireEvent.click(within(row).getByRole('button', { name: /^slett$/i }))
     fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^ok$/i }))
 
     await waitFor(() => expect(screen.getByText('Grana bak låven')).toBeInTheDocument())
