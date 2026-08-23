@@ -29,7 +29,7 @@ describe('EntryList', () => {
   it('says so when nothing has been logged, rather than showing an empty block', () => {
     renderList({ readings: [], volumeEntries: [] })
     expect(screen.getByText(/ingenting lagt inn ennå/i)).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /slett/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /fjern/i })).not.toBeInTheDocument()
   })
 
   it('shows readings and volume movements in one list, oldest first', () => {
@@ -48,7 +48,7 @@ describe('EntryList', () => {
     const { onDeleteReading, onDeleteVolumeEntry } = renderList()
     const row = screen.getAllByTestId('entry-row')[1]
 
-    fireEvent.click(within(row).getByRole('button', { name: /^slett$/i }))
+    fireEvent.click(within(row).getByRole('button', { name: /^fjern$/i }))
     fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^ok$/i }))
 
     expect(onDeleteReading).toHaveBeenCalledWith('r1')
@@ -59,7 +59,7 @@ describe('EntryList', () => {
     const { onDeleteReading, onDeleteVolumeEntry } = renderList()
     const row = screen.getAllByTestId('entry-row')[0]
 
-    fireEvent.click(within(row).getByRole('button', { name: /^slett$/i }))
+    fireEvent.click(within(row).getByRole('button', { name: /^fjern$/i }))
     fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^ok$/i }))
 
     expect(onDeleteVolumeEntry).toHaveBeenCalledWith('v1')
@@ -70,11 +70,11 @@ describe('EntryList', () => {
     const { onDeleteReading } = renderList()
     const row = screen.getAllByTestId('entry-row')[1]
 
-    fireEvent.click(within(row).getByRole('button', { name: /^slett$/i }))
+    fireEvent.click(within(row).getByRole('button', { name: /^fjern$/i }))
     fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^avbryt$/i }))
 
     expect(onDeleteReading).not.toHaveBeenCalled()
-    expect(within(row).getByRole('button', { name: /^slett$/i })).toBeInTheDocument()
+    expect(within(row).getByRole('button', { name: /^fjern$/i })).toBeInTheDocument()
   })
 })
 
@@ -84,6 +84,6 @@ describe('EntryList in English', () => {
     renderList()
 
     expect(screen.getAllByTestId('entry-row')[0]).toHaveTextContent(/added wood: 2 favn/i)
-    expect(screen.getAllByRole('button', { name: /^delete$/i })).toHaveLength(3)
+    expect(screen.getAllByRole('button', { name: /^remove$/i })).toHaveLength(3)
   })
 })

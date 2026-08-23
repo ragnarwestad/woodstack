@@ -209,7 +209,7 @@ describe('StackDetail', () => {
 
     fireEvent.click(screen.getByRole('tab', { name: /historikk/i }))
     const row = screen.getAllByTestId('entry-row')[1]
-    fireEvent.click(within(row).getByRole('button', { name: /^slett$/i }))
+    fireEvent.click(within(row).getByRole('button', { name: /^fjern$/i }))
     fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^ok$/i }))
 
     await waitFor(() => expect(screen.getAllByTestId('entry-row')).toHaveLength(2))
@@ -234,7 +234,7 @@ describe('StackDetail', () => {
 
     fireEvent.click(screen.getByRole('tab', { name: /historikk/i }))
     const row = screen.getAllByTestId('entry-row')[1]
-    fireEvent.click(within(row).getByRole('button', { name: /^slett$/i }))
+    fireEvent.click(within(row).getByRole('button', { name: /^fjern$/i }))
     fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^ok$/i }))
 
     await waitFor(() => expect(screen.getByText(/igjen nå: 2 m³ fast/i)).toBeInTheDocument())

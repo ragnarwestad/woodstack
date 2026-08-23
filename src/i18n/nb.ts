@@ -34,7 +34,7 @@ export const nb = {
 
   'entryList.empty': 'Ingenting lagt inn ennå.',
   'entryList.volumeDetail': '{kind}: {amount} {unit}',
-  'entryList.delete': 'Slett',
+  'entryList.delete': 'Fjern',
   'entryList.deleteQuestion': 'Slette denne føringen? Det kan ikke angres.',
 
   'addStack.heading': 'Ny vedstabel',

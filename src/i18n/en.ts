@@ -35,7 +35,7 @@ export const en: Record<TranslationKey, string> = {
 
   'entryList.empty': 'Nothing logged yet.',
   'entryList.volumeDetail': '{kind}: {amount} {unit}',
-  'entryList.delete': 'Delete',
+  'entryList.delete': 'Remove',
   'entryList.deleteQuestion': 'Delete this entry? This cannot be undone.',
 
   'addStack.heading': 'New woodpile',
