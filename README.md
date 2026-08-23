@@ -70,13 +70,23 @@ is the same file, kept there because the generator writes its output next to
 the image it is given:
 
 ```bash
-pnpm dlx @vite-pwa/assets-generator --preset minimal public/favicon.svg
+pnpm dlx @vite-pwa/assets-generator
 ```
 
-That regenerates every PNG and `favicon.ico` in `public/` in place. The
-generator is a one-off CLI run rather than a dependency — `pnpm-workspace.yaml`
-says why. `src/pwaIcons.ts` lists the generated files for the PWA manifest, so
-changing the preset means changing that list too.
+That regenerates every PNG and `favicon.ico` in `public/` in place, reading
+`pwa-assets.config.ts` for what to generate. The generator is a one-off CLI run
+rather than a dependency — `pnpm-workspace.yaml` says why. `src/pwaIcons.ts`
+lists the generated files for the PWA manifest, so changing the preset means
+changing that list too.
+
+The config exists because the generator's `minimal` preset pads the mark onto a
+**white** canvas for the maskable and apple icons. Android masks that whole
+canvas to the launcher's shape, so the installed app showed the mark on a white
+circle instead of on its plum tile. `pwa-assets.config.ts` is that preset with
+the padding colour set to the manifest's own `theme_color`; the icons the
+launcher does not mask keep their transparency. `src/test/iconConfig.test.ts`
+reads the corner pixels of the two generated files, so regenerating them the old
+way fails the suite instead of reaching a phone.
 
 ## How it is deployed
 
