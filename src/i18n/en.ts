@@ -93,6 +93,14 @@ export const en: Record<TranslationKey, string> = {
   'install.install': 'Install',
   'install.close': 'Close',
 
+  'notify.heading': 'Get a nudge when the firewood is ready',
+  'notify.reason':
+    'We will tell you when the firewood is ready to burn, so you do not have to keep it in mind for months.',
+  'notify.enable': 'Tell me',
+  'notify.close': 'Close',
+
+  'ready.body': '{name} might be ready to burn now. Worth checking with a meter.',
+
   'chart.emptyLabel': 'Drying curve without data',
   'chart.label': 'Drying curve: how dry the firewood gets over time, with the limit at {threshold}',
 

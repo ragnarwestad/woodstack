@@ -78,6 +78,12 @@ export type Stack = {
    *  version it does not recognise, so bumping it would delete every stored
    *  stack instead of migrating it. */
   volumeEntries?: VolumeEntry[]
+  /** ISO calendar date the visitor was told this stack had entered its ready
+   *  window. Absent until then, set once, never cleared — a stack stored
+   *  before this field existed reads as "not told yet", the same way an absent
+   *  `volumeEntries` reads as "nothing logged", and for the same reason: the
+   *  version guard would have emptied every browser instead of migrating it. */
+  notifiedReadyAt?: string
 }
 
 /** Everything needed to create a stack; the id and the empty reading list are

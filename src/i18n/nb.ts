@@ -92,6 +92,16 @@ export const nb = {
   'install.install': 'Installer',
   'install.close': 'Lukk',
 
+  'notify.heading': 'Få beskjed når veden er klar',
+  'notify.reason':
+    'Vi sier fra når stabelen er tørr nok til å fyre med, så du slipper å huske på det i månedsvis.',
+  'notify.enable': 'Si fra',
+  'notify.close': 'Lukk',
+
+  // «Kan være klar», ikke «er klar»: modellen regner ut et vindu, ikke en
+  // dato, og den som sjekker med måler rett etterpå skal ikke bli overrasket.
+  'ready.body': '{name} kan være klar å fyre med nå. Sjekk gjerne med måler.',
+
   'chart.emptyLabel': 'Tørkekurve uten data',
   'chart.label': 'Tørkekurve: hvor tørr veden blir over tid, med grensen på {threshold}',
 

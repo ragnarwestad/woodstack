@@ -27,6 +27,7 @@ import { ConfirmButton } from './ConfirmButton'
 import { DryingCurveChart } from './DryingCurveChart'
 import { EntryList } from './EntryList'
 import { LogReadingForm } from './LogReadingForm'
+import { NotifyPrompt } from './NotifyPrompt'
 import { VolumeEntryForm } from './VolumeEntryForm'
 
 const CURVE_MONTHS = 30
@@ -164,6 +165,10 @@ export function StackDetail({ stackId, onBack, onEdit, getNormalsFn = getNormals
           place: stack.location.name,
         })}
       </Text>
+
+      {/* The moment to ask: the visitor has a stack open, so there is now
+          something concrete to be told about. Not on arrival. */}
+      <NotifyPrompt />
 
       {loading && <Text>{t('common.loadingClimate')}</Text>}
 

@@ -201,6 +201,15 @@ export function estimateWindow(stack: Stack, normals: ClimateNormals): DryWindow
   }
 }
 
+/** Whether the window has opened yet — the one fact the ready-check needs out
+ *  of the whole window, and the only place "on the day itself" is decided.
+ *  Recomputed from the stack's current fields every time it is asked, so an
+ *  edit or a new reading moves the answer with it; nothing is ever scheduled
+ *  against a date the app may stop believing in. */
+export function hasEnteredWindow(window: DryWindow, today: Date): boolean {
+  return today.getTime() >= window.earliest.getTime()
+}
+
 /** How far through the ready-window today is, 0-100. Before the window it is
  *  0, after it 100 — the ring can never read negative or over full. */
 export function windowProgress(window: DryWindow, today: Date): number {

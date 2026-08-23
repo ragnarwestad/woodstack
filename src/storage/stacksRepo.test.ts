@@ -5,6 +5,7 @@ import {
   addVolumeEntry,
   getStack,
   loadStacks,
+  markStackReadyNotified,
   removeReading,
   removeStack,
   removeVolumeEntry,
@@ -417,6 +418,42 @@ describe('updateStack', () => {
         location: BERGEN,
       }),
     ).toBeUndefined()
+    expect(loadStacks()).toEqual(before)
+  })
+})
+
+describe('markStackReadyNotified', () => {
+  it('records the date the visitor was told, and persists it', () => {
+    saveStacks([makeStack({ id: 'a' })])
+
+    const updated = markStackReadyNotified('a', '2027-09-01')
+
+    expect(updated?.notifiedReadyAt).toBe('2027-09-01')
+    expect(getStack('a')?.notifiedReadyAt).toBe('2027-09-01')
+  })
+
+  it('leaves everything else on the stack standing', () => {
+    saveStacks([
+      makeStack({
+        id: 'a',
+        readings: [{ id: 'r1', date: '2026-10-15', moisture: 28 }],
+        volumeEntries: [{ id: 'v1', date: '2026-04-15', kind: 'addition', amount: 2, unit: 'favn' }],
+      }),
+    ])
+
+    markStackReadyNotified('a', '2027-09-01')
+
+    const stored = getStack('a')
+    expect(stored?.readings).toHaveLength(1)
+    expect(stored?.volumeEntries).toHaveLength(1)
+    expect(stored?.name).toBe('Bjørkestabelen')
+  })
+
+  it('changes nothing for an id that is not there', () => {
+    saveStacks([makeStack({ id: 'a' })])
+    const before = loadStacks()
+
+    expect(markStackReadyNotified('nope', '2027-09-01')).toBeUndefined()
     expect(loadStacks()).toEqual(before)
   })
 })

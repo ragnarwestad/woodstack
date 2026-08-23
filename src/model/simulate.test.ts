@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { emc } from './emc'
-import { effectiveRate, estimateWindow, refitRate, simulate, windowProgress } from './simulate'
+import { effectiveRate, estimateWindow, hasEnteredWindow, refitRate, simulate, windowProgress } from './simulate'
 import { DRY_ENOUGH_MOISTURE } from './units'
 import { OSLO_NORMALS, constantNormals, makeStack } from '../test/fixtures'
 
@@ -120,6 +120,27 @@ describe('windowProgress', () => {
       expect(value).toBeGreaterThanOrEqual(0)
       expect(value).toBeLessThanOrEqual(100)
     }
+  })
+})
+
+describe('hasEnteredWindow', () => {
+  const window = {
+    earliest: new Date('2027-09-01T00:00:00Z'),
+    latest: new Date('2027-11-01T00:00:00Z'),
+  }
+
+  it('is false the day before the window opens', () => {
+    expect(hasEnteredWindow(window, new Date('2027-08-31T00:00:00Z'))).toBe(false)
+  })
+
+  // The boundary is the whole point: the ready-check fires on this day or it
+  // fires a day late, and a day late is a day the visitor was not told.
+  it('is true exactly on the day the window opens', () => {
+    expect(hasEnteredWindow(window, new Date('2027-09-01T00:00:00Z'))).toBe(true)
+  })
+
+  it('stays true after the window has closed again', () => {
+    expect(hasEnteredWindow(window, new Date('2028-01-01T00:00:00Z'))).toBe(true)
   })
 })
 

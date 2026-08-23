@@ -3,6 +3,7 @@ import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { App } from './App'
 import { renderWithMantine } from './test/render'
 import { OSLO_NORMALS, makeStack } from './test/fixtures'
+import { estimateWindow } from './model/simulate'
 import { getStack, saveStacks } from './storage/stacksRepo'
 import { writeCachedNormals } from './climate/normalsCache'
 import { exportState } from './storage/appState'
@@ -119,6 +120,61 @@ describe('App', () => {
     renderWithMantine(<App />)
     await waitFor(() => expect(screen.getByText('Importert stabel')).toBeInTheDocument())
     expect(window.location.hash).not.toContain('i=')
+  })
+})
+
+/** The day after the default fixture stack's window opens. Read out of the
+ *  model rather than written down, so a change to the drying rate cannot make
+ *  this date quietly mean something else. */
+function readyDay(stack: Parameters<typeof estimateWindow>[0]): Date {
+  return new Date(estimateWindow(stack, OSLO_NORMALS).earliest.getTime() + 24 * 60 * 60 * 1000)
+}
+
+describe('App telling the visitor a stack is ready', () => {
+  it('says so once, on the first open after the window has passed', async () => {
+    const stack = makeStack({ id: 'a', name: 'Bjørk ved veggen' })
+    saveStacks([stack])
+
+    renderWithMantine(<App today={readyDay(stack)} />)
+
+    await waitFor(() => expect(screen.getByText(/bjørk ved veggen kan være klar/i)).toBeInTheDocument())
+    expect(getStack('a')?.notifiedReadyAt).toBeTruthy()
+  })
+
+  /** The one that would break silently: without the stored flag, every single
+   *  app open from here to the end of the winter announces the same stack
+   *  again. */
+  it('does not say it again the next time the app is opened', async () => {
+    const stack = makeStack({ id: 'a', name: 'Bjørk ved veggen' })
+    saveStacks([stack])
+    const today = readyDay(stack)
+
+    const first = renderWithMantine(<App today={today} />)
+    await waitFor(() => expect(screen.getByText(/bjørk ved veggen kan være klar/i)).toBeInTheDocument())
+    first.unmount()
+
+    renderWithMantine(<App today={new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000)} />)
+    await waitFor(() => expect(screen.getByText('Bjørk ved veggen')).toBeInTheDocument())
+    expect(screen.queryByText(/bjørk ved veggen kan være klar/i)).not.toBeInTheDocument()
+  })
+
+  it('says nothing about a stack whose window has not opened yet', async () => {
+    const stack = makeStack({ id: 'a', name: 'Bjørk ved veggen' })
+    saveStacks([stack])
+    const beforeReady = new Date(estimateWindow(stack, OSLO_NORMALS).earliest.getTime() - 24 * 60 * 60 * 1000)
+
+    renderWithMantine(<App today={beforeReady} />)
+
+    await waitFor(() => expect(screen.getByText('Bjørk ved veggen')).toBeInTheDocument())
+    expect(screen.queryByText(/kan være klar/i)).not.toBeInTheDocument()
+    expect(getStack('a')?.notifiedReadyAt).toBeUndefined()
+  })
+
+  // A permission prompt on arrival is the fastest route to a permanent no.
+  it('does not offer to notify anyone before a stack has been opened', () => {
+    saveStacks([makeStack({ id: 'a', name: 'Bjørk ved veggen' })])
+    renderWithMantine(<App />)
+    expect(screen.queryByText(/få beskjed når veden er klar/i)).not.toBeInTheDocument()
   })
 })
 

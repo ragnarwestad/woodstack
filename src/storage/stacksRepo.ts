@@ -91,6 +91,19 @@ export function updateStack(id: string, edit: StackEdit): Stack | undefined {
   return updated
 }
 
+/** Records that the visitor has been told this stack's window has opened, so
+ *  the check on the next app open does not tell them all over again. One
+ *  direction only: nothing here ever clears the field. */
+export function markStackReadyNotified(id: string, date: string): Stack | undefined {
+  const stacks = loadStacks()
+  const target = stacks.find((stack) => stack.id === id)
+  if (!target) return undefined
+
+  const updated: Stack = { ...target, notifiedReadyAt: date }
+  saveStacks(stacks.map((stack) => (stack.id === id ? updated : stack)))
+  return updated
+}
+
 /** Swap the whole set — what importing a share link does. */
 export function replaceStacks(stacks: Stack[]): void {
   saveStacks(stacks)

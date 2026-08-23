@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { StackDetail } from './StackDetail'
 import { renderWithMantine } from '../test/render'
@@ -9,6 +9,26 @@ import { ENGLISH_TEST_LANGUAGE, setTestLanguage } from '../test/language'
 beforeEach(() => {
   localStorage.clear()
   saveStacks([makeStack({ id: 'a', name: 'Bjørk ved veggen' })])
+})
+
+/** The notify opt-in only shows itself where the browser could honour it, and
+ *  `happy-dom` has neither API — so the one test about it installs both. */
+function installNotificationSupport() {
+  Object.defineProperty(globalThis, 'Notification', {
+    value: { permission: 'default' as NotificationPermission, requestPermission: vi.fn() },
+    configurable: true,
+    writable: true,
+  })
+  Object.defineProperty(navigator, 'serviceWorker', {
+    value: { ready: Promise.resolve({ showNotification: vi.fn() }) },
+    configurable: true,
+    writable: true,
+  })
+}
+
+afterEach(() => {
+  Reflect.deleteProperty(globalThis, 'Notification')
+  Reflect.deleteProperty(navigator, 'serviceWorker')
 })
 
 describe('StackDetail', () => {
@@ -247,6 +267,16 @@ describe('StackDetail', () => {
       <StackDetail stackId="nope" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
     )
     expect(screen.getByText(/finner ikke/i)).toBeInTheDocument()
+  })
+
+  /** `1-description.md` puts the ask here and nowhere else: after the visitor
+   *  has entered a stack, when there is something to be told about. */
+  it('offers to notify the visitor once they have a stack open', async () => {
+    installNotificationSupport()
+    renderWithMantine(
+      <StackDetail stackId="a" onBack={vi.fn()} onEdit={vi.fn()} getNormalsFn={vi.fn().mockResolvedValue(OSLO_NORMALS)} />,
+    )
+    await waitFor(() => expect(screen.getByText(/få beskjed når veden er klar/i)).toBeInTheDocument())
   })
 })
 
