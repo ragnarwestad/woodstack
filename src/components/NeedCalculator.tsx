@@ -23,7 +23,11 @@ import {
 } from '../model/needCalculator'
 import { toSolidLiters } from '../model/volume'
 import { VOLUME_UNITS, type Species, type Stack, type VolumeUnit } from '../storage/schema'
-import { readResultUnitPreference } from '../storage/resultUnitPreference'
+import {
+  readResultUnitPreference,
+  writeResultUnitPreference,
+  type ResultUnit,
+} from '../storage/resultUnitPreference'
 import { useTranslation } from '../i18n/useTranslation'
 import { BackLink } from './BackLink'
 
@@ -51,6 +55,9 @@ export function NeedCalculator({ stacks, onBack }: Props) {
   const speciesId = useId()
   const stoveId = useId()
   const unitId = useId()
+  // Explicit id like this screen's other three selects, unlike `ComparePage`,
+  // which leaves Mantine's implicit label wiring alone for all of its.
+  const resultUnitId = useId()
 
   const [mode, setMode] = useState<Mode>('energy')
   const [species, setSpecies] = useState<Species>(SPECIES_IDS[0])
@@ -60,6 +67,15 @@ export function NeedCalculator({ stacks, onBack }: Props) {
   const [volumeUnit, setVolumeUnit] = useState<VolumeUnit>('favn')
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<Result | null>(null)
+  // Held in state as well as in storage so a result already on screen is
+  // restated the moment another unit is picked. The same setting the
+  // comparison screen writes, so the two agree on the unit.
+  const [resultUnit, setResultUnit] = useState<ResultUnit>(readResultUnitPreference)
+
+  function chooseResultUnit(unit: ResultUnit) {
+    writeResultUnitPreference(unit)
+    setResultUnit(unit)
+  }
 
   const efficiency = STOVE_OPTIONS.find((option) => option.id === stove)!.efficiency
 
@@ -88,7 +104,6 @@ export function NeedCalculator({ stacks, onBack }: Props) {
     }
   }
 
-  const preferredUnit = readResultUnitPreference()
   const alreadyHaveSolidLiters = totalLoggedSolidLiters(stacks)
   const showAlreadyHave = mode === 'energy' && result !== null && hasLoggedVolume(stacks)
 
@@ -161,6 +176,17 @@ export function NeedCalculator({ stacks, onBack }: Props) {
         />
       </SimpleGrid>
 
+      {/* Above the answer it governs rather than in a menu: `solidLiters` is
+          unit-independent, so a result already on screen changes unit here
+          without «Beregn» being pressed again. */}
+      <NativeSelect
+        id={resultUnitId}
+        label={t('compare.resultUnitLabel')}
+        value={resultUnit}
+        onChange={(event) => chooseResultUnit(event.currentTarget.value as ResultUnit)}
+        data={VOLUME_UNITS.map((unit) => ({ value: unit, label: t(`volume.unit.${unit}`) }))}
+      />
+
       {error && <Alert color="red">{error}</Alert>}
 
       <Group>
@@ -169,15 +195,15 @@ export function NeedCalculator({ stacks, onBack }: Props) {
 
       {result && (
         <MantineStack gap={4}>
-          <Text data-testid="need-result">{formatNeed(result.solidLiters, preferredUnit, translator)}</Text>
+          <Text data-testid="need-result">{formatNeed(result.solidLiters, resultUnit, translator)}</Text>
           {result.kwh !== undefined && (
             <Text c="dimmed">{t('need.resultEnergy', { kwh: Math.round(result.kwh) })}</Text>
           )}
           {showAlreadyHave && (
             <Text data-testid="need-already-have" c="dimmed">
               {t('need.alreadyHave', {
-                have: formatUnitAmount(alreadyHaveSolidLiters, preferredUnit, translator),
-                toBuy: formatUnitAmount(Math.max(0, result.solidLiters - alreadyHaveSolidLiters), preferredUnit, translator),
+                have: formatUnitAmount(alreadyHaveSolidLiters, resultUnit, translator),
+                toBuy: formatUnitAmount(Math.max(0, result.solidLiters - alreadyHaveSolidLiters), resultUnit, translator),
               })}
             </Text>
           )}

@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { fireEvent, screen, within } from '@testing-library/react'
 import { renderWithMantine } from '../test/render'
 import { nb } from '../i18n/nb'
-import { RESULT_UNIT_STORAGE_KEY } from '../storage/resultUnitPreference'
+import { RESULT_UNIT_STORAGE_KEY, readResultUnitPreference } from '../storage/resultUnitPreference'
 import { ComparePage } from './ComparePage'
 
 /** Two lots side by side, four figures each, and one line saying which is the
@@ -83,13 +83,40 @@ describe('ComparePage', () => {
     expect(figure(1, 'amountInUnit')).toContain('0,31')
   })
 
-  it('restates both amounts in the unit chosen from the three-dot menu', () => {
+  it('restates both amounts in the unit that was already chosen when the screen opened', () => {
     localStorage.setItem(RESULT_UNIT_STORAGE_KEY, 'fastKubikk')
     renderWithMantine(<ComparePage onBack={() => undefined} />)
 
     fillLot(0, { price: '2400', amount: '1', unit: 'favn', species: 'bjork' })
 
     expect(figure(0, 'amountInUnit')).toContain('1,6')
+  })
+
+  /** The point of moving the picker onto this screen: changing it and seeing
+   *  what it did are the same glance, with nothing else to press. */
+  it('recalculates the amounts the moment another unit is picked on the screen', () => {
+    renderWithMantine(<ComparePage onBack={() => undefined} />)
+
+    fillLot(0, { price: '2400', amount: '1', unit: 'favn', species: 'bjork' })
+    expect(figure(0, 'amountInUnit')).toContain('1,00')
+
+    fireEvent.change(screen.getByLabelText(nb['compare.resultUnitLabel']), {
+      target: { value: 'fastKubikk' },
+    })
+
+    expect(figure(0, 'amountInUnit')).toContain('1,6')
+  })
+
+  /** One remembered setting, not one per screen: it is picked once and still
+   *  there tomorrow, and on the calculator screen too. */
+  it('remembers the unit picked here, past this session', () => {
+    renderWithMantine(<ComparePage onBack={() => undefined} />)
+
+    fireEvent.change(screen.getByLabelText(nb['compare.resultUnitLabel']), {
+      target: { value: 'storsekk' },
+    })
+
+    expect(readResultUnitPreference()).toBe('storsekk')
   })
 
   /** Kilos cannot be restated as favner without knowing which wood they are,

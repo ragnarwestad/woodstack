@@ -9,7 +9,7 @@ import {
   TextInput,
   Title,
 } from '@mantine/core'
-import { SPECIES_IDS, type Species } from '../storage/schema'
+import { SPECIES_IDS, VOLUME_UNITS, type Species } from '../storage/schema'
 import {
   PRICE_UNITS,
   evaluateLot,
@@ -21,7 +21,11 @@ import {
 } from '../model/lot'
 import { MOISTURE_BANDS, moistureBand, type MoistureBandId } from '../model/moisture'
 import { compareLots } from '../model/lotComparison'
-import { readResultUnitPreference, type ResultUnit } from '../storage/resultUnitPreference'
+import {
+  readResultUnitPreference,
+  writeResultUnitPreference,
+  type ResultUnit,
+} from '../storage/resultUnitPreference'
 import { useTranslation, type Translator } from '../i18n/useTranslation'
 import { BackLink } from './BackLink'
 import { ExplainButton, ExplainedLabel } from './ExplainButton'
@@ -220,9 +224,15 @@ export function ComparePage({ onBack }: { onBack: () => void }) {
   const translator = useTranslation()
   const { t } = translator
   const [lots, setLots] = useState<[LotDraft, LotDraft]>([EMPTY_LOT, EMPTY_LOT])
-  // Read once on mount, like the language: the menu that changes it is in the
-  // header of a screen this one has replaced, so it cannot change underneath.
-  const [resultUnit] = useState<ResultUnit>(readResultUnitPreference)
+  // Held in state as well as in storage so the figures move the moment a unit
+  // is picked. The same setting the calculator screen writes, so a unit chosen
+  // there is the one this screen opens with.
+  const [resultUnit, setResultUnit] = useState<ResultUnit>(readResultUnitPreference)
+
+  function chooseResultUnit(unit: ResultUnit) {
+    writeResultUnitPreference(unit)
+    setResultUnit(unit)
+  }
 
   const results = lots.map(toLot).map((lot) => (isLotComplete(lot) ? evaluateLot(lot) : null))
   const [first, second] = results
@@ -249,6 +259,16 @@ export function ComparePage({ onBack }: { onBack: () => void }) {
         </Text>
         <ExplainButton title={t('explain.comparePerKwh.title')} body={t('explain.comparePerKwh.body')} size={22} />
       </Group>
+
+      {/* Above the lots rather than in a menu: the unit the figures are read
+          in belongs next to the figures it governs, so picking it and seeing
+          what it did are the same glance. */}
+      <NativeSelect
+        label={t('compare.resultUnitLabel')}
+        value={resultUnit}
+        onChange={(event) => chooseResultUnit(event.currentTarget.value as ResultUnit)}
+        data={VOLUME_UNITS.map((unit) => ({ value: unit, label: t(`volume.unit.${unit}`) }))}
+      />
 
       {/* One column on a phone: two lots of five fields side by side on a
           narrow screen would squeeze both into unreadable columns. */}

@@ -3,7 +3,8 @@ import { fireEvent, screen } from '@testing-library/react'
 import { NeedCalculator } from './NeedCalculator'
 import { renderWithMantine } from '../test/render'
 import { makeStack } from '../test/fixtures'
-import { writeResultUnitPreference } from '../storage/resultUnitPreference'
+import { nb } from '../i18n/nb'
+import { readResultUnitPreference, writeResultUnitPreference } from '../storage/resultUnitPreference'
 
 beforeEach(() => {
   localStorage.clear()
@@ -108,5 +109,36 @@ describe('NeedCalculator', () => {
 
     const text = screen.getByTestId('need-result').textContent ?? ''
     expect(text.indexOf('sekk')).toBeLessThan(text.indexOf('favn'))
+  })
+
+  /** The picker sits on the screen the answer is on, so the answer follows the
+   *  pick straight away — `solidLiters` is unit-independent, and nothing about
+   *  the sum changed, so «Beregn» does not have to be pressed a second time. */
+  it('restates a result already on screen the moment another unit is picked', () => {
+    renderWithMantine(<NeedCalculator stacks={[]} onBack={() => undefined} />)
+
+    fireEvent.change(screen.getByLabelText(/energibehov/i), { target: { value: '5000' } })
+    fireEvent.click(screen.getByRole('button', { name: /beregn/i }))
+    const inFavn = screen.getByTestId('need-result').textContent ?? ''
+    expect(inFavn.indexOf('favn')).toBeLessThan(inFavn.indexOf('sekk'))
+
+    fireEvent.change(screen.getByLabelText(nb['compare.resultUnitLabel']), {
+      target: { value: 'storsekk' },
+    })
+
+    const inStorsekk = screen.getByTestId('need-result').textContent ?? ''
+    expect(inStorsekk.indexOf('storsekk')).toBeLessThan(inStorsekk.indexOf('favn'))
+  })
+
+  /** One remembered setting, not one per screen: what is picked here is what
+   *  the comparison screen opens with. */
+  it('remembers the unit picked here, past this session', () => {
+    renderWithMantine(<NeedCalculator stacks={[]} onBack={() => undefined} />)
+
+    fireEvent.change(screen.getByLabelText(nb['compare.resultUnitLabel']), {
+      target: { value: 'losKubikk' },
+    })
+
+    expect(readResultUnitPreference()).toBe('losKubikk')
   })
 })

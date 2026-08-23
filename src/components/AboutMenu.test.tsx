@@ -5,11 +5,6 @@ import { ENGLISH_TEST_LANGUAGE, setTestLanguage } from '../test/language'
 import { SERVICE_NAME } from '../climate/openMeteo'
 import { nb } from '../i18n/nb'
 import { en } from '../i18n/en'
-import {
-  RESULT_UNIT_STORAGE_KEY,
-  readResultUnitPreference,
-  writeResultUnitPreference,
-} from '../storage/resultUnitPreference'
 import { AboutMenu } from './AboutMenu'
 
 /** The version is baked in at build time and differs on every checkout, so the
@@ -126,12 +121,12 @@ describe('AboutMenu', () => {
   })
 })
 
-/** The comparison screen and the unit its answers are read in: two things
- *  that belong to the app rather than to any one stack, so they live behind
- *  the same three dots the «Om appen» item already did. */
+/** The two screens that belong to the app rather than to any one stack, so
+ *  they live behind the same three dots the «Om appen» item already did. The
+ *  unit the answers are read in used to sit here too; it now sits on the two
+ *  screens that use it. */
 describe('AboutMenu holding the app-wide settings', () => {
   beforeEach(() => {
-    localStorage.removeItem(RESULT_UNIT_STORAGE_KEY)
     window.location.hash = ''
   })
 
@@ -143,34 +138,14 @@ describe('AboutMenu holding the app-wide settings', () => {
     expect(window.location.hash).toBe('#compare')
   })
 
-  it('ticks the unit the answers are currently read in', () => {
-    writeResultUnitPreference('losKubikk')
+  /** Eleven units unfolded inline is not what a menu is for — theme has three
+   *  choices and language two, which is why those two can sit open here. The
+   *  choice moved to the two screens whose figures it governs. */
+  it('no longer offers the unit the answers are read in', () => {
     renderWithMantine(<AboutMenu />)
     fireEvent.click(screen.getByRole('button', { name: nb['about.menuLabel'] }))
 
-    expect(screen.getByRole('menuitem', { name: nb['volume.unit.losKubikk'] })).toHaveAttribute(
-      'aria-checked',
-      'true',
-    )
-    expect(screen.getByRole('menuitem', { name: nb['volume.unit.favn'] })).toHaveAttribute(
-      'aria-checked',
-      'false',
-    )
-  })
-
-  /** The point of the setting: it is picked once and still there tomorrow.
-   *  Kept out of the stack data on purpose, so it survives a share link. */
-  it('remembers a new unit past this session', () => {
-    renderWithMantine(<AboutMenu />)
-    fireEvent.click(screen.getByRole('button', { name: nb['about.menuLabel'] }))
-    fireEvent.click(screen.getByRole('menuitem', { name: nb['volume.unit.storsekk'] }))
-
-    expect(readResultUnitPreference()).toBe('storsekk')
-
-    fireEvent.click(screen.getByRole('button', { name: nb['about.menuLabel'] }))
-    expect(screen.getByRole('menuitem', { name: nb['volume.unit.storsekk'] })).toHaveAttribute(
-      'aria-checked',
-      'true',
-    )
+    expect(screen.queryByText(nb['compare.resultUnitLabel'])).not.toBeInTheDocument()
+    expect(screen.queryByRole('menuitem', { name: nb['volume.unit.favn'] })).not.toBeInTheDocument()
   })
 })
