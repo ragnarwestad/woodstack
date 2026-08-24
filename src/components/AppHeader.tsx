@@ -1,4 +1,4 @@
-import { Anchor, Group, Paper, Stack, Text, Title } from '@mantine/core'
+import { Anchor, Container, Group, Paper, Stack, Text, Title } from '@mantine/core'
 // The header mark, not the app icon: the icon carries an opaque background
 // because a home-screen tile needs one, and on the page that reads as a dark
 // square beside the title in the light theme.
@@ -47,19 +47,11 @@ export function AppHeader({ onHome }: Props) {
       style={{
         zIndex: 2,
         overflow: 'hidden',
-        padding: '22px var(--ws-header-pad-x) 30px',
-        // The side padding is a custom property: on a phone the header needs
-        // every pixel it can give the title and the slogan, and index.css
-        // restates it — along with the mark's size, the gap and the type — in
-        // one media query.
-        //
-        // Out AND up. `App` wraps everything in `Container size="sm" py="xl"`,
-        // and cancelling only the side padding left a strip of page above the
-        // panel at rest — which then vanished the moment `top={0}` took hold
-        // and the panel came up flush. Inset in one state and flush in the
-        // other is the mismatch; the band is drawn sitting at the top.
-        marginInline: 'calc(var(--mantine-spacing-md) * -1)',
-        marginTop: 'calc(var(--mantine-spacing-xl) * -1)',
+        // No side padding of its own: the panel is the full width of the
+        // window and the container below holds the content, so the mark and
+        // the title line up with the cards at every width. Only the band is
+        // edge to edge.
+        padding: '22px 0 30px',
         backgroundColor: PLUM_PANEL,
         color: 'var(--mantine-color-white)',
       }}
@@ -67,22 +59,17 @@ export function AppHeader({ onHome }: Props) {
       <div aria-hidden="true" data-testid="header-rings" className="ws-header-rings" />
       <div aria-hidden="true" data-testid="header-scallop" className="ws-header-scallop" />
 
-      {/* `position: relative` is load-bearing, not cosmetic: an absolutely
-          positioned box paints above a static one whatever the markup order,
-          so without it the two decorations above would cover the content.
-          With it, they are all positioned and DOM order decides — rings,
-          then scallop, then this.
+      {/* `position: relative` on the container is load-bearing, not cosmetic:
+          an absolutely positioned box paints above a static one whatever the
+          markup order, so without it the two decorations above would cover the
+          content. With it, they are all positioned and DOM order decides —
+          rings, then scallop, then this.
 
           `wrap="wrap"`: the mark, the title and the three buttons do not fit
           on one line on a phone, and the buttons are what should drop to a
           line of their own — not the app's name. */}
-      <Group
-        justify="space-between"
-        align="flex-start"
-        wrap="wrap"
-        gap="sm"
-        style={{ position: 'relative' }}
-      >
+      <Container size="sm" px="md" style={{ position: 'relative' }}>
+        <Group justify="space-between" align="flex-start" wrap="wrap" gap="sm">
         <Group gap="var(--ws-header-gap)" wrap="nowrap">
           {/* A real `href`, not a button dressed as one: cmd-click and
               middle-click have to open the app in a new tab the way every other
@@ -142,7 +129,8 @@ export function AppHeader({ onHome }: Props) {
           <LanguageControl />
           <AboutMenu />
         </Group>
-      </Group>
+        </Group>
+      </Container>
     </Paper>
   )
 }
