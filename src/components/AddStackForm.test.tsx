@@ -51,6 +51,21 @@ async function pickOslo() {
 }
 
 describe('AddStackForm', () => {
+  it('starts with a translated, left-aligned back control that cancels adding', () => {
+    const onCancel = vi.fn()
+    const { container } = renderWithMantine(
+      <AddStackForm onAdd={vi.fn()} onCancel={onCancel} geocodeFn={geocodeFn} />,
+    )
+    const column = container.querySelector('.mantine-Stack-root') as HTMLElement
+    const back = screen.getByRole('button', { name: /tilbake/i })
+    const heading = screen.getByText(/ny vedstabel/i)
+
+    expect(back.compareDocumentPosition(heading) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(back.parentElement).not.toBe(column)
+    fireEvent.click(back)
+    expect(onCancel).toHaveBeenCalledOnce()
+  })
+
   it('asks for every input the drying rate depends on, split size included', () => {
     renderWithMantine(<AddStackForm onAdd={vi.fn()} onCancel={vi.fn()} geocodeFn={geocodeFn} />)
     expect(screen.getByLabelText(/navn/i)).toBeInTheDocument()

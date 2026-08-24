@@ -28,6 +28,7 @@ import { StorageQuotaError } from '../storage/stacksRepo'
 import { geocode, type GeocodeResult } from '../climate/openMeteo'
 import { labelledMatches } from '../climate/placeLabels'
 import { useTranslation } from '../i18n/useTranslation'
+import { BackLink } from './BackLink'
 import { ExplainedLabel } from './ExplainButton'
 import { FieldRow } from './FieldRow'
 import { PhotoField, PhotoPreview } from './PhotoField'
@@ -141,6 +142,7 @@ export function AddStackForm({ onAdd, onCancel, geocodeFn, resizeFn }: Props) {
 
   return (
     <MantineStack gap="md">
+      <BackLink onClick={onCancel} />
       <Text fw={600}>{t('addStack.heading')}</Text>
 
       {/* Name and date: what this pile is and when it went up. */}
@@ -332,5 +334,3 @@ export function AddStackForm({ onAdd, onCancel, geocodeFn, resizeFn }: Props) {
     </MantineStack>
   )
 }
-
-
