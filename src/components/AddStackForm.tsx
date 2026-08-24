@@ -6,8 +6,8 @@ import {
   Group,
   NativeSelect,
   Stack as MantineStack,
-  Text,
   TextInput,
+  Title,
 } from '@mantine/core'
 import {
   COVERS,
@@ -143,7 +143,7 @@ export function AddStackForm({ onAdd, onCancel, geocodeFn, resizeFn }: Props) {
   return (
     <MantineStack gap="md">
       <BackLink onClick={onCancel} />
-      <Text fw={600}>{t('addStack.heading')}</Text>
+      <Title order={2}>{t('addStack.heading')}</Title>
 
       {/* Name and date: what this pile is and when it went up. */}
       <FieldRow>

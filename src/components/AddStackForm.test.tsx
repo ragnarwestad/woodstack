@@ -66,6 +66,12 @@ describe('AddStackForm', () => {
     expect(onCancel).toHaveBeenCalledOnce()
   })
 
+  it('uses the same heading style as the other subpages', () => {
+    renderWithMantine(<AddStackForm onAdd={vi.fn()} onCancel={vi.fn()} geocodeFn={geocodeFn} />)
+
+    expect(screen.getByRole('heading', { name: /ny vedstabel|new woodpile/i, level: 2 })).toBeInTheDocument()
+  })
+
   it('asks for every input the drying rate depends on, split size included', () => {
     renderWithMantine(<AddStackForm onAdd={vi.fn()} onCancel={vi.fn()} geocodeFn={geocodeFn} />)
     expect(screen.getByLabelText(/navn/i)).toBeInTheDocument()
