@@ -232,6 +232,18 @@ describe('EditStackForm', () => {
     expect(getStack('a')?.cover).toBe('roof')
   })
 
+  /** The reported bug: this was the one subpage with no way back at all —
+   *  every other one a visitor can land on has a "← Tilbake" link. */
+  it('has a way back, the same as every other subpage', () => {
+    const onCancel = vi.fn()
+    renderWithMantine(
+      <EditStackForm stackId="a" onSave={vi.fn()} onCancel={onCancel} geocodeFn={geocodeBergen()} />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: /tilbake/i }))
+    expect(onCancel).toHaveBeenCalled()
+  })
+
   // Searching drops the chosen place, so a search left half-finished has no
   // place at all — saving then would wipe the location the stack already has.
   it('will not save with the place search left hanging', async () => {

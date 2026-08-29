@@ -7,7 +7,6 @@ import {
   NativeSelect,
   Stack as MantineStack,
   TextInput,
-  Title,
 } from '@mantine/core'
 import {
   COVERS,
@@ -28,10 +27,10 @@ import { StorageQuotaError } from '../storage/stacksRepo'
 import { geocode, type GeocodeResult } from '../climate/openMeteo'
 import { labelledMatches } from '../climate/placeLabels'
 import { useTranslation } from '../i18n/useTranslation'
-import { BackLink } from './BackLink'
 import { ExplainedLabel } from './ExplainButton'
 import { FieldRow } from './FieldRow'
 import { PhotoField, PhotoPreview } from './PhotoField'
+import { SubpageHeader } from './SubpageHeader'
 
 function today(): string {
   return new Date().toISOString().slice(0, 10)
@@ -142,8 +141,10 @@ export function AddStackForm({ onAdd, onCancel, geocodeFn, resizeFn }: Props) {
 
   return (
     <MantineStack gap="md">
-      <BackLink onClick={onCancel} />
-      <Title order={2}>{t('addStack.heading')}</Title>
+      {/* The link and the title on one line rather than stacked: the link on
+          its own used to leave a whole row saying only "← Tilbake", with the
+          title repeating what the visitor already knows one line below it. */}
+      <SubpageHeader onBack={onCancel} title={t('addStack.heading')} />
 
       {/* Name and date: what this pile is and when it went up. */}
       <FieldRow>

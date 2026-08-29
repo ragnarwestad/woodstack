@@ -8,7 +8,6 @@ import {
   Paper,
   Tabs,
   Text,
-  Title,
 } from '@mantine/core'
 import type { ActualWeather, ClimateNormals, VolumeEntry } from '../storage/schema'
 import {
@@ -31,6 +30,7 @@ import { EntryList } from './EntryList'
 import { ExplainButton } from './ExplainButton'
 import { LogReadingForm } from './LogReadingForm'
 import { NotifyPrompt } from './NotifyPrompt'
+import { SubpageHeader } from './SubpageHeader'
 import { VolumeEntryForm } from './VolumeEntryForm'
 import { DASHED_RULE, PLUM_PANEL } from '../theme'
 
@@ -195,30 +195,29 @@ export function StackDetail({
 
   return (
     <MantineStack gap="md">
-      {/* Back on the left, the one thing you can do to this stack on the
-          right. Deleting moved to the list, so "Endre" is alone up here and
-          does not need a line of its own. */}
-      <Group justify="space-between" align="center" wrap="nowrap">
-        <BackLink onClick={onBack} />
-        <Button
-          variant="default"
-          onClick={onEdit}
-          radius={999}
-          className="ws-pressable"
-          fw={700}
-          fz={12}
-          tt="uppercase"
-          style={{ borderWidth: 2, letterSpacing: '0.08em' }}
-        >
-          {t('stackDetail.edit')}
-        </Button>
-      </Group>
-
-      {/* The name in the body face for the same reason as in the list: it is
+      {/* Back on the left, the name centred in what is left of the row, and
+          "Endre" — the one thing you can do to this stack — on the right.
+          The name in the body face for the same reason as in the list: it is
           a sentence the visitor wrote, and Bungee has no lower case. */}
-      <Title order={2} ff="Outfit, sans-serif" fw={700}>
-        {stack.name}
-      </Title>
+      <SubpageHeader
+        onBack={onBack}
+        title={stack.name}
+        titleProps={{ ff: 'Outfit, sans-serif', fw: 700 }}
+        action={
+          <Button
+            variant="default"
+            onClick={onEdit}
+            radius={999}
+            className="ws-pressable"
+            fw={700}
+            fz={12}
+            tt="uppercase"
+            style={{ borderWidth: 2, letterSpacing: '0.08em' }}
+          >
+            {t('stackDetail.edit')}
+          </Button>
+        }
+      />
 
       <Text fz={12} fw={600} tt="uppercase" style={{ letterSpacing: '0.14em', color: META_LINE }}>
         {t('stackDetail.meta', {

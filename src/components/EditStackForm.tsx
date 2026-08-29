@@ -27,6 +27,7 @@ import { useTranslation } from '../i18n/useTranslation'
 import { BackLink } from './BackLink'
 import { FieldRow } from './FieldRow'
 import { PhotoField, PhotoPreview } from './PhotoField'
+import { SubpageHeader } from './SubpageHeader'
 
 /** A place the stack can stand: either the one it already stands in, or one
  *  the visitor picked out of the search. */
@@ -154,7 +155,12 @@ export function EditStackForm({
 
   return (
     <MantineStack gap="md">
-      <Text fw={600}>{t('editStack.heading')}</Text>
+      {/* The reported bug: this screen had no way back at all — every other
+          subpage a visitor can land on has a "← Tilbake" link, this one did
+          not. The link and the title share one line rather than stacking:
+          the link alone would leave a whole row saying only that, with the
+          title repeating what the visitor already knows one line below it. */}
+      <SubpageHeader onBack={onCancel} title={t('editStack.heading')} />
 
       {/* The same two-column layout as the new-stack form: none of these
           values needs the full width, and the two screens should not read like
