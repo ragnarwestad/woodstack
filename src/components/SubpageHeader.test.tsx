@@ -45,7 +45,22 @@ describe('SubpageHeader', () => {
     const title = screen.getByRole('heading', { name: 'Granveden i skjulet' })
     const row = title.parentElement as HTMLElement
     expect(row.style.display).toBe('grid')
-    expect(row.style.gridTemplateColumns).toBe('1fr auto 1fr')
+    expect(row.style.gridTemplateColumns).toBe('1fr minmax(0, auto) 1fr')
     expect(title.style.textAlign).toBe('center')
+  })
+
+  /** The reported bug: a long stack name pushed the link column narrower
+   *  than «← Tilbake» itself needs, and the link wrapped to two lines
+   *  instead of the title — the one column in this row that is meant to
+   *  wrap. `minmax(0, auto)` on the title's own column above is the fix;
+   *  `white-space: nowrap` on the link is the belt to that fix's braces. */
+  it('never lets the back link itself wrap, whatever the title needs', () => {
+    renderWithMantine(<SubpageHeader onBack={vi.fn()} title="Granveden i skjulet" />)
+
+    const link = screen.getByRole('button', { name: /tilbake/i })
+    // Two `div`s up: `BackLink`'s own non-stretching wrapper, then this
+    // component's grid cell, which is the one carrying `white-space`.
+    const cell = link.closest('div')?.parentElement as HTMLElement
+    expect(cell.style.whiteSpace).toBe('nowrap')
   })
 })

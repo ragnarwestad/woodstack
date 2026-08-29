@@ -21,12 +21,23 @@ type Props = {
  *  the same width — Norwegian's «Tilbake» and English's «Back» are not the
  *  same width as each other, let alone as «Endre»/«Edit» or as nothing at
  *  all on the two forms. Two `1fr` columns of equal width flanking the
- *  title's own `auto` column is what keeps the title on the page's true
- *  centre line whatever either side holds — or does not. */
+ *  title's own middle column is what keeps the title on the page's true
+ *  centre line whatever either side holds — or does not.
+ *
+ *  The middle column is `minmax(0, auto)`, not a bare `auto`: a grid track
+ *  and the item in it default to never shrinking below the item's own
+ *  min-content size — for text, the width of its single longest unbreakable
+ *  word — so a long stack name that cannot fit was pushing the `1fr` link
+ *  column to give up its own space instead, and «← Tilbake» wrapped in a
+ *  column too narrow for it. `minmax(0, auto)` lets the middle column shrink
+ *  past that floor, so the title's own text wraps there instead — the one
+ *  place in the row a second line belongs. `whiteSpace: 'nowrap'` on the
+ *  link is the other half: it holds «← Tilbake» to one line even if the grid
+ *  ever offers that column less than its natural width regardless. */
 export function SubpageHeader({ onBack, title, titleProps, action }: Props) {
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: 8 }}>
-      <div style={{ justifySelf: 'start' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr minmax(0, auto) 1fr', alignItems: 'center', gap: 8 }}>
+      <div style={{ justifySelf: 'start', whiteSpace: 'nowrap' }}>
         <BackLink onClick={onBack} />
       </div>
       <Title order={2} ta="center" {...titleProps}>
