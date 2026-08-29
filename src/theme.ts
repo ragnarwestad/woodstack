@@ -50,12 +50,18 @@ const berry: MantineColorsTuple = [
  *  CSS actually reads. That mismatch is why cards and fields barely lifted
  *  off the page: their border was fainter than intended, and the surface
  *  itself sat too close to the body colour to read as raised. Fixed by
- *  swapping 3 and 4 and lightening 6. */
+ *  swapping 3 and 4 and lightening 6.
+ *
+ *  Shade 3 is also what `Combobox` — a `NativeSelect`'s own chevron — pulls
+ *  for its arrow in dark mode, and the value that fixing the border left
+ *  behind there was nearly the same darkness as the lightened shade 6, so
+ *  the arrow all but disappeared into the field it sat in. Shade 3 is lifted
+ *  well clear of both for that reason, not to fit the ramp between 2 and 4. */
 const plumNight: MantineColorsTuple = [
   '#F7EBD3', // text
   '#D9C6B4',
   '#A88F9E',
-  '#3A1F36',
+  '#8C7286', // combobox chevron
   '#4A2A44', // borders — what `Paper`/`Input` actually pull in dark mode
   '#2A1226', // raised surface / header
   '#3D2140', // paper / input background

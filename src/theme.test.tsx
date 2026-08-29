@@ -153,6 +153,18 @@ describe('the Woodstack ’26 theme, wired the way main.tsx wires it', () => {
 
     expect(contrastRatio(body!, surface!)).toBeGreaterThan(1.3)
   })
+
+  /** The reported bug: a `NativeSelect`'s own dropdown arrow was invisible in
+   *  dark mode. `Combobox` pulls shade 3 of the `dark` tuple for it, and the
+   *  value fixing the border left there was nearly the same darkness as the
+   *  lightened field background (shade 6) — the arrow all but disappeared
+   *  into the field it sat in. */
+  it('gives the dropdown chevron a colour actually visible against the field it sits in', () => {
+    const chevron = resolvedVariable('dark', '--mantine-color-dark-3')
+    const field = resolvedVariable('dark', '--mantine-color-dark-6')
+
+    expect(contrastRatio(chevron!, field!)).toBeGreaterThan(3)
+  })
 })
 
 describe('the theme leaves the poster decoration to a later spec', () => {
