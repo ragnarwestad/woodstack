@@ -329,7 +329,10 @@ export function ComparePage() {
 
       {verdict && (
         <Paper radius="lg" p="lg" style={{ backgroundColor: PLUM_PANEL, color: 'var(--mantine-color-white)' }}>
-          <Text ff="Bungee, sans-serif" fw={400} fz={17} lh={1.3} data-testid="verdict">
+          {/* Not Bungee: it draws capitals only, and this line is a sentence
+              with lower case in it, the same reason the stack page's name
+              gives its `Title` the same override. */}
+          <Text ff="Outfit, sans-serif" fw={700} fz={17} lh={1.3} data-testid="verdict">
             {verdict.cheaperIndex === null
               ? t('compare.verdictTie')
               : t('compare.verdict', {

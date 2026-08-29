@@ -99,6 +99,7 @@ export const nb = {
   'need.result': 'Omtrent {primary}, eller {secondary}',
   'need.resultEnergy': 'Det tilsvarer omtrent {kwh} kWh levert varme',
   'need.alreadyHave': 'Du har allerede omtrent {have}, så du trenger å kjøpe {toBuy} til.',
+  'need.energyAmountRange': 'Energibehov må være et tall større enn 0.',
   'need.amountRange': 'Mengden må være et tall større enn 0.',
 
   'stove.rentbrennende': 'Rentbrennende ovn',

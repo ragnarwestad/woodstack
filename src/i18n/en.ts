@@ -96,6 +96,7 @@ export const en: Record<TranslationKey, string> = {
   'need.result': 'About {primary}, or {secondary}',
   'need.resultEnergy': 'That is about {kwh} kWh of delivered heat',
   'need.alreadyHave': 'You already have about {have}, so you need to buy {toBuy} more.',
+  'need.energyAmountRange': 'The energy need must be a number greater than 0.',
   'need.amountRange': 'The amount must be a number greater than 0.',
 
   'stove.rentbrennende': 'Clean-burning stove',

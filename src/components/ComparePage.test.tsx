@@ -134,6 +134,17 @@ describe('ComparePage', () => {
     expect(verdict).toContain('50')
   })
 
+  /** The verdict is a sentence, not a wordmark — Bungee draws capitals only,
+   *  so it turned "Parti 1 er 50 % billigere per kWh" into a shout, the same
+   *  problem a stack's own name has on `StackDetail`. */
+  it('sets the verdict in the body face, not the display one', () => {
+    renderWithMantine(<ComparePage />)
+    fillLot(0, { price: '1200', amount: '1', unit: 'favn', species: 'bjork' })
+    fillLot(1, { price: '2400', amount: '1', unit: 'favn', species: 'bjork' })
+
+    expect(getComputedStyle(screen.getByTestId('verdict')).fontFamily).not.toContain('Bungee')
+  })
+
   /** Acceptance criterion 1. The verdict names a lot by number; the badge
    *  points at the card, so the winner can be seen without reading a
    *  sentence and counting cards. */

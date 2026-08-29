@@ -83,7 +83,7 @@ export function NeedCalculator({ stacks }: Props) {
     if (mode === 'energy') {
       const kwh = Number(energyAmount)
       if (energyAmount.trim() === '' || !Number.isFinite(kwh) || kwh <= 0) {
-        setError(t('need.amountRange'))
+        setError(t('need.energyAmountRange'))
         setResult(null)
         return
       }
@@ -190,16 +190,17 @@ export function NeedCalculator({ stacks }: Props) {
 
       {/* Above the answer it governs rather than in a menu: `solidLiters` is
           unit-independent, so a result already on screen changes unit here
-          without «Beregn» being pressed again. */}
-      <NativeSelect
-        id={resultUnitId}
-        label={t('compare.resultUnitLabel')}
-        value={resultUnit}
-        onChange={(event) => chooseResultUnit(event.currentTarget.value as ResultUnit)}
-        data={VOLUME_UNITS.map((unit) => ({ value: unit, label: t(`volume.unit.${unit}`) }))}
-      />
-
-      {error && <Alert color="red">{error}</Alert>}
+          without «Beregn» being pressed again. The same half-width grid as
+          the fields above it, rather than a lone field spanning both. */}
+      <SimpleGrid cols={{ base: 1, xs: 2 }} spacing="sm">
+        <NativeSelect
+          id={resultUnitId}
+          label={t('compare.resultUnitLabel')}
+          value={resultUnit}
+          onChange={(event) => chooseResultUnit(event.currentTarget.value as ResultUnit)}
+          data={VOLUME_UNITS.map((unit) => ({ value: unit, label: t(`volume.unit.${unit}`) }))}
+        />
+      </SimpleGrid>
 
       <Group>
         <Button
@@ -215,6 +216,12 @@ export function NeedCalculator({ stacks }: Props) {
         </Button>
       </Group>
 
+      {/* Below the button either way, error or answer — an error above it
+          used to shove «Beregn» down the moment a bad number was typed, so
+          the button sat somewhere different depending on what happened
+          last. */}
+      {error && <Alert color="red">{error}</Alert>}
+
       {/* The answer the screen exists to give, so it takes the plum panel the
           stack page's drying window takes — not a card, which is for something
           you act on. The two lines under it are context, dimmed by opacity
@@ -223,7 +230,10 @@ export function NeedCalculator({ stacks }: Props) {
       {result && (
         <Paper radius="lg" p="lg" style={{ backgroundColor: PLUM_PANEL, color: 'var(--mantine-color-white)' }}>
           <MantineStack gap={4}>
-            <Text ff="Bungee, sans-serif" fw={400} fz={17} lh={1.3} data-testid="need-result">
+            {/* Not Bungee: it draws capitals only, and this line is a
+                sentence with lower case in it, the same reason the stack
+                page's name gives its `Title` the same override. */}
+            <Text ff="Outfit, sans-serif" fw={700} fz={17} lh={1.3} data-testid="need-result">
               {formatNeed(result.solidLiters, resultUnit, translator)}
             </Text>
             {result.kwh !== undefined && (

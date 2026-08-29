@@ -35,6 +35,18 @@ describe('NeedCalculator', () => {
     expect(text).toMatch(/sekk/i)
   })
 
+  /** The result is a sentence, not a wordmark — Bungee draws capitals only,
+   *  so it turned "Omtrent 3,2 favner, eller 2 sekker" into a shout, the same
+   *  problem a stack's own name has on `StackDetail`. */
+  it('sets the result in the body face, not the display one', () => {
+    renderWithMantine(<NeedCalculator stacks={[]} />)
+
+    fireEvent.change(screen.getByLabelText(/energibehov/i), { target: { value: '5000' } })
+    fireEvent.click(screen.getByRole('button', { name: /beregn/i }))
+
+    expect(getComputedStyle(screen.getByTestId('need-result')).fontFamily).not.toContain('Bungee')
+  })
+
   /** AC 2: an amount already offered in a volume unit -> the kWh it
    *  represents, and the amount restated in other units — proving the
    *  conversion runs in both directions. */
@@ -96,6 +108,32 @@ describe('NeedCalculator', () => {
     fireEvent.change(screen.getByLabelText(/energibehov/i), { target: { value: '5000' } })
     fireEvent.click(screen.getByRole('button', { name: /beregn/i }))
     expect(screen.getByTestId('need-already-have')).toBeInTheDocument()
+  })
+
+  /** The error names the field that is actually wrong — «Energibehov» on the
+   *  energy tab, «Mengden» on the volume one — rather than one generic
+   *  sentence that fits neither exactly. */
+  it('names the energy field in the error on the energy tab, and the amount on the volume tab', () => {
+    renderWithMantine(<NeedCalculator stacks={[]} />)
+    fireEvent.click(screen.getByRole('button', { name: /beregn/i }))
+    expect(screen.getByText(nb['need.energyAmountRange'])).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('radio', { name: /får tilbud om/i }))
+    fireEvent.click(screen.getByRole('button', { name: /beregn/i }))
+    expect(screen.getByText(nb['need.amountRange'])).toBeInTheDocument()
+  })
+
+  /** The error and the answer are the same two things happening in the same
+   *  spot — one or the other, below the button — so «Beregn» does not jump to
+   *  a different place depending on whether the last number typed was good. */
+  it('puts the error below the button, where the answer would otherwise be', () => {
+    renderWithMantine(<NeedCalculator stacks={[]} />)
+
+    fireEvent.click(screen.getByRole('button', { name: /beregn/i }))
+    const button = screen.getByRole('button', { name: /beregn/i })
+    const error = screen.getByText(nb['need.energyAmountRange'])
+
+    expect(button.compareDocumentPosition(error) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   })
 
   /** AC 6: the visitor's unit preference decides which unit is said first and
