@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Group, Menu, Modal, Tabs, Text, UnstyledButton } from '@mantine/core'
+import { Menu, Modal, Tabs, Text, UnstyledButton } from '@mantine/core'
 import { useTranslation } from '../i18n/useTranslation'
 
 /** Three dots, drawn here rather than pulled from an icon library. It is the
@@ -103,11 +103,11 @@ export function AboutMenu() {
           keepMounted={false}
           color="orange"
           classNames={{ tab: 'ws-tab' }}
-          styles={{ tab: { fontWeight: 700, fontSize: 13, letterSpacing: '0.02em', padding: '9px 6px' } }}
+          styles={{ tab: { fontWeight: 700, fontSize: 13, letterSpacing: '0.02em', padding: '9px 14px' } }}
         >
-          {/* No `grow` here, unlike the stack page: «Slik regner vi» is three
-              times the width of «Om», so an even split hands one label a lake
-              of space and squeezes the other two. */}
+          {/* No `grow` here, unlike the stack page: the three labels are not
+              close to the same width, so an even split hands the shortest one
+              a lake of space and squeezes the longest. */}
           <Tabs.List>
             <Tabs.Tab value="what">{t('about.tabWhat')}</Tabs.Tab>
             <Tabs.Tab value="how">{t('about.tabHow')}</Tabs.Tab>
@@ -115,42 +115,36 @@ export function AboutMenu() {
           </Tabs.List>
 
           {/* The bodies are written as paragraphs with blank lines between
-              them; `pre-line` is what keeps those breaks on screen. */}
-          <Tabs.Panel value="what" pt="md">
-            <Text size="sm" style={{ whiteSpace: 'pre-line' }}>
-              {t('about.what.body')}
-            </Text>
-          </Tabs.Panel>
+              them; `pre-line` is what keeps those breaks on screen.
 
-          <Tabs.Panel value="how" pt="md">
-            <Text size="sm" style={{ whiteSpace: 'pre-line' }}>
-              {t('about.how.body')}
-            </Text>
-          </Tabs.Panel>
+              The wrapper's `min-height` is sized for the longest of the
+              three — «Utregninger», four paragraphs — so the dialog does
+              not grow and shrink as the visitor switches tabs; the two
+              shorter ones just leave some room below instead. */}
+          <div data-testid="about-panels" style={{ minHeight: 400 }}>
+            <Tabs.Panel value="what" pt="md">
+              <Text size="sm" style={{ whiteSpace: 'pre-line' }}>
+                {t('about.what.body')}
+              </Text>
+            </Tabs.Panel>
 
-          <Tabs.Panel value="info" pt="md">
-            <Text size="sm" style={{ whiteSpace: 'pre-line' }}>
-              {t('about.info.body')}
-            </Text>
-          </Tabs.Panel>
+            <Tabs.Panel value="how" pt="md">
+              <Text size="sm" style={{ whiteSpace: 'pre-line' }}>
+                {t('about.how.body')}
+              </Text>
+            </Tabs.Panel>
+
+            <Tabs.Panel value="info" pt="md">
+              <Text size="sm" style={{ whiteSpace: 'pre-line' }}>
+                {t('about.info.body')}
+              </Text>
+            </Tabs.Panel>
+          </div>
         </Tabs>
 
-        {/* The same dashed rule as the volume line on the stack page: it runs
-            into the label rather than across the dialog above it. */}
-        <Group gap={8} wrap="nowrap" align="center" mt="md">
-          <div
-            aria-hidden="true"
-            style={{
-              flex: 1,
-              height: 2,
-              background:
-                'repeating-linear-gradient(90deg, var(--mantine-color-default-border) 0 6px, transparent 6px 12px)',
-            }}
-          />
-          <Text size="xs" c="dimmed">
-            {t('about.version', { value: __APP_VERSION__ })}
-          </Text>
-        </Group>
+        <Text size="xs" c="dimmed" ta="center" mt="md">
+          {t('about.version', { value: __APP_VERSION__ })}
+        </Text>
       </Modal>
     </>
   )

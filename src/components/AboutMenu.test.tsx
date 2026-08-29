@@ -46,6 +46,21 @@ describe('AboutMenu', () => {
     expect(dialog.textContent).toContain(nb['about.what.body'])
   })
 
+  /** Switching tabs used to resize the dialog, since a one-paragraph tab and
+   *  a four-paragraph one are not the same height. The wrapper's own
+   *  `min-height` is what keeps the dialog the same size regardless of which
+   *  tab is open. */
+  it('gives the panels a fixed minimum height, the same on every tab', () => {
+    renderWithMantine(<AboutMenu />)
+    const dialog = openDialog()
+
+    const heightOnFirstTab = within(dialog).getByTestId('about-panels').style.minHeight
+    expect(heightOnFirstTab).not.toBe('')
+
+    fireEvent.click(within(dialog).getByRole('tab', { name: nb['about.tabInfo'] }))
+    expect(within(dialog).getByTestId('about-panels').style.minHeight).toBe(heightOnFirstTab)
+  })
+
   it('explains how the estimate is worked out on its own tab', () => {
     renderWithMantine(<AboutMenu />)
     const dialog = openDialog()
@@ -78,6 +93,16 @@ describe('AboutMenu', () => {
     expect(within(dialog).getByText(VERSION)).toBeInTheDocument()
   })
 
+  /** No dashed rule running into it any more — the version stands on its
+   *  own, centred under the tabs rather than left-aligned beside a line. */
+  it('centres the version line, without a rule running into it', () => {
+    renderWithMantine(<AboutMenu />)
+    const dialog = openDialog()
+
+    expect(within(dialog).getByText(VERSION)).toHaveStyle({ textAlign: 'center' })
+    expect(dialog.querySelector('[aria-hidden="true"]')).not.toBeInTheDocument()
+  })
+
   /** The dialog title sat at 12 px in Bungee and the three tabs at 10 — both
    *  written into `styles={{ ... }}` objects, which is the form happy-dom
    *  keeps, so the rendered tree is where they are checked. */
@@ -88,8 +113,8 @@ describe('AboutMenu', () => {
     assertNoBungeeBelow16(document.body)
   })
 
-  /** «Slik regner vi» is a sentence, and three shouted labels in a row are
-   *  the same wall the Bungee version was. */
+  /** Three shouted labels in a row are the same wall the Bungee version
+   *  was. */
   it('leaves the tab labels in mixed case', () => {
     renderWithMantine(<AboutMenu />)
     const dialog = openDialog()
@@ -107,9 +132,9 @@ describe('AboutMenu', () => {
   })
 
   /** The same underline tabs as the stack page, and for the same reason — but
-   *  without the even split. «Slik regner vi» is three times the width of
-   *  «Om», so an even split hands one label a lake of space and squeezes the
-   *  other two. The three keep their own widths, left-aligned. */
+   *  without the even split. The three labels are not close to the same
+   *  width, so an even split would hand the shortest one a lake of space and
+   *  squeeze the longest. The three keep their own widths, left-aligned. */
   it('draws the dialog tabs as an underline row that keeps each label to its own width', () => {
     renderWithMantine(<AboutMenu />)
     const dialog = openDialog()
@@ -118,7 +143,7 @@ describe('AboutMenu', () => {
     expect(list).toHaveAttribute('data-variant', 'default')
     expect(list).not.toHaveAttribute('data-grow')
     expect(within(dialog).getByRole('tab', { name: nb['about.tabWhat'] })).toHaveStyle({
-      padding: '9px 6px',
+      padding: '9px 14px',
     })
   })
 

@@ -41,7 +41,7 @@ export const nb = {
   'about.menuItem': 'Om Woodstack',
   'about.title': 'Om Woodstack',
   'about.tabWhat': 'Om',
-  'about.tabHow': 'Slik regner vi',
+  'about.tabHow': 'Utregninger',
   'about.tabInfo': 'Info',
   'about.what.body':
     'Woodstack anslår når vedstabelen din er tørr nok til å fyre med. Du legger inn treslag, når veden ble stablet og noen få andre opplysninger, og appen regner ut et vindu – for eksempel midten av september til midten av oktober – ikke én bestemt dato.\n\nDet er et anslag, ikke en måling. Ingen kan si hvordan været blir dag for dag så langt fram, så veden kan bli klar litt før eller litt etter vinduet.',
