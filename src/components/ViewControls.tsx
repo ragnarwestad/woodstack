@@ -123,7 +123,11 @@ function Choice({ selected, label, onClick }: { selected: boolean; label: string
   )
 }
 
-export function ThemeControl() {
+/** The theme choice, as the `Menu.Label` and the three `Choice` rows alone —
+ *  no `Menu`/`Menu.Target` of its own, so a narrow header can splice this
+ *  into the «...» dropdown instead of giving the choice a button of its own.
+ *  `ThemeControl` below is this, wrapped in exactly that button. */
+export function ThemeMenuItems() {
   const { t } = useTranslation()
   // Mantine keeps the choice itself, in its own storage key, and resolves
   // `auto` against the device. Nothing here has to remember anything.
@@ -134,6 +138,25 @@ export function ThemeControl() {
     { value: 'dark', label: t('app.themeDark') },
     { value: 'auto', label: t('app.themeAuto') },
   ]
+
+  return (
+    <>
+      <Menu.Label>{t('app.theme')}</Menu.Label>
+      {schemes.map(({ value, label }) => (
+        <Choice
+          key={value}
+          selected={value === colorScheme}
+          label={label}
+          onClick={() => setColorScheme(value)}
+        />
+      ))}
+    </>
+  )
+}
+
+export function ThemeControl() {
+  const { t } = useTranslation()
+  const { colorScheme } = useMantineColorScheme()
   const Icon = colorScheme === 'light' ? Sun : colorScheme === 'dark' ? Moon : SunMoon
 
   return (
@@ -144,15 +167,7 @@ export function ThemeControl() {
         </IconButton>
       </Menu.Target>
       <Menu.Dropdown>
-        <Menu.Label>{t('app.theme')}</Menu.Label>
-        {schemes.map(({ value, label }) => (
-          <Choice
-            key={value}
-            selected={value === colorScheme}
-            label={label}
-            onClick={() => setColorScheme(value)}
-          />
-        ))}
+        <ThemeMenuItems />
       </Menu.Dropdown>
     </Menu>
   )
@@ -166,9 +181,24 @@ const LANGUAGES: { value: Language; label: string }[] = [
   { value: 'en', label: 'English' },
 ]
 
-export function LanguageControl() {
+/** The language choice, as the `Menu.Label` and the two `Choice` rows alone —
+ *  the same reason `ThemeMenuItems` is split out from `ThemeControl`. */
+export function LanguageMenuItems() {
   const { t } = useTranslation()
   const { language, setLanguage } = useLanguageChoice()
+
+  return (
+    <>
+      <Menu.Label>{t('app.language')}</Menu.Label>
+      {LANGUAGES.map(({ value, label }) => (
+        <Choice key={value} selected={value === language} label={label} onClick={() => setLanguage(value)} />
+      ))}
+    </>
+  )
+}
+
+export function LanguageControl() {
+  const { t } = useTranslation()
 
   return (
     <Menu position="bottom-end" transitionProps={{ duration: 0 }}>
@@ -178,10 +208,7 @@ export function LanguageControl() {
         </IconButton>
       </Menu.Target>
       <Menu.Dropdown>
-        <Menu.Label>{t('app.language')}</Menu.Label>
-        {LANGUAGES.map(({ value, label }) => (
-          <Choice key={value} selected={value === language} label={label} onClick={() => setLanguage(value)} />
-        ))}
+        <LanguageMenuItems />
       </Menu.Dropdown>
     </Menu>
   )

@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { fireEvent, screen, within } from '@testing-library/react'
 import { renderWithMantine } from '../test/render'
+import { mockNarrowViewport } from '../test/matchMedia'
 import { nb } from '../i18n/nb'
 import { RESULT_UNIT_STORAGE_KEY, readResultUnitPreference } from '../storage/resultUnitPreference'
 import { ComparePage } from './ComparePage'
@@ -13,25 +14,6 @@ import { ComparePage } from './ComparePage'
 beforeEach(() => {
   localStorage.clear()
 })
-
-/** happy-dom has no layout engine, so the phone-width branch cannot be
- *  reached by resizing anything — it is read from `useMediaQuery`, which
- *  falls back to `false` (`window.matchMedia` does not exist here) unless a
- *  test stands one up itself. This is the one the narrow-screen tests below
- *  install; every other test in this file runs with the real absence of
- *  `matchMedia` and so exercises the side-by-side layout, same as before. */
-function mockNarrowViewport() {
-  vi.stubGlobal(
-    'matchMedia',
-    vi.fn((query: string) => ({
-      matches: true,
-      media: query,
-      addEventListener: () => undefined,
-      removeEventListener: () => undefined,
-      dispatchEvent: () => false,
-    })),
-  )
-}
 
 afterEach(() => {
   vi.unstubAllGlobals()

@@ -1,6 +1,14 @@
 import { useState } from 'react'
 import { Menu, Modal, Tabs, Text, UnstyledButton } from '@mantine/core'
 import { useTranslation } from '../i18n/useTranslation'
+import { LanguageMenuItems, ThemeMenuItems } from './ViewControls'
+
+type Props = {
+  /** Whether theme and language stand in this dropdown too, rather than in
+   *  buttons of their own beside it — see the note on `viewControls` where
+   *  it is read, in `AppHeader`. */
+  viewControls?: boolean
+}
 
 /** Three dots, drawn here rather than pulled from an icon library. It is the
  *  only icon the app has, and a whole package for one glyph runs against the
@@ -35,7 +43,7 @@ function ThreeDots() {
  *  The version sits below the tabs rather than inside one: «which build is
  *  this» is asked when something looks wrong, and the answer should not be
  *  behind whichever tab happens to be closed. */
-export function AboutMenu() {
+export function AboutMenu({ viewControls = false }: Props = {}) {
   const { t } = useTranslation()
   const [opened, setOpened] = useState(false)
 
@@ -69,6 +77,19 @@ export function AboutMenu() {
             boxShadow: 'var(--mantine-shadow-sm)',
           }}
         >
+          {/* Below 550px the three icon buttons wrapped to a line of their
+              own under the wordmark. Theme and language move in here instead
+              — behind the same three dots, above the one-off «what is this
+              app» item — so only this button stands at the top right and
+              the header stops wrapping. */}
+          {viewControls && (
+            <>
+              <ThemeMenuItems />
+              <Menu.Divider />
+              <LanguageMenuItems />
+              <Menu.Divider />
+            </>
+          )}
           <Menu.Item onClick={() => setOpened(true)}>{t('about.menuItem')}</Menu.Item>
         </Menu.Dropdown>
       </Menu>

@@ -1,4 +1,5 @@
 import { Anchor, Container, Group, Paper, Stack, Text, Title } from '@mantine/core'
+import { useMediaQuery } from '@mantine/hooks'
 // The header mark, not the app icon: the icon carries an opaque background
 // because a home-screen tile needs one, and on the page that reads as a dark
 // square beside the title in the light theme.
@@ -26,6 +27,11 @@ type Props = {
 
 export function AppHeader({ onHome, homeTabs }: Props) {
   const { t } = useTranslation()
+  // Below this, three separate icon buttons wrapped to a line of their own
+  // under the wordmark — with `space-between` on the wrapped Group, they
+  // then landed on the left. `530px` was where it happened; this backs off
+  // before it does.
+  const isNarrow = useMediaQuery('(max-width: 550px)')
 
 
   return (
@@ -131,11 +137,19 @@ export function AppHeader({ onHome, homeTabs }: Props) {
             these wrap to a line of their own they are the only thing on it,
             and `space-between` puts a lone item at the start — so on the
             narrow screen the wrap was for, they landed on the left. The auto
-            margin holds them right on both lines. */}
+            margin holds them right on both lines.
+
+            Below `isNarrow`, theme and language move inside the «...» dropdown
+            instead of standing beside it — one button fits the line the mark
+            is on where three did not, so the row never wraps at all. */}
         <Group gap="xs" wrap="nowrap" style={{ marginLeft: 'auto' }}>
-          <ThemeControl />
-          <LanguageControl />
-          <AboutMenu />
+          {!isNarrow && (
+            <>
+              <ThemeControl />
+              <LanguageControl />
+            </>
+          )}
+          <AboutMenu viewControls={isNarrow} />
         </Group>
         </Group>
 
