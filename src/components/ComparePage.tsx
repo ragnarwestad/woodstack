@@ -29,7 +29,6 @@ import {
 } from '../storage/resultUnitPreference'
 import { useTranslation, type Translator } from '../i18n/useTranslation'
 import { DASHED_RULE, FIELD_LABEL_STYLE, PLUM_PANEL } from '../theme'
-import { BackLink } from './BackLink'
 import { ExplainButton, ExplainedLabel } from './ExplainButton'
 
 /** Two lots of firewood side by side: what each costs per kWh, what each
@@ -258,7 +257,7 @@ function LotCard({ index, draft, onChange, result, resultUnit, isCheapest }: Lot
   )
 }
 
-export function ComparePage({ onBack }: { onBack: () => void }) {
+export function ComparePage() {
   const translator = useTranslation()
   const { t } = translator
   const [lots, setLots] = useState<[LotDraft, LotDraft]>([EMPTY_LOT, EMPTY_LOT])
@@ -282,7 +281,6 @@ export function ComparePage({ onBack }: { onBack: () => void }) {
 
   return (
     <Stack gap="md">
-      <BackLink onClick={onBack} />
       <Title order={2}>{t('compare.title')}</Title>
       <Text c="dimmed" size="sm">
         {t('compare.intro')}
@@ -290,23 +288,28 @@ export function ComparePage({ onBack }: { onBack: () => void }) {
 
       {/* The «?» on its own, next to the figure it explains rather than next
           to a field: kroner per kWh is the answer the screen is built around,
-          and it is worth a sentence about why it and not kroner per kilo. */}
-      <Group gap={6} wrap="nowrap">
-        <Text size="sm" fw={700}>
-          {t('compare.krPerKwh')}
-        </Text>
-        <ExplainButton title={t('explain.comparePerKwh.title')} body={t('explain.comparePerKwh.body')} size={22} />
-      </Group>
+          and it is worth a sentence about why it and not kroner per kilo.
+          Beside the unit picker rather than above it — the two used to stack
+          into three lines of height for two short controls, wasting the
+          scroll a phone has least of. */}
+      <Group justify="space-between" align="center" wrap="wrap" gap="sm">
+        {/* Above the lots rather than in a menu: the unit the figures are read
+            in belongs next to the figures it governs, so picking it and seeing
+            what it did are the same glance. */}
+        <NativeSelect
+          label={t('compare.resultUnitLabel')}
+          value={resultUnit}
+          onChange={(event) => chooseResultUnit(event.currentTarget.value as ResultUnit)}
+          data={VOLUME_UNITS.map((unit) => ({ value: unit, label: t(`volume.unit.${unit}`) }))}
+        />
 
-      {/* Above the lots rather than in a menu: the unit the figures are read
-          in belongs next to the figures it governs, so picking it and seeing
-          what it did are the same glance. */}
-      <NativeSelect
-        label={t('compare.resultUnitLabel')}
-        value={resultUnit}
-        onChange={(event) => chooseResultUnit(event.currentTarget.value as ResultUnit)}
-        data={VOLUME_UNITS.map((unit) => ({ value: unit, label: t(`volume.unit.${unit}`) }))}
-      />
+        <Group gap={6} wrap="nowrap">
+          <Text size="sm" fw={700}>
+            {t('compare.krPerKwh')}
+          </Text>
+          <ExplainButton title={t('explain.comparePerKwh.title')} body={t('explain.comparePerKwh.body')} size={22} />
+        </Group>
+      </Group>
 
       {/* One column on a phone: two lots of five fields side by side on a
           narrow screen would squeeze both into unreadable columns. */}

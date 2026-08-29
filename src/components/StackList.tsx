@@ -1,4 +1,4 @@
-import { Button, Group, Image, Paper, Stack as MantineStack, Text, UnstyledButton } from '@mantine/core'
+import { Button, Group, Image, Paper, Stack as MantineStack, Text, Title, UnstyledButton } from '@mantine/core'
 import type { ClimateNormals, Stack } from '../storage/schema'
 import { dryingProgress, estimateWindow } from '../model/simulate'
 import { formatWindow } from '../model/units'
@@ -43,12 +43,11 @@ export function StackList({
   return (
     <MantineStack gap="md">
       <Group justify="space-between">
-        {/* Bungee stays only at 16 px and up, where the face was drawn to
-            work. Below it the poster feeling comes from Outfit 700 in
-            capitals with tracking instead. */}
-        <Text fw={700} fz={14} tt="uppercase" style={{ letterSpacing: '0.08em' }}>
-          {t('stackList.heading')}
-        </Text>
+        {/* The same `Title order={2}` as the comparison and the need
+            calculator's own headings, now that all three sit behind the same
+            row of tabs — one heading font across the three, not the list's
+            own smaller label beside the button it used to be. */}
+        <Title order={2}>{t('stackList.heading')}</Title>
         <Button
           onClick={onAdd}
           radius={999}

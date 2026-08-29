@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { fireEvent, screen, within } from '@testing-library/react'
 import { renderWithMantine } from '../test/render'
 import { nb } from '../i18n/nb'
@@ -32,16 +32,8 @@ function figure(index: number, name: string): string {
 
 describe('ComparePage', () => {
   it('names itself, so the visitor knows which screen they landed on', () => {
-    renderWithMantine(<ComparePage onBack={() => undefined} />)
+    renderWithMantine(<ComparePage />)
     expect(screen.getByRole('heading', { name: nb['compare.title'] })).toBeInTheDocument()
-  })
-
-  it('goes back the same way every other screen does', () => {
-    const onBack = vi.fn()
-    renderWithMantine(<ComparePage onBack={onBack} />)
-
-    fireEvent.click(screen.getByRole('button', { name: /tilbake/i }))
-    expect(onBack).toHaveBeenCalledOnce()
   })
 
   /** Acceptance criterion 6. A favn of birch and a favn of spruce are nearly
@@ -50,7 +42,7 @@ describe('ComparePage', () => {
    *  — a field that comes and goes moves everything under it, the same rule
    *  `AddStackForm` states for its second-species picker. */
   it('asks a lot sold by volume which wood it is, and a lot sold by weight not', () => {
-    renderWithMantine(<ComparePage onBack={() => undefined} />)
+    renderWithMantine(<ComparePage />)
 
     fillLot(0, { price: '2400', amount: '1', unit: 'favn' })
     fillLot(1, { price: '3000', amount: '1000', unit: 'kg' })
@@ -67,7 +59,7 @@ describe('ComparePage', () => {
    *  only the headline one. 1 favn of birch is 1600 solid litres, 800 kg bone
    *  dry, 960 kg at 20 % — so 2400 kroner is 2,50 per kilo. */
   it('shows all four figures for each lot, not only the kilowatt-hour price', () => {
-    renderWithMantine(<ComparePage onBack={() => undefined} />)
+    renderWithMantine(<ComparePage />)
 
     fillLot(0, { price: '2400', amount: '1', unit: 'favn', species: 'bjork' })
     fillLot(1, { price: '900', amount: '1', unit: 'losKubikk', species: 'gran' })
@@ -85,7 +77,7 @@ describe('ComparePage', () => {
 
   it('restates both amounts in the unit that was already chosen when the screen opened', () => {
     localStorage.setItem(RESULT_UNIT_STORAGE_KEY, 'fastKubikk')
-    renderWithMantine(<ComparePage onBack={() => undefined} />)
+    renderWithMantine(<ComparePage />)
 
     fillLot(0, { price: '2400', amount: '1', unit: 'favn', species: 'bjork' })
 
@@ -95,7 +87,7 @@ describe('ComparePage', () => {
   /** The point of moving the picker onto this screen: changing it and seeing
    *  what it did are the same glance, with nothing else to press. */
   it('recalculates the amounts the moment another unit is picked on the screen', () => {
-    renderWithMantine(<ComparePage onBack={() => undefined} />)
+    renderWithMantine(<ComparePage />)
 
     fillLot(0, { price: '2400', amount: '1', unit: 'favn', species: 'bjork' })
     expect(figure(0, 'amountInUnit')).toContain('1,00')
@@ -110,7 +102,7 @@ describe('ComparePage', () => {
   /** One remembered setting, not one per screen: it is picked once and still
    *  there tomorrow, and on the calculator screen too. */
   it('remembers the unit picked here, past this session', () => {
-    renderWithMantine(<ComparePage onBack={() => undefined} />)
+    renderWithMantine(<ComparePage />)
 
     fireEvent.change(screen.getByLabelText(nb['compare.resultUnitLabel']), {
       target: { value: 'storsekk' },
@@ -123,7 +115,7 @@ describe('ComparePage', () => {
    *  and a weight lot is never asked. A dash says so; a number would be made
    *  up. */
   it('leaves the restated amount blank for a lot sold by the kilo', () => {
-    renderWithMantine(<ComparePage onBack={() => undefined} />)
+    renderWithMantine(<ComparePage />)
 
     fillLot(0, { price: '3000', amount: '1000', unit: 'kg' })
 
@@ -131,7 +123,7 @@ describe('ComparePage', () => {
   })
 
   it('says which lot is cheaper and by how much, rather than leaving two columns to compare', () => {
-    renderWithMantine(<ComparePage onBack={() => undefined} />)
+    renderWithMantine(<ComparePage />)
 
     // Same wood, same amount, one of them half the price: 50 % cheaper.
     fillLot(0, { price: '1200', amount: '1', unit: 'favn', species: 'bjork' })
@@ -146,7 +138,7 @@ describe('ComparePage', () => {
    *  points at the card, so the winner can be seen without reading a
    *  sentence and counting cards. */
   it('marks the cheaper lot\u2019s own card, not only the verdict line', () => {
-    renderWithMantine(<ComparePage onBack={() => undefined} />)
+    renderWithMantine(<ComparePage />)
 
     fillLot(0, { price: '1200', amount: '1', unit: 'favn', species: 'bjork' })
     fillLot(1, { price: '2400', amount: '1', unit: 'favn', species: 'bjork' })
@@ -156,7 +148,7 @@ describe('ComparePage', () => {
   })
 
   it('names no winner when the two cost the same', () => {
-    renderWithMantine(<ComparePage onBack={() => undefined} />)
+    renderWithMantine(<ComparePage />)
 
     fillLot(0, { price: '2400', amount: '1', unit: 'favn', species: 'bjork' })
     fillLot(1, { price: '2400', amount: '1', unit: 'favn', species: 'bjork' })
@@ -168,7 +160,7 @@ describe('ComparePage', () => {
   })
 
   it('waits for both lots before saying anything about which one wins', () => {
-    renderWithMantine(<ComparePage onBack={() => undefined} />)
+    renderWithMantine(<ComparePage />)
 
     fillLot(0, { price: '2400', amount: '1', unit: 'favn', species: 'bjork' })
 

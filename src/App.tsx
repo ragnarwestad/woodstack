@@ -2,8 +2,10 @@ import { useCallback, useEffect, useState } from "react";
 import { Alert, Container, Stack } from "@mantine/core";
 import type { NewStack, Stack as WoodStack } from "./storage/schema";
 import {
+  compareHash,
   isCompareHash,
   isNeedHash,
+  needHash,
   readStackId,
   stackHash,
 } from "./storage/appState";
@@ -16,6 +18,7 @@ import {
 } from "./storage/stacksRepo";
 import { getCachedNormals, getNormals } from "./climate/normalsCache";
 import { AppHeader } from "./components/AppHeader";
+import { HomeTabs, type HomeTab } from "./components/HomeTabs";
 import { StackList } from "./components/StackList";
 import { StackDetail } from "./components/StackDetail";
 import { AddStackForm } from "./components/AddStackForm";
@@ -116,9 +119,8 @@ export function App({ today = new Date() }: Props = {}) {
 
   /** The mark in the header. Every screen in the app is one of five things
    *  standing here, and home is none of them — so this clears all five rather
-   *  than the one the visitor happens to be looking at. `back()` and its two
-   *  siblings each leave the others alone on purpose; this is the one that
-   *  does not. */
+   *  than the one the visitor happens to be looking at. `back()` leaves the
+   *  others alone on purpose; this is the one that does not. */
   function goHome() {
     history.replaceState(
       null,
@@ -149,32 +151,30 @@ export function App({ today = new Date() }: Props = {}) {
     setEditing(false);
   }
 
-  /** The same asymmetry as `back()`, for the same reason: arriving pushes a
-   *  hash, so leaving clears it rather than adding a second history entry —
-   *  and it drops `editing` for the same reason `back()` does. The comparison
-   *  can be opened from the header while a stack is half-edited, and without
-   *  this the next stack the visitor opens lands on the edit screen unasked. */
-  function closeCompare() {
-    history.replaceState(
-      null,
-      "",
-      window.location.pathname + window.location.search,
-    );
-    setComparing(false);
-    setEditing(false);
-  }
-
-  /** The same asymmetry and the same reason as `closeCompare`: the need
-   *  calculator can also be opened from the header while a stack is
-   *  half-edited. */
-  function closeNeed() {
-    history.replaceState(
-      null,
-      "",
-      window.location.pathname + window.location.search,
-    );
-    setNeeding(false);
-    setEditing(false);
+  /** The three front-page tabs, one function for all three: each sets the
+   *  hash the way `select()` does for a stack. Unlike `back()`, this never has
+   *  to drop `editing` — the tab row does not stand on the edit screen at
+   *  all, so there is no half-finished edit to leave behind on the way to
+   *  another tab. Neither screen carries a `BackLink` any more either: the
+   *  tabs are the only way in and out of both now. */
+  function selectTab(tab: HomeTab) {
+    if (tab === "compare") {
+      window.location.hash = compareHash();
+      setComparing(true);
+      setNeeding(false);
+    } else if (tab === "need") {
+      window.location.hash = needHash();
+      setNeeding(true);
+      setComparing(false);
+    } else {
+      history.replaceState(
+        null,
+        "",
+        window.location.pathname + window.location.search,
+      );
+      setComparing(false);
+      setNeeding(false);
+    }
   }
 
   function create(input: NewStack) {
@@ -194,6 +194,12 @@ export function App({ today = new Date() }: Props = {}) {
   // page and make the one way out the hardest thing on it to find.
   const onList = !comparing && !needing && !selectedId && !adding;
 
+  // The three tabs stand wherever the list, the comparison or the calculator
+  // do — anywhere that is not a single stack or a form, none of which are a
+  // click away from one another the tabs could confuse.
+  const onHomeTabs = !selectedId && !adding && !editing;
+  const homeTab: HomeTab = comparing ? "compare" : needing ? "need" : "stacks";
+
   return (
     <>
       {/* Outside the container, and the only thing that is: the plum band is
@@ -204,6 +210,8 @@ export function App({ today = new Date() }: Props = {}) {
 
       <Container size="sm" pt="lg" pb="xl">
         <Stack gap="lg">
+          {onHomeTabs && <HomeTabs value={homeTab} onChange={selectTab} />}
+
           {onList && <InstallPrompt />}
 
           {/* Nothing is lost by keeping this to the list: `justReady` is not
@@ -231,9 +239,9 @@ export function App({ today = new Date() }: Props = {}) {
             any one stack, so these are the two branches here that ask
             nothing about `selectedId`. */}
           {comparing ? (
-            <ComparePage onBack={closeCompare} />
+            <ComparePage />
           ) : needing ? (
-            <NeedCalculator stacks={stacks} onBack={closeNeed} />
+            <NeedCalculator stacks={stacks} />
           ) : selectedId && editing ? (
             <EditStackForm
               stackId={selectedId}

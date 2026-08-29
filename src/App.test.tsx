@@ -153,18 +153,41 @@ describe('App', () => {
   })
 })
 
-/** The fourth screen the hash routes to, and the one that belongs to no
- *  stack: it answers a question about wood someone else is selling. */
-describe('App and the comparison screen', () => {
-  it('opens the comparison screen from the three-dot menu', async () => {
+/** The three tabs are read as one row now, so a visitor switching between
+ *  them should not see the heading change face partway through. */
+describe('App and the front-page tabs', () => {
+  it('sets the same heading font on all three tabs', async () => {
     saveStacks([makeStack({ id: 'a', name: 'Bjørk ved veggen' })])
     renderWithMantine(<App />)
 
-    fireEvent.click(screen.getByRole('button', { name: nb['about.menuLabel'] }))
-    fireEvent.click(screen.getByRole('menuitem', { name: nb['compare.menuItem'] }))
+    const stacksFont = getComputedStyle(
+      screen.getByRole('heading', { name: nb['stackList.heading'] }),
+    ).fontFamily
 
-    // The menu writes the hash; `App` hears the `hashchange` and switches
-    // screen on the tick after it, so both halves are waited for.
+    fireEvent.click(screen.getByRole('tab', { name: nb['nav.tabCompare'] }))
+    const compareFont = getComputedStyle(
+      await screen.findByRole('heading', { name: nb['compare.title'] }),
+    ).fontFamily
+
+    fireEvent.click(screen.getByRole('tab', { name: nb['nav.tabNeed'] }))
+    const needFont = getComputedStyle(
+      await screen.findByRole('heading', { name: nb['need.title'] }),
+    ).fontFamily
+
+    expect(compareFont).toBe(stacksFont)
+    expect(needFont).toBe(stacksFont)
+  })
+})
+
+/** The fourth screen the hash routes to, and the one that belongs to no
+ *  stack: it answers a question about wood someone else is selling. */
+describe('App and the comparison screen', () => {
+  it('opens the comparison screen from the front-page tabs', async () => {
+    saveStacks([makeStack({ id: 'a', name: 'Bjørk ved veggen' })])
+    renderWithMantine(<App />)
+
+    fireEvent.click(screen.getByRole('tab', { name: nb['nav.tabCompare'] }))
+
     await waitFor(() =>
       expect(screen.getByRole('heading', { name: nb['compare.title'] })).toBeInTheDocument(),
     )
@@ -185,41 +208,13 @@ describe('App and the comparison screen', () => {
     expect(screen.queryByText('Bjørk ved veggen')).not.toBeInTheDocument()
   })
 
-  /** The same trap `back()` already guards against, reached the other way
-   *  round: leaving a half-finished edit through the menu must not leave
-   *  `editing` standing, or the NEXT stack the visitor opens lands on the
-   *  edit screen unasked. */
-  it('does not leave an abandoned edit standing behind it', async () => {
-    saveStacks([makeStack({ id: 'a', name: 'Bjørk ved veggen' })])
-    window.location.hash = '#s=a'
-    renderWithMantine(<App />)
-
-    await waitFor(() => screen.getByRole('button', { name: /^endre$/i }))
-    fireEvent.click(screen.getByRole('button', { name: /^endre$/i }))
-    await waitFor(() => screen.getByRole('button', { name: /^lagre$/i }))
-
-    fireEvent.click(screen.getByRole('button', { name: nb['about.menuLabel'] }))
-    fireEvent.click(screen.getByRole('menuitem', { name: nb['compare.menuItem'] }))
-    await waitFor(() => screen.getByRole('heading', { name: nb['compare.title'] }))
-
-    fireEvent.click(screen.getByRole('button', { name: /tilbake/i }))
-    await waitFor(() => screen.getByText('Bjørk ved veggen'))
-    fireEvent.click(screen.getByRole('button', { name: /bjørk ved veggen/i }))
-
-    // The name field is the edit form's own — the stack page never shows it.
-    await waitFor(() =>
-      expect(screen.getByRole('heading', { name: 'Bjørk ved veggen' })).toBeInTheDocument(),
-    )
-    expect(screen.queryByLabelText(/navn/i)).not.toBeInTheDocument()
-  })
-
   it('clears the hash and shows the list again on the way back', async () => {
     saveStacks([makeStack({ id: 'a', name: 'Bjørk ved veggen' })])
     window.location.hash = '#compare'
     renderWithMantine(<App />)
 
     await waitFor(() => screen.getByRole('heading', { name: nb['compare.title'] }))
-    fireEvent.click(screen.getByRole('button', { name: /tilbake/i }))
+    fireEvent.click(screen.getByRole('tab', { name: nb['nav.tabStacks'] }))
 
     await waitFor(() => expect(screen.getByText('Bjørk ved veggen')).toBeInTheDocument())
     expect(window.location.hash).toBe('')
@@ -230,12 +225,11 @@ describe('App and the comparison screen', () => {
  *  stack: it answers how much wood a visitor should buy, not which of two
  *  lots to buy. */
 describe('App and the need calculator', () => {
-  it('opens the need calculator from the three-dot menu', async () => {
+  it('opens the need calculator from the front-page tabs', async () => {
     saveStacks([makeStack({ id: 'a', name: 'Bjørk ved veggen' })])
     renderWithMantine(<App />)
 
-    fireEvent.click(screen.getByRole('button', { name: nb['about.menuLabel'] }))
-    fireEvent.click(screen.getByRole('menuitem', { name: nb['need.menuItem'] }))
+    fireEvent.click(screen.getByRole('tab', { name: nb['nav.tabNeed'] }))
 
     await waitFor(() => expect(screen.getByRole('heading', { name: nb['need.title'] })).toBeInTheDocument())
     expect(window.location.hash).toBe('#need')
@@ -258,34 +252,10 @@ describe('App and the need calculator', () => {
     renderWithMantine(<App />)
 
     await waitFor(() => screen.getByRole('heading', { name: nb['need.title'] }))
-    fireEvent.click(screen.getByRole('button', { name: /tilbake/i }))
+    fireEvent.click(screen.getByRole('tab', { name: nb['nav.tabStacks'] }))
 
     await waitFor(() => expect(screen.getByText('Bjørk ved veggen')).toBeInTheDocument())
     expect(window.location.hash).toBe('')
-  })
-
-  /** The same trap `back()` and `closeCompare()` already guard against. */
-  it('does not leave an abandoned edit standing behind it', async () => {
-    saveStacks([makeStack({ id: 'a', name: 'Bjørk ved veggen' })])
-    window.location.hash = '#s=a'
-    renderWithMantine(<App />)
-
-    await waitFor(() => screen.getByRole('button', { name: /^endre$/i }))
-    fireEvent.click(screen.getByRole('button', { name: /^endre$/i }))
-    await waitFor(() => screen.getByRole('button', { name: /^lagre$/i }))
-
-    fireEvent.click(screen.getByRole('button', { name: nb['about.menuLabel'] }))
-    fireEvent.click(screen.getByRole('menuitem', { name: nb['need.menuItem'] }))
-    await waitFor(() => screen.getByRole('heading', { name: nb['need.title'] }))
-
-    fireEvent.click(screen.getByRole('button', { name: /tilbake/i }))
-    await waitFor(() => screen.getByText('Bjørk ved veggen'))
-    fireEvent.click(screen.getByRole('button', { name: /bjørk ved veggen/i }))
-
-    await waitFor(() =>
-      expect(screen.getByRole('heading', { name: 'Bjørk ved veggen' })).toBeInTheDocument(),
-    )
-    expect(screen.queryByLabelText(/navn/i)).not.toBeInTheDocument()
   })
 })
 

@@ -33,6 +33,10 @@ export const nb = {
 
   /* The dialog behind the header's three dots. The same explaining voice as
      the «?» marks above, at the scale of the whole app rather than one field. */
+  'nav.tabStacks': 'Vedstabler',
+  'nav.tabCompare': 'Sammenlign',
+  'nav.tabNeed': 'Behov',
+
   'about.menuLabel': 'Mer',
   'about.menuItem': 'Om Woodstack',
   'about.title': 'Om Woodstack',
@@ -49,7 +53,6 @@ export const nb = {
 
   /* Comparing two lots of firewood: one purchase against another, nothing to
      do with a woodpile the visitor already owns. */
-  'compare.menuItem': 'Sammenlign to vedpartier',
   'compare.title': 'Sammenlign to vedpartier',
   'compare.resultUnitLabel': 'Enhet i svaret',
   'compare.intro':
@@ -84,7 +87,6 @@ export const nb = {
 
   /* "Hvor mye trenger jeg?" — kalkulatoren for et energibehov eller et
      tilbudt vedparti, ikke en sammenligning av to. */
-  'need.menuItem': 'Hvor mye trenger jeg?',
   'need.title': 'Hvor mye ved trenger jeg?',
   'need.modeEnergyTab': 'Jeg vet hvor mye varme jeg trenger',
   'need.modeVolumeTab': 'Jeg vet hvor mye ved jeg får tilbud om',

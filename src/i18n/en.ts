@@ -30,6 +30,10 @@ export const en: Record<TranslationKey, string> = {
   'explain.volumeUnits.body':
     'The three do not measure the same thing. A stacked cubic metre counts the air between the logs, a solid cubic metre is the wood alone, and a favn is 2.4 m³ stacked – that is 1.6 m³ solid. The same pile of firewood gives three different numbers depending on the unit you pick.',
 
+  'nav.tabStacks': 'Woodpiles',
+  'nav.tabCompare': 'Compare',
+  'nav.tabNeed': 'Need',
+
   'about.menuLabel': 'More',
   'about.menuItem': 'About Woodstack',
   'about.title': 'About Woodstack',
@@ -46,7 +50,6 @@ export const en: Record<TranslationKey, string> = {
 
   /* Comparing two lots of firewood: one purchase against another, nothing to
      do with a woodpile the visitor already owns. */
-  'compare.menuItem': 'Compare two lots of firewood',
   'compare.title': 'Compare two lots of firewood',
   'compare.resultUnitLabel': 'Unit in the answer',
   'compare.intro':
@@ -81,7 +84,6 @@ export const en: Record<TranslationKey, string> = {
 
   /* "How much do I need?" — the calculator for an energy need or an offered
      lot, not a comparison of two. */
-  'need.menuItem': 'How much do I need?',
   'need.title': 'How much wood do I need?',
   'need.modeEnergyTab': 'I know how much heat I need',
   'need.modeVolumeTab': 'I know how much wood I am offered',

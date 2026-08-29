@@ -27,10 +27,9 @@ describe('AboutMenu', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
 
-  it('opens a menu with the things that belong to the app as a whole', () => {
+  it('opens a menu with the one thing that belongs to the app as a whole', () => {
     renderWithMantine(<AboutMenu />)
     fireEvent.click(screen.getByRole('button', { name: nb['about.menuLabel'] }))
-    expect(screen.getByRole('menuitem', { name: nb['compare.menuItem'] })).toBeInTheDocument()
     expect(screen.getByRole('menuitem', { name: nb['about.menuItem'] })).toBeInTheDocument()
   })
 
@@ -142,21 +141,11 @@ describe('AboutMenu', () => {
   })
 })
 
-/** The two screens that belong to the app rather than to any one stack, so
- *  they live behind the same three dots the «Om appen» item already did. The
- *  unit the answers are read in used to sit here too; it now sits on the two
- *  screens that use it. */
+/** The unit the answers are read in used to sit in this menu too; it now
+ *  sits on the two screens that use it. */
 describe('AboutMenu holding the app-wide settings', () => {
   beforeEach(() => {
     window.location.hash = ''
-  })
-
-  it('sends the visitor to the comparison screen', () => {
-    renderWithMantine(<AboutMenu />)
-    fireEvent.click(screen.getByRole('button', { name: nb['about.menuLabel'] }))
-    fireEvent.click(screen.getByRole('menuitem', { name: nb['compare.menuItem'] }))
-
-    expect(window.location.hash).toBe('#compare')
   })
 
   /** Eleven units unfolded inline is not what a menu is for — theme has three

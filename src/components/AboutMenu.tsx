@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Group, Menu, Modal, Tabs, Text, UnstyledButton } from '@mantine/core'
-import { compareHash, needHash } from '../storage/appState'
 import { useTranslation } from '../i18n/useTranslation'
 
 /** Three dots, drawn here rather than pulled from an icon library. It is the
@@ -18,15 +17,15 @@ function ThreeDots() {
   )
 }
 
-/** The things that belong to the app as a whole rather than to any one field:
- *  what it does, how it arrives at the date, and what it does with what you
- *  put into it. Behind the header's three dots, so the header carries a button
- *  instead of that much to read past.
+/** The one thing that belongs to the app as a whole rather than to any one
+ *  field: what it does, how it arrives at the date, and what it does with
+ *  what you put into it. Behind the header's three dots, so the header
+ *  carries a button instead of that much to read past.
  *
- *  Three concerns now, not one. Besides «Om Woodstack» the dropdown holds the
- *  way into the comparison screen and the way into the "how much do I need?"
- *  calculator — neither belongs to any one stack, and neither is big enough
- *  to earn its own icon beside theme and language.
+ *  The comparison screen and the "how much do I need?" calculator used to
+ *  live in this dropdown too; they now sit as tabs on the front page beside
+ *  «Vedstabler», since neither belongs to any one stack and both are used
+ *  often enough to earn a tab rather than a detour through «...».
  *
  *  The same `Modal` as `ExplainButton` and `ConfirmButton`, and for the same
  *  reasons — it traps focus, closes on Escape or a tap outside, and brings its
@@ -70,25 +69,6 @@ export function AboutMenu() {
             boxShadow: 'var(--mantine-shadow-sm)',
           }}
         >
-          {/* The two things a visitor changes and comes back to, above the
-              one-off «what is this app» item. */}
-          <Menu.Item
-            onClick={() => {
-              window.location.hash = compareHash()
-            }}
-          >
-            {t('compare.menuItem')}
-          </Menu.Item>
-
-          <Menu.Item
-            onClick={() => {
-              window.location.hash = needHash()
-            }}
-          >
-            {t('need.menuItem')}
-          </Menu.Item>
-
-          <Menu.Divider />
           <Menu.Item onClick={() => setOpened(true)}>{t('about.menuItem')}</Menu.Item>
         </Menu.Dropdown>
       </Menu>

@@ -5,9 +5,9 @@ import {
   Group,
   NativeSelect,
   Paper,
+  Radio,
   SimpleGrid,
   Stack as MantineStack,
-  Tabs,
   Text,
   TextInput,
   Title,
@@ -31,7 +31,6 @@ import {
 } from '../storage/resultUnitPreference'
 import { useTranslation } from '../i18n/useTranslation'
 import { FIELD_LABEL_STYLE, PLUM_PANEL } from '../theme'
-import { BackLink } from './BackLink'
 
 type Mode = 'energy' | 'volume'
 
@@ -44,14 +43,13 @@ type Result = {
 
 type Props = {
   stacks: Stack[]
-  onBack: () => void
 }
 
 /** "How much wood should I buy?" The inverse of the comparison screen: one
  *  number in (an energy need, or a volume already offered), the other
  *  numbers out. Nothing here writes to a stack — it only reads the ledgers
  *  for the "already have" line. */
-export function NeedCalculator({ stacks, onBack }: Props) {
+export function NeedCalculator({ stacks }: Props) {
   const translator = useTranslation()
   const { t } = translator
   const speciesId = useId()
@@ -111,46 +109,32 @@ export function NeedCalculator({ stacks, onBack }: Props) {
 
   return (
     <MantineStack gap="md">
-      <BackLink onClick={onBack} />
       <Title order={2}>{t('need.title')}</Title>
 
-      {/* The only tabs in the app whose labels are sentences. `.ws-tab` gives
-          them the same underline weight as the stack page's, and both rows are
-          now Outfit in mixed case — what this row has always been, and what
-          the stack page's four short labels became when Bungee left every size
-          below 16 px. It keeps its own styling because a sentence needs to
-          wrap and to sit centred, which four short words do not. */}
-      <Tabs
+      {/* A choice, not a switch between two screens: picking one clears
+          nothing the visitor cannot see, so a radio pair says that better
+          than two tabs did — a tab reads as "go here", and there is nowhere
+          to go, only a different field below to fill in. */}
+      <Radio.Group
         value={mode}
         onChange={(value) => {
           setMode(value as Mode)
           setResult(null)
           setError(null)
         }}
-        color="orange"
-        classNames={{ tab: 'ws-tab' }}
-        styles={{
-          tab: {
-            fontFamily: 'Outfit, sans-serif',
-            fontSize: 12,
-            fontWeight: 600,
-            whiteSpace: 'normal',
-            textAlign: 'center',
-            justifyContent: 'center',
-            lineHeight: 1.25,
-            padding: '9px 8px',
-          },
-        }}
       >
-        {/* `grow`: two labels of about the same length, each taking half the
-            row, so a sentence has the width to wrap to two lines instead of
-            being squeezed against its neighbour. */}
-        <Tabs.List grow>
-          <Tabs.Tab value="energy">{t('need.modeEnergyTab')}</Tabs.Tab>
-          <Tabs.Tab value="volume">{t('need.modeVolumeTab')}</Tabs.Tab>
-        </Tabs.List>
+        <MantineStack gap={8}>
+          <Radio value="energy" label={t('need.modeEnergyTab')} />
+          <Radio value="volume" label={t('need.modeVolumeTab')} />
+        </MantineStack>
+      </Radio.Group>
 
-        <Tabs.Panel value="energy" pt="sm">
+      {mode === 'energy' ? (
+        // The same two-column grid as the volume mode's pair of fields, so a
+        // single field does not stretch across a width two fields share —
+        // the empty second cell costs nothing on a phone, where `cols` folds
+        // back to one anyway.
+        <SimpleGrid cols={{ base: 1, xs: 2 }} spacing="sm">
           <TextInput
             type="number"
             min={0}
@@ -159,29 +143,27 @@ export function NeedCalculator({ stacks, onBack }: Props) {
             value={energyAmount}
             onChange={(event) => setEnergyAmount(event.currentTarget.value)}
           />
-        </Tabs.Panel>
-
-        <Tabs.Panel value="volume" pt="sm">
-          <SimpleGrid cols={{ base: 1, xs: 2 }} spacing="sm">
-            <TextInput
-              type="number"
-              min={0}
-              label={t('need.amountLabel', { unit: t(`volume.unitShort.${volumeUnit}`) })}
-              styles={{ label: FIELD_LABEL_STYLE }}
-              value={volumeAmount}
-              onChange={(event) => setVolumeAmount(event.currentTarget.value)}
-            />
-            <NativeSelect
-              id={unitId}
-              label={t('need.unitLabel')}
-              styles={{ label: FIELD_LABEL_STYLE }}
-              value={volumeUnit}
-              onChange={(event) => setVolumeUnit(event.currentTarget.value as VolumeUnit)}
-              data={VOLUME_UNITS.map((unit) => ({ value: unit, label: t(`volume.unit.${unit}`) }))}
-            />
-          </SimpleGrid>
-        </Tabs.Panel>
-      </Tabs>
+        </SimpleGrid>
+      ) : (
+        <SimpleGrid cols={{ base: 1, xs: 2 }} spacing="sm">
+          <TextInput
+            type="number"
+            min={0}
+            label={t('need.amountLabel', { unit: t(`volume.unitShort.${volumeUnit}`) })}
+            styles={{ label: FIELD_LABEL_STYLE }}
+            value={volumeAmount}
+            onChange={(event) => setVolumeAmount(event.currentTarget.value)}
+          />
+          <NativeSelect
+            id={unitId}
+            label={t('need.unitLabel')}
+            styles={{ label: FIELD_LABEL_STYLE }}
+            value={volumeUnit}
+            onChange={(event) => setVolumeUnit(event.currentTarget.value as VolumeUnit)}
+            data={VOLUME_UNITS.map((unit) => ({ value: unit, label: t(`volume.unit.${unit}`) }))}
+          />
+        </SimpleGrid>
+      )}
 
       {/* Species and stove are common to both directions: species always
           shown (see acceptance criterion 7 in the spec — every result here
