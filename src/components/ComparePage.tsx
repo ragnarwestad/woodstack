@@ -1,4 +1,5 @@
 import { useId, useState } from 'react'
+import { useMediaQuery } from '@mantine/hooks'
 import {
   Badge,
   Group,
@@ -6,6 +7,7 @@ import {
   Paper,
   SimpleGrid,
   Stack,
+  Tabs,
   Text,
   TextInput,
   Title,
@@ -265,6 +267,13 @@ export function ComparePage() {
   // is picked. The same setting the calculator screen writes, so a unit chosen
   // there is the one this screen opens with.
   const [resultUnit, setResultUnit] = useState<ResultUnit>(readResultUnitPreference)
+  // Below the same width `SimpleGrid` folds the two lots to one column at:
+  // side by side there squeezes both into unreadable columns, so a phone
+  // gets one lot at a time behind a tab instead, with the verdict above it
+  // rather than below two long forms it would otherwise take a long scroll
+  // to reach.
+  const isNarrow = useMediaQuery('(max-width: 47.99em)')
+  const [activeLot, setActiveLot] = useState<'0' | '1'>('0')
 
   function chooseResultUnit(unit: ResultUnit) {
     writeResultUnitPreference(unit)
@@ -279,12 +288,47 @@ export function ComparePage() {
     setLots((current) => (index === 0 ? [draft, current[1]] : [current[0], draft]))
   }
 
+  // Both cards share this so the one replacing the other never moves the
+  // tabs below by a few pixels — the placeholder's sentence is longer and
+  // would otherwise wrap to a second line the verdict's shorter one does not.
+  const verdictCardStyle = { minHeight: 85, borderRadius: 'var(--mantine-radius-lg)', padding: 'var(--mantine-spacing-lg)' }
+
+  const verdictPanel = verdict && (
+    <Paper style={{ ...verdictCardStyle, backgroundColor: PLUM_PANEL, color: 'var(--mantine-color-white)' }}>
+      {/* Not Bungee: it draws capitals only, and this line is a sentence
+          with lower case in it, the same reason the stack page's name
+          gives its `Title` the same override. */}
+      <Text ff="Outfit, sans-serif" fw={700} fz={17} lh={1.3} data-testid="verdict">
+        {verdict.cheaperIndex === null
+          ? t('compare.verdictTie')
+          : t('compare.verdict', {
+              number: verdict.cheaperIndex + 1,
+              percent: formatNumber(verdict.percentCheaper, 0, translator),
+            })}
+      </Text>
+    </Paper>
+  )
+
+  // The same red an error uses on the need calculator, and the same card
+  // shape as the verdict above — not Mantine's `Alert`, whose own padding and
+  // icon give it a different height than the verdict's single line of text.
+  const verdictPlaceholder = (
+    <Paper
+      style={{
+        ...verdictCardStyle,
+        backgroundColor: 'var(--mantine-color-red-light)',
+        color: 'var(--mantine-color-red-light-color)',
+      }}
+    >
+      <Text fw={700} fz={17} lh={1.3}>
+        {t('compare.verdictAwaiting')}
+      </Text>
+    </Paper>
+  )
+
   return (
     <Stack gap="md">
       <Title order={2}>{t('compare.title')}</Title>
-      <Text c="dimmed" size="sm">
-        {t('compare.intro')}
-      </Text>
 
       {/* The «?» on its own, next to the figure it explains rather than next
           to a field: kroner per kWh is the answer the screen is built around,
@@ -311,36 +355,61 @@ export function ComparePage() {
         </Group>
       </Group>
 
-      {/* One column on a phone: two lots of five fields side by side on a
-          narrow screen would squeeze both into unreadable columns. */}
-      <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
-        {lots.map((draft, index) => (
-          <LotCard
-            key={index}
-            index={index}
-            draft={draft}
-            onChange={(next) => setLot(index, next)}
-            result={results[index]}
-            resultUnit={resultUnit}
-            isCheapest={verdict?.cheaperIndex === index}
-          />
-        ))}
-      </SimpleGrid>
+      {/* A placeholder the same shape and height as the verdict, not nothing
+          and not the old two-sentence intro: with nothing here, the lots sit
+          right under the picker until both are priced, then everything below
+          jumps the moment the verdict appears. It says what the old intro's
+          first sentence did, the one instruction this screen actually needs
+          before the second lot is priced. */}
+      {verdict ? verdictPanel : verdictPlaceholder}
 
-      {verdict && (
-        <Paper radius="lg" p="lg" style={{ backgroundColor: PLUM_PANEL, color: 'var(--mantine-color-white)' }}>
-          {/* Not Bungee: it draws capitals only, and this line is a sentence
-              with lower case in it, the same reason the stack page's name
-              gives its `Title` the same override. */}
-          <Text ff="Outfit, sans-serif" fw={700} fz={17} lh={1.3} data-testid="verdict">
-            {verdict.cheaperIndex === null
-              ? t('compare.verdictTie')
-              : t('compare.verdict', {
-                  number: verdict.cheaperIndex + 1,
-                  percent: formatNumber(verdict.percentCheaper, 0, translator),
-                })}
-          </Text>
-        </Paper>
+      {isNarrow ? (
+        // One lot at a time rather than two long forms stacked: the tab
+        // itself already says which lot is which, so switching between them
+        // costs a tap instead of a long scroll.
+        <Tabs
+          value={activeLot}
+          onChange={(value) => setActiveLot((value ?? '0') as '0' | '1')}
+          keepMounted={false}
+          color="orange"
+          classNames={{ tab: 'ws-tab' }}
+          styles={{ tab: { fontWeight: 700, fontSize: 13, letterSpacing: '0.02em', padding: '9px 14px' } }}
+        >
+          <Tabs.List grow>
+            <Tabs.Tab value="0">{t('compare.lotHeading', { number: 1 })}</Tabs.Tab>
+            <Tabs.Tab value="1">{t('compare.lotHeading', { number: 2 })}</Tabs.Tab>
+          </Tabs.List>
+
+          {lots.map((draft, index) => (
+            <Tabs.Panel key={index} value={String(index)} pt="md">
+              <LotCard
+                index={index}
+                draft={draft}
+                onChange={(next) => setLot(index, next)}
+                result={results[index]}
+                resultUnit={resultUnit}
+                isCheapest={verdict?.cheaperIndex === index}
+              />
+            </Tabs.Panel>
+          ))}
+        </Tabs>
+      ) : (
+        // Side by side only from here up: two lots of five fields next to
+        // each other on a phone would squeeze both into unreadable columns,
+        // which is what the narrow layout above exists for.
+        <SimpleGrid cols={2} spacing="md">
+          {lots.map((draft, index) => (
+            <LotCard
+              key={index}
+              index={index}
+              draft={draft}
+              onChange={(next) => setLot(index, next)}
+              result={results[index]}
+              resultUnit={resultUnit}
+              isCheapest={verdict?.cheaperIndex === index}
+            />
+          ))}
+        </SimpleGrid>
       )}
     </Stack>
   )

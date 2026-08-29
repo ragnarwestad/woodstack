@@ -52,8 +52,6 @@ export const en: Record<TranslationKey, string> = {
      do with a woodpile the visitor already owns. */
   'compare.title': 'Compare two lots of firewood',
   'compare.resultUnitLabel': 'Unit in the answer',
-  'compare.intro':
-    'Enter the price, the amount and how dry the wood is for both lots. The app works out kroner per kWh, which is the number that decides which lot is cheaper.',
   'compare.lotHeading': 'Lot {number}',
   'compare.priceLabel': 'Price for the whole lot (kr)',
   'compare.amountLabel': 'Amount',
@@ -74,6 +72,7 @@ export const en: Record<TranslationKey, string> = {
   'compare.awaitingLot': 'Enter a price and an amount, and the figures appear here.',
   'compare.verdict': 'Lot {number} is {percent} % cheaper per kWh.',
   'compare.verdictTie': 'The two lots cost the same per kWh.',
+  'compare.verdictAwaiting': 'Enter the price, the amount and how dry the wood is for both lots.',
   'compare.cheapestBadge': 'Cheapest',
   'explain.compareMoisture.title': 'Why do we ask how dry the wood is?',
   'explain.compareMoisture.body':

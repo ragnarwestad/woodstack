@@ -55,8 +55,6 @@ export const nb = {
      do with a woodpile the visitor already owns. */
   'compare.title': 'Sammenlign to vedpartier',
   'compare.resultUnitLabel': 'Enhet i svaret',
-  'compare.intro':
-    'Legg inn pris, mengde og hvor tørr veden er for begge partiene. Appen regner om til kroner per kWh, som er tallet som avgjør hvilket parti som er billigst.',
   'compare.lotHeading': 'Parti {number}',
   'compare.priceLabel': 'Pris for hele partiet (kr)',
   'compare.amountLabel': 'Mengde',
@@ -77,6 +75,7 @@ export const nb = {
   'compare.awaitingLot': 'Fyll inn pris og mengde, så kommer tallene her.',
   'compare.verdict': 'Parti {number} er {percent} % billigere per kWh.',
   'compare.verdictTie': 'De to partiene koster like mye per kWh.',
+  'compare.verdictAwaiting': 'Legg inn pris, mengde og hvor tørr veden er for begge partiene.',
   'compare.cheapestBadge': 'Billigst',
   'explain.compareMoisture.title': 'Hvorfor spør vi hvor tørr veden er?',
   'explain.compareMoisture.body':

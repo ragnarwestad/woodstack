@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { fireEvent, screen, within } from '@testing-library/react'
 import { renderWithMantine } from '../test/render'
 import { nb } from '../i18n/nb'
@@ -12,6 +12,29 @@ import { ComparePage } from './ComparePage'
 
 beforeEach(() => {
   localStorage.clear()
+})
+
+/** happy-dom has no layout engine, so the phone-width branch cannot be
+ *  reached by resizing anything — it is read from `useMediaQuery`, which
+ *  falls back to `false` (`window.matchMedia` does not exist here) unless a
+ *  test stands one up itself. This is the one the narrow-screen tests below
+ *  install; every other test in this file runs with the real absence of
+ *  `matchMedia` and so exercises the side-by-side layout, same as before. */
+function mockNarrowViewport() {
+  vi.stubGlobal(
+    'matchMedia',
+    vi.fn((query: string) => ({
+      matches: true,
+      media: query,
+      addEventListener: () => undefined,
+      removeEventListener: () => undefined,
+      dispatchEvent: () => false,
+    })),
+  )
+}
+
+afterEach(() => {
+  vi.unstubAllGlobals()
 })
 
 /** Fills in one lot. The unit goes in before the species, because changing the
@@ -179,5 +202,87 @@ describe('ComparePage', () => {
     // Acceptance criterion 3: the badge cannot run ahead of the verdict it
     // reads from — one priced lot is not a comparison.
     expect(screen.queryByText(nb['compare.cheapestBadge'])).not.toBeInTheDocument()
+  })
+
+  /** The same placeholder as the narrow layout, not the old two-sentence
+   *  intro — the two lots side by side is the only thing that differs
+   *  between the narrow and the wide screen now. */
+  it('holds the verdict’s place before both lots are priced, here too', () => {
+    renderWithMantine(<ComparePage />)
+    expect(screen.getByText(nb['compare.verdictAwaiting'])).toBeInTheDocument()
+
+    fillLot(0, { price: '1200', amount: '1', unit: 'favn', species: 'bjork' })
+    fillLot(1, { price: '2400', amount: '1', unit: 'favn', species: 'bjork' })
+
+    expect(screen.queryByText(nb['compare.verdictAwaiting'])).not.toBeInTheDocument()
+    expect(screen.getByTestId('verdict')).toBeInTheDocument()
+  })
+
+  /** The placeholder's sentence is longer than the verdict's and would wrap
+   *  to a second line on its own, making its card taller — which is exactly
+   *  what nudged everything below it down a few pixels the moment the
+   *  verdict replaced it. Sharing one `min-height` is what keeps the swap
+   *  from moving anything below it. */
+  it('gives the placeholder and the verdict the same minimum height', () => {
+    renderWithMantine(<ComparePage />)
+    const placeholderHeight = screen.getByText(nb['compare.verdictAwaiting']).parentElement?.style.minHeight
+    expect(placeholderHeight).toBeTruthy()
+
+    fillLot(0, { price: '1200', amount: '1', unit: 'favn', species: 'bjork' })
+    fillLot(1, { price: '2400', amount: '1', unit: 'favn', species: 'bjork' })
+
+    expect(screen.getByTestId('verdict').parentElement?.style.minHeight).toBe(placeholderHeight)
+  })
+})
+
+/** On a phone, side by side used to mean two long forms stacked instead, with
+ *  the verdict at the bottom of both — the one thing the screen exists to
+ *  say, behind the longest scroll on it. */
+describe('ComparePage on a narrow screen', () => {
+  it('shows one lot at a time, behind a tab for each', () => {
+    mockNarrowViewport()
+    renderWithMantine(<ComparePage />)
+
+    expect(screen.getByRole('tab', { name: nb['compare.lotHeading'].replace('{number}', '1') })).toBeInTheDocument()
+    expect(screen.getByTestId('lot-0')).toBeInTheDocument()
+    expect(screen.queryByTestId('lot-1')).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('tab', { name: nb['compare.lotHeading'].replace('{number}', '2') }))
+    expect(screen.getByTestId('lot-1')).toBeInTheDocument()
+    expect(screen.queryByTestId('lot-0')).not.toBeInTheDocument()
+  })
+
+  it('puts the verdict above the tabs, not after two long forms', () => {
+    mockNarrowViewport()
+    renderWithMantine(<ComparePage />)
+
+    fillLot(0, { price: '1200', amount: '1', unit: 'favn', species: 'bjork' })
+    fireEvent.click(screen.getByRole('tab', { name: nb['compare.lotHeading'].replace('{number}', '2') }))
+    fillLot(1, { price: '2400', amount: '1', unit: 'favn', species: 'bjork' })
+
+    const verdict = screen.getByTestId('verdict')
+    const tabs = screen.getByRole('tablist')
+    expect(verdict.compareDocumentPosition(tabs) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
+  /** Without this, the tabs sit right under the picker until both lots are
+   *  priced, then jump down the moment the verdict appears above them. The
+   *  placeholder holds that spot from the first render, so the tabs never
+   *  move once the visitor starts pricing the second lot. */
+  it('holds the verdict’s place before both lots are priced, so the tabs do not jump down', () => {
+    mockNarrowViewport()
+    renderWithMantine(<ComparePage />)
+
+    expect(screen.getByText(nb['compare.verdictAwaiting'])).toBeInTheDocument()
+    const placeholder = screen.getByText(nb['compare.verdictAwaiting'])
+    const tabsBefore = screen.getByRole('tablist')
+    expect(placeholder.compareDocumentPosition(tabsBefore) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+
+    fillLot(0, { price: '1200', amount: '1', unit: 'favn', species: 'bjork' })
+    fireEvent.click(screen.getByRole('tab', { name: nb['compare.lotHeading'].replace('{number}', '2') }))
+    fillLot(1, { price: '2400', amount: '1', unit: 'favn', species: 'bjork' })
+
+    expect(screen.queryByText(nb['compare.verdictAwaiting'])).not.toBeInTheDocument()
+    expect(screen.getByTestId('verdict')).toBeInTheDocument()
   })
 })
