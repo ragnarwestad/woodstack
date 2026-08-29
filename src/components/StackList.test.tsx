@@ -19,6 +19,38 @@ describe('StackList', () => {
     expect(screen.getByText('Granstabelen')).toBeInTheDocument()
   })
 
+  /** The reported bug: the heading (and the add button beside it) scrolled
+   *  away with the very first swipe, while `AppHeader` stayed put above it.
+   *  `AppHeader` publishes its own rendered height as `--ws-header-height`,
+   *  and this row reads it back as its own sticky `top` so it stays pinned
+   *  just below the header instead — only the list itself still scrolls.
+   *
+   *  The `top` value itself is NOT checked here: happy-dom drops a `var(...)`
+   *  value out of a `top` declaration entirely, the same way it drops
+   *  `calc(var(...))` elsewhere in this app's styles (see `AppHeader.tsx`'s
+   *  own note on its margins). `position: sticky` is what survives, and what
+   *  this asserts; the offset itself wants a look at a real narrow screen. */
+  it('pins the heading row under the header instead of letting it scroll away', () => {
+    renderWithMantine(<StackList stacks={stacks} normalsFor={() => OSLO_NORMALS} onSelect={vi.fn()}
+      onDelete={vi.fn()} onAdd={vi.fn()} />)
+
+    const row = screen.getByRole('heading', { name: /vedstablene mine/i }).closest('[class*="Group"]') as HTMLElement
+    expect(row.style.position).toBe('sticky')
+  })
+
+  /** The reported bug: this row is taller than the comparison and need
+   *  screens' own heading rows, since the button in it is taller than any
+   *  heading alone — so the three rows came out three different heights
+   *  instead of reading as one shape. Pinned to the button's own height,
+   *  the same value the other two rows are pinned to as well. */
+  it('gives the heading row the same height the button in it needs', () => {
+    renderWithMantine(<StackList stacks={stacks} normalsFor={() => OSLO_NORMALS} onSelect={vi.fn()}
+      onDelete={vi.fn()} onAdd={vi.fn()} />)
+
+    const row = screen.getByRole('heading', { name: /vedstablene mine/i }).closest('[class*="Group"]') as HTMLElement
+    expect(row.style.minHeight).toBe('52px')
+  })
+
   /** Bungee is a display face with a single weight. Asking the browser for a
    *  bold it does not have makes it synthesise one, which a signage face wears
    *  badly — so the name asks for 400 and gets the drawn shapes. */

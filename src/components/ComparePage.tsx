@@ -343,7 +343,39 @@ export function ComparePage() {
 
   return (
     <Stack gap="md">
-      <Title order={2}>{t('compare.title')}</Title>
+      {/* Sticky under the header rather than moving into it — the same
+          `Group` `StackList`'s heading row stands in, and the same styling,
+          so the two read as one row of chrome rather than two different
+          shapes. Reads the same `--ws-header-height` `AppHeader` publishes.
+          The 8px is padding, inside the sticky box, not a margin in front of
+          it: a margin sits outside the box in normal flow, so the row would
+          have to scroll that distance shut before locking, moving again
+          despite `marginTop` cancelling the page container's own `pt="lg"`
+          in full. Equal top and bottom is what centres the title in the box
+          rather than crowding it toward one edge. */}
+      <Group
+        justify="space-between"
+        align="center"
+        style={{
+          position: 'sticky',
+          top: 'var(--ws-header-height, 0px)',
+          zIndex: 1,
+          backgroundColor: 'var(--mantine-color-body)',
+          paddingBlock: 8,
+          // Pinned to the same height as the list's own heading row, which
+          // has a button in it this row does not — left alone, this row
+          // would come out shorter than that one. A literal number, not
+          // `var(--button-height-sm)`: Mantine defines that custom property
+          // scoped to the button's own root class, invisible outside the
+          // button's own subtree — custom properties only cascade downward,
+          // so a reference to it here silently failed to resolve and the
+          // whole declaration was dropped, at any padding value.
+          minHeight: 52,
+          marginTop: 'calc(var(--mantine-spacing-lg) * -1)',
+        }}
+      >
+        <Title order={2}>{t('compare.title')}</Title>
+      </Group>
 
       {/* The «?» on its own, next to the figure it explains rather than next
           to a field: kroner per kWh is the answer the screen is built around,

@@ -41,6 +41,33 @@ describe('ComparePage', () => {
     expect(screen.getByRole('heading', { name: nb['compare.title'] })).toBeInTheDocument()
   })
 
+  /** The reported bug: the title scrolled away with the very first swipe,
+   *  while `AppHeader` stayed put above it. `AppHeader` publishes its own
+   *  rendered height as `--ws-header-height`, and this heading reads it back
+   *  as its own sticky `top` so it stays pinned just below the header
+   *  instead — only the two lots still scroll.
+   *
+   *  The `top` value itself is NOT checked here: happy-dom drops a `var(...)`
+   *  value out of a `top` declaration entirely (see `StackList.test.tsx`'s
+   *  own note on the same thing). `position: sticky` is what survives. */
+  it('pins its own title under the header instead of letting it scroll away', () => {
+    renderWithMantine(<ComparePage />)
+
+    const row = screen.getByRole('heading', { name: nb['compare.title'] }).closest('[class*="Group"]') as HTMLElement
+    expect(row.style.position).toBe('sticky')
+  })
+
+  /** The reported bug: this row came out shorter than the list's own
+   *  heading row, which has a button in it this one does not — three
+   *  different heights instead of one shape. Pinned to the button's own
+   *  height, the same value `StackList`'s row is pinned to as well. */
+  it('gives the title row the same height the list heading row needs for its button', () => {
+    renderWithMantine(<ComparePage />)
+
+    const row = screen.getByRole('heading', { name: nb['compare.title'] }).closest('[class*="Group"]') as HTMLElement
+    expect(row.style.minHeight).toBe('52px')
+  })
+
   /** Acceptance criterion 6. A favn of birch and a favn of spruce are nearly
    *  twice apart in energy, so a volume lot has to say which wood it is; kilos
    *  are already a weight and need no species. The field stays put either way

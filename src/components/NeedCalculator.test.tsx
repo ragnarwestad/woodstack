@@ -11,6 +11,33 @@ beforeEach(() => {
 })
 
 describe('NeedCalculator', () => {
+  /** The reported bug: the title scrolled away with the very first swipe,
+   *  while `AppHeader` stayed put above it. `AppHeader` publishes its own
+   *  rendered height as `--ws-header-height`, and this heading reads it back
+   *  as its own sticky `top` so it stays pinned just below the header
+   *  instead — only the fields still scroll.
+   *
+   *  The `top` value itself is NOT checked here: happy-dom drops a `var(...)`
+   *  value out of a `top` declaration entirely (see `StackList.test.tsx`'s
+   *  own note on the same thing). `position: sticky` is what survives. */
+  it('pins its own title under the header instead of letting it scroll away', () => {
+    renderWithMantine(<NeedCalculator stacks={[]} />)
+
+    const row = screen.getByRole('heading', { name: nb['need.title'] }).closest('[class*="Group"]') as HTMLElement
+    expect(row.style.position).toBe('sticky')
+  })
+
+  /** The reported bug: this row came out shorter than the list's own
+   *  heading row, which has a button in it this one does not — three
+   *  different heights instead of one shape. Pinned to the button's own
+   *  height, the same value `StackList`'s row is pinned to as well. */
+  it('gives the title row the same height the list heading row needs for its button', () => {
+    renderWithMantine(<NeedCalculator stacks={[]} />)
+
+    const row = screen.getByRole('heading', { name: nb['need.title'] }).closest('[class*="Group"]') as HTMLElement
+    expect(row.style.minHeight).toBe('52px')
+  })
+
   /** AC 7: the species field is always shown and required — unlike spec 19's
    *  per-lot comparison, every result this screen gives includes a volume
    *  unit, so species is never conditionally skippable here. */

@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { Anchor, Container, Group, Paper, Stack, Text, Title } from '@mantine/core'
 import { useMediaQuery } from '@mantine/hooks'
 // The header mark, not the app icon: the icon carries an opaque background
@@ -33,6 +34,29 @@ export function AppHeader({ onHome, homeTabs }: Props) {
   // before it does.
   const isNarrow = useMediaQuery('(max-width: 550px)')
 
+  // The panel's own height, published as a custom property rather than a
+  // fixed number: it wraps to a different height on a narrow screen, in a
+  // longer language, or once the front-page tabs come and go, so nothing
+  // that wants to sit sticky just below it can hard-code the offset. Each
+  // page's own title row reads this to stay pinned under the panel instead
+  // of scrolling away with the rest of that page's content.
+  const panelRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const panel = panelRef.current
+    if (!panel) return
+    // Not `entry.contentRect.height`: `ResizeObserver`'s content rect is the
+    // box's own content area, excluding the padding this panel is drawn
+    // with — `22px 0 30px`, over 50px this panel actually stands taller
+    // than that number said. `offsetHeight` is the panel's real rendered
+    // height, padding and border included, which is what something sitting
+    // sticky just below it needs to line up against.
+    const observer = new ResizeObserver(() => {
+      document.documentElement.style.setProperty('--ws-header-height', `${panel.offsetHeight}px`)
+    })
+    observer.observe(panel)
+    return () => observer.disconnect()
+  }, [])
 
   return (
     // Sticky rather than a scrolling list inside a fixed frame: the page goes
@@ -54,6 +78,7 @@ export function AppHeader({ onHome, homeTabs }: Props) {
     // bleeds to the screen edge on a phone, where a rounded corner would read
     // as a floating rectangle rather than a full-bleed band.
     <Paper
+      ref={panelRef}
       className="ws-header"
       pos="sticky"
       top={0}

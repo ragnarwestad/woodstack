@@ -189,11 +189,6 @@ export function App({ today = new Date() }: Props = {}) {
     setAdding(false);
   }
 
-  // The list, and nothing standing on top of it. The two banners below belong
-  // here and nowhere else: on any other screen they push «← Tilbake» down the
-  // page and make the one way out the hardest thing on it to find.
-  const onList = !comparing && !needing && !selectedId && !adding;
-
   // The three tabs stand wherever the list, the comparison or the calculator
   // do — anywhere that is not a single stack or a form, none of which are a
   // click away from one another the tabs could confuse.
@@ -215,29 +210,6 @@ export function App({ today = new Date() }: Props = {}) {
 
       <Container size="sm" pt="lg" pb="xl">
         <Stack gap="lg">
-          {onList && <InstallPrompt />}
-
-          {/* Nothing is lost by keeping this to the list: `justReady` is not
-            cleared by moving between screens, so a stack that became ready
-            while the visitor was deep inside another one still says so the
-            moment they come back out. The notification the phone shows does
-            not wait for that at all. */}
-          {onList &&
-            justReady.map((stack) => (
-              <Alert
-                key={stack.id}
-                color="teal"
-                withCloseButton
-                onClose={() =>
-                  setJustReady((current) =>
-                    current.filter((other) => other.id !== stack.id),
-                  )
-                }
-              >
-                {t("ready.body", { name: stack.name })}
-              </Alert>
-            ))}
-
           {/* The comparison and the need calculator first: neither belongs to
             any one stack, so these are the two branches here that ask
             nothing about `selectedId`. */}
@@ -272,6 +244,36 @@ export function App({ today = new Date() }: Props = {}) {
               onSelect={select}
               onDelete={(id) => removeStack(id)}
               onAdd={() => setAdding(true)}
+              banner={
+                // Passed in rather than left standing between the header
+                // and the list's own sticky heading row — anything there
+                // would have put a gap in front of that row's resting
+                // position, and the row would have visibly slid up to
+                // close it on the first bit of scroll instead of standing
+                // still from the very top. Nothing is lost by keeping
+                // `justReady` past this: it is not cleared by moving
+                // between screens, so a stack that became ready while the
+                // visitor was deep inside another one still says so the
+                // moment they come back out. The notification the phone
+                // shows does not wait for that at all.
+                <Stack gap="lg">
+                  <InstallPrompt />
+                  {justReady.map((stack) => (
+                    <Alert
+                      key={stack.id}
+                      color="teal"
+                      withCloseButton
+                      onClose={() =>
+                        setJustReady((current) =>
+                          current.filter((other) => other.id !== stack.id),
+                        )
+                      }
+                    >
+                      {t("ready.body", { name: stack.name })}
+                    </Alert>
+                  ))}
+                </Stack>
+              }
             />
           )}
         </Stack>
