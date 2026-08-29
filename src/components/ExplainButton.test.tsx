@@ -1,3 +1,4 @@
+import type { FormEvent } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 import { fireEvent, screen, within } from '@testing-library/react'
 import { ExplainButton, ExplainedLabel } from './ExplainButton'
@@ -50,7 +51,7 @@ describe('ExplainButton', () => {
    *  quietest possible failure, and one an element swap reintroduces for
    *  free. */
   it('asks rather than submits the form it stands in', () => {
-    const onSubmit = vi.fn((event: React.FormEvent) => event.preventDefault())
+    const onSubmit = vi.fn((event: FormEvent) => event.preventDefault())
     renderWithMantine(
       <form onSubmit={onSubmit}>
         <ExplainButton title={TITLE} body={BODY} />
