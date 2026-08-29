@@ -43,17 +43,22 @@ const berry: MantineColorsTuple = [
   '#9A2957', '#7C1F45', '#5E1633',
 ]
 
-/** Plum night. Mantine builds every dark-theme surface, border and dimmed
- *  text out of this one tuple, so the dark screens are these ten values.
- *  4 is the dimmed text, 3 the border, 6 the body background. */
+/** Plum night. Mantine builds every dark-theme surface and border out of this
+ *  one tuple: `Paper` and `Input` take their background from shade 6 and
+ *  their border from shade 4 — not shade 3, which an earlier version of this
+ *  tuple put the border colour in, one step too light for what Mantine's own
+ *  CSS actually reads. That mismatch is why cards and fields barely lifted
+ *  off the page: their border was fainter than intended, and the surface
+ *  itself sat too close to the body colour to read as raised. Fixed by
+ *  swapping 3 and 4 and lightening 6. */
 const plumNight: MantineColorsTuple = [
   '#F7EBD3', // text
   '#D9C6B4',
   '#A88F9E',
-  '#4A2A44', // borders
   '#3A1F36',
+  '#4A2A44', // borders — what `Paper`/`Input` actually pull in dark mode
   '#2A1226', // raised surface / header
-  '#241428', // paper
+  '#3D2140', // paper / input background
   '#1D0F1F',
   '#150A13', // body
   '#0E0610',
@@ -137,7 +142,7 @@ export const cssVariablesResolver: Parameters<typeof import('@mantine/core').Man
   },
   dark: {
     '--mantine-color-body': '#150A13',
-    '--mantine-color-default': '#241428',
+    '--mantine-color-default': '#3D2140',
     '--mantine-color-default-border': '#4A2A44',
     '--mantine-color-dimmed': 'rgba(247, 235, 211, 0.62)',
     '--ws-header-ring': 'rgba(242, 178, 60, 0.18)',

@@ -78,6 +78,23 @@ function resolvedVariable(scheme: 'light' | 'dark', name: string): string | unde
   return value
 }
 
+/** The WCAG relative luminance of a `#rrggbb` colour. */
+function relativeLuminance(hex: string): number {
+  const [r, g, b] = [0, 2, 4].map((offset) => parseInt(hex.slice(1 + offset, 3 + offset), 16) / 255)
+  const linear = (channel: number) => (channel <= 0.03928 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4)
+  return 0.2126 * linear(r) + 0.7152 * linear(g) + 0.0722 * linear(b)
+}
+
+/** The WCAG contrast ratio between two `#rrggbb` colours, always 1 or more
+ *  regardless of which one is passed first. Not the 4.5:1 that rule is built
+ *  for text on a background — this is one dark surface against another, where
+ *  even a modest ratio is the difference between "raised" and "the same
+ *  colour". */
+function contrastRatio(a: string, b: string): number {
+  const [lighter, darker] = [relativeLuminance(a), relativeLuminance(b)].sort((x, y) => y - x)
+  return (lighter + 0.05) / (darker + 0.05)
+}
+
 describe('the Woodstack ’26 theme, wired the way main.tsx wires it', () => {
   /** The accents step a shade brighter in the dark scheme: the same ember has
    *  to hold its contrast against plum night that it holds against cream. */
@@ -109,6 +126,32 @@ describe('the Woodstack ’26 theme, wired the way main.tsx wires it', () => {
   it('paints the page cream in light and plum in dark', () => {
     expect(resolvedVariable('light', '--mantine-color-body')).toBe('#F7EBD3')
     expect(resolvedVariable('dark', '--mantine-color-body')).toBe('#150A13')
+  })
+
+  /** The reported bug: cards and fields barely lifted off the dark page.
+   *  `Paper` and `Input` take their dark-mode background from shade 6 of the
+   *  `dark` tuple and their border from shade 4 — not shade 3, which an
+   *  earlier version of this tuple put the intended border colour in. Shade
+   *  4 was darker than shade 6 was meant to read against, so the border all
+   *  but disappeared into the card it was drawn on. */
+  it('gives Paper and Input a border that is actually visible against their own background', () => {
+    const border = resolvedVariable('dark', '--mantine-color-dark-4')
+    const surface = resolvedVariable('dark', '--mantine-color-dark-6')
+
+    expect(border).toBe('#4A2A44')
+    expect(surface).toBe('#3D2140')
+    expect(contrastRatio(border!, surface!)).toBeGreaterThan(1.1)
+  })
+
+  /** The other half of the same bug: the card surface itself sat close
+   *  enough to the body colour that a `Paper` with no border of its own —
+   *  most of them, since `withBorder` is the exception — did not read as
+   *  raised at all. */
+  it('lifts the card surface clearly off the body in dark mode', () => {
+    const body = resolvedVariable('dark', '--mantine-color-body')
+    const surface = resolvedVariable('dark', '--mantine-color-dark-6')
+
+    expect(contrastRatio(body!, surface!)).toBeGreaterThan(1.3)
   })
 })
 
