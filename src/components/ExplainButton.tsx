@@ -104,7 +104,10 @@ type LabelProps = Omit<Props, 'size'> & {
  *  the field by `htmlFor`. */
 export function ExplainedLabel({ htmlFor, label, title, body, labelStyle }: LabelProps) {
   return (
-    <Group gap={4} wrap="nowrap">
+    // `mb`: Mantine's own field label carries this gap to the box below it
+    // built in; rendered here rather than through the `label` prop, this one
+    // has to say so itself or the field sits flush under the mark.
+    <Group gap={4} wrap="nowrap" mb={4}>
       <Input.Label htmlFor={htmlFor} style={labelStyle}>
         {label}
       </Input.Label>

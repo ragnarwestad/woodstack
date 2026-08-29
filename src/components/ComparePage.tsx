@@ -133,8 +133,10 @@ function LotCard({ index, draft, onChange, result, resultUnit, isCheapest }: Lot
         {/* The badge sits on the title's own row rather than floating over the
             card's corner: every other label-beside-a-heading in this app is a
             `Group justify="space-between"`, and an overlay would land on the
-            card's 2 px border. */}
-        <Group justify="space-between" align="flex-start" wrap="nowrap">
+            card's 2 px border. Centred rather than top-aligned: both the
+            title and the badge are a single line, so centring is what lines
+            their text up rather than stranding the shorter one at the top. */}
+        <Group justify="space-between" align="center" wrap="nowrap">
           <Title order={3} ff="Outfit, sans-serif" fw={700} fz={13} tt="uppercase" style={{ letterSpacing: '0.08em' }}>
             {t('compare.lotHeading', { number: index + 1 })}
           </Title>
@@ -145,18 +147,17 @@ function LotCard({ index, draft, onChange, result, resultUnit, isCheapest }: Lot
           )}
         </Group>
 
-        <TextInput
-          type="number"
-          min={0}
-          label={t('compare.priceLabel')}
-          styles={{ label: FIELD_LABEL_STYLE }}
-          value={draft.price}
-          onChange={(event) => onChange({ ...draft, price: event.currentTarget.value })}
-        />
-
-        {/* Amount and unit on one row: neither means anything without the
-            other, and «1» beside «favn» reads the way the advert does. */}
+        {/* Price and amount on one row: the two numbers a seller's advert
+            gives, next to each other the way the advert states them. */}
         <SimpleGrid cols={2} spacing="sm">
+          <TextInput
+            type="number"
+            min={0}
+            label={t('compare.priceLabel')}
+            styles={{ label: FIELD_LABEL_STYLE }}
+            value={draft.price}
+            onChange={(event) => onChange({ ...draft, price: event.currentTarget.value })}
+          />
           <TextInput
             type="number"
             min={0}
@@ -165,6 +166,11 @@ function LotCard({ index, draft, onChange, result, resultUnit, isCheapest }: Lot
             value={draft.amount}
             onChange={(event) => onChange({ ...draft, amount: event.currentTarget.value })}
           />
+        </SimpleGrid>
+
+        {/* Unit and species on one row: the two things that say what the lot
+            actually is, once its price and amount are down above. */}
+        <SimpleGrid cols={2} spacing="sm">
           <NativeSelect
             label={t('compare.unitLabel')}
             styles={{ label: FIELD_LABEL_STYLE }}
@@ -172,37 +178,37 @@ function LotCard({ index, draft, onChange, result, resultUnit, isCheapest }: Lot
             onChange={(event) => onChange({ ...draft, unit: event.currentTarget.value as PriceUnit })}
             data={PRICE_UNITS.map((value) => ({ value, label: unitLabel(value, translator) }))}
           />
-        </SimpleGrid>
 
-        {/* Disabled, never hidden, for the reason `AddStackForm` gives about
-            its second-species picker: a field that comes and goes moves
-            everything under it and makes the form a different shape each
-            time. The description under it says why it is greyed out, so the
-            visitor is not left wondering whether they missed something. */}
-        <div>
-          <NativeSelect
-            label={t('compare.speciesLabel')}
-            // Off, drawn rather than greyed: a palette with no grey in it has
-            // to say "not for you" some other way, so the border goes dashed
-            // and the fill a shade back from the cards around it.
-            styles={{
-              label: FIELD_LABEL_STYLE,
-              input: needsSpecies
-                ? undefined
-                : {
-                    borderStyle: 'dashed',
-                    borderWidth: 2,
-                    backgroundColor:
-                      'color-mix(in srgb, var(--mantine-color-default-border) 10%, var(--mantine-color-default))',
-                  },
-            }}
-            description={needsSpecies ? undefined : t('compare.speciesNotNeeded')}
-            disabled={!needsSpecies}
-            value={draft.species}
-            onChange={(event) => onChange({ ...draft, species: event.currentTarget.value as Species })}
-            data={SPECIES_IDS.map((value) => ({ value, label: t(`species.${value}`) }))}
-          />
-        </div>
+          {/* Disabled, never hidden, for the reason `AddStackForm` gives about
+              its second-species picker: a field that comes and goes moves
+              everything under it and makes the form a different shape each
+              time. The description under it says why it is greyed out, so the
+              visitor is not left wondering whether they missed something. */}
+          <div>
+            <NativeSelect
+              label={t('compare.speciesLabel')}
+              // Off, drawn rather than greyed: a palette with no grey in it has
+              // to say "not for you" some other way, so the border goes dashed
+              // and the fill a shade back from the cards around it.
+              styles={{
+                label: FIELD_LABEL_STYLE,
+                input: needsSpecies
+                  ? undefined
+                  : {
+                      borderStyle: 'dashed',
+                      borderWidth: 2,
+                      backgroundColor:
+                        'color-mix(in srgb, var(--mantine-color-default-border) 10%, var(--mantine-color-default))',
+                    },
+              }}
+              description={needsSpecies ? undefined : t('compare.speciesNotNeeded')}
+              disabled={!needsSpecies}
+              value={draft.species}
+              onChange={(event) => onChange({ ...draft, species: event.currentTarget.value as Species })}
+              data={SPECIES_IDS.map((value) => ({ value, label: t(`species.${value}`) }))}
+            />
+          </div>
+        </SimpleGrid>
 
         <div>
           <ExplainedLabel
@@ -291,7 +297,16 @@ export function ComparePage() {
   // Both cards share this so the one replacing the other never moves the
   // tabs below by a few pixels — the placeholder's sentence is longer and
   // would otherwise wrap to a second line the verdict's shorter one does not.
-  const verdictCardStyle = { minHeight: 85, borderRadius: 'var(--mantine-radius-lg)', padding: 'var(--mantine-spacing-lg)' }
+  // `flex`/`center`: a one-line verdict sat at the top of the reserved
+  // height rather than centred in it, since a `Paper` with nothing but a
+  // block of text inside does not centre that text on its own.
+  const verdictCardStyle = {
+    minHeight: 85,
+    borderRadius: 'var(--mantine-radius-lg)',
+    padding: 'var(--mantine-spacing-lg)',
+    display: 'flex',
+    alignItems: 'center',
+  }
 
   const verdictPanel = verdict && (
     <Paper style={{ ...verdictCardStyle, backgroundColor: PLUM_PANEL, color: 'var(--mantine-color-white)' }}>
@@ -335,8 +350,11 @@ export function ComparePage() {
           and it is worth a sentence about why it and not kroner per kilo.
           Beside the unit picker rather than above it — the two used to stack
           into three lines of height for two short controls, wasting the
-          scroll a phone has least of. */}
-      <Group justify="space-between" align="center" wrap="wrap" gap="sm">
+          scroll a phone has least of. Aligned to the end rather than centred:
+          the select carries its own label above the box, so centring against
+          that whole two-line block left the text floating above the box
+          instead of level with it. */}
+      <Group justify="space-between" align="flex-end" wrap="wrap" gap="sm">
         {/* Above the lots rather than in a menu: the unit the figures are read
             in belongs next to the figures it governs, so picking it and seeing
             what it did are the same glance. */}
