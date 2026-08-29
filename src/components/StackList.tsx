@@ -42,7 +42,12 @@ export function StackList({
 
   return (
     <MantineStack gap="md">
-      <Group justify="space-between">
+      {/* `align="flex-start"`: the button is taller than the heading, and
+          `Group`'s default `center` alignment sat the heading a few pixels
+          lower than the same `Title` stands alone on the other two tabs —
+          centred against the taller button rather than starting at the row's
+          own top the way a lone heading does. */}
+      <Group justify="space-between" align="flex-start">
         {/* The same `Title order={2}` as the comparison and the need
             calculator's own headings, now that all three sit behind the same
             row of tabs — one heading font across the three, not the list's
