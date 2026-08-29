@@ -18,7 +18,7 @@ import {
 } from "./storage/stacksRepo";
 import { getCachedNormals, getNormals } from "./climate/normalsCache";
 import { AppHeader } from "./components/AppHeader";
-import { HomeTabs, type HomeTab } from "./components/HomeTabs";
+import type { HomeTab } from "./components/HomeTabs";
 import { StackList } from "./components/StackList";
 import { StackDetail } from "./components/StackDetail";
 import { AddStackForm } from "./components/AddStackForm";
@@ -205,13 +205,16 @@ export function App({ today = new Date() }: Props = {}) {
       {/* Outside the container, and the only thing that is: the plum band is
           drawn edge to edge, so it cannot sit inside a 720px column. Its own
           container, inside the panel, keeps the mark and the title on the same
-          line as the cards below. */}
-      <AppHeader onHome={goHome} />
+          line as the cards below. The tabs are drawn inside it too now, rather
+          than in the scrolling column below, so they stay on screen with the
+          mark instead of scrolling away under it. */}
+      <AppHeader
+        onHome={goHome}
+        homeTabs={onHomeTabs ? { value: homeTab, onChange: selectTab } : undefined}
+      />
 
       <Container size="sm" pt="lg" pb="xl">
         <Stack gap="lg">
-          {onHomeTabs && <HomeTabs value={homeTab} onChange={selectTab} />}
-
           {onList && <InstallPrompt />}
 
           {/* Nothing is lost by keeping this to the list: `justReady` is not

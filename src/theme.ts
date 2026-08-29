@@ -103,7 +103,7 @@ export const theme: MantineThemeOverride = createTheme({
     fontWeight: '400',
     sizes: {
       h1: { fontSize: '2.125rem', lineHeight: '1.05' },
-      h2: { fontSize: '1.5rem', lineHeight: '1.1' },
+      h2: { fontSize: '1.25rem', lineHeight: '1.15' },
     },
   },
   radius: { sm: '8px', md: '12px', lg: '20px' },

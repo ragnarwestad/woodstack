@@ -5,6 +5,7 @@ import { Anchor, Container, Group, Paper, Stack, Text, Title } from '@mantine/co
 import { Logo } from './Logo'
 import { useTranslation } from '../i18n/useTranslation'
 import { AboutMenu } from './AboutMenu'
+import { HomeTabs, type HomeTab } from './HomeTabs'
 import { LanguageControl, ThemeControl } from './ViewControls'
 import { PLUM_PANEL } from '../theme'
 
@@ -14,9 +15,16 @@ type Props = {
    *  their own, so clearing the URL alone would leave the visitor sitting on
    *  a form. */
   onHome: () => void
+  /** The three front-page tabs, drawn inside this same sticky panel so they
+   *  stay on screen with the mark rather than scrolling away under it —
+   *  `undefined` on a stack, a form, or anywhere else the tabs do not stand. */
+  homeTabs?: {
+    value: HomeTab
+    onChange: (tab: HomeTab) => void
+  }
 }
 
-export function AppHeader({ onHome }: Props) {
+export function AppHeader({ onHome, homeTabs }: Props) {
   const { t } = useTranslation()
 
 
@@ -130,6 +138,8 @@ export function AppHeader({ onHome }: Props) {
           <AboutMenu />
         </Group>
         </Group>
+
+        {homeTabs && <HomeTabs value={homeTabs.value} onChange={homeTabs.onChange} mt="sm" />}
       </Container>
     </Paper>
   )

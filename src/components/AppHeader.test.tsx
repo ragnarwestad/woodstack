@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { fireEvent, screen } from '@testing-library/react'
 import { useMantineColorScheme } from '@mantine/core'
 import { renderWithMantine } from '../test/render'
@@ -156,5 +156,36 @@ describe('AppHeader', () => {
     expect(controls).toContainElement(screen.getByRole('button', { name: nb['app.language'] }))
     expect(controls).toContainElement(screen.getByRole('button', { name: nb['app.theme'] }))
     expect(controls).not.toContainElement(screen.getByRole('heading', { name: /Woodstack/ }))
+  })
+
+  /** The tabs used to sit in the scrolling column below the header and
+   *  scroll away under it. They are drawn inside this same sticky panel
+   *  now, so they stay on screen with the mark instead. */
+  it('draws the front-page tabs inside its own sticky panel, when given any', () => {
+    renderWithMantine(
+      <LanguageProvider>
+        <AppHeader onHome={() => {}} homeTabs={{ value: 'stacks', onChange: vi.fn() }} />
+      </LanguageProvider>,
+    )
+
+    const panel = document.querySelector('.ws-header')
+    expect(panel).toContainElement(screen.getByRole('tab', { name: nb['nav.tabCompare'] }))
+  })
+
+  it('carries no tabs at all on a stack, a form, or anywhere else they were not asked for', () => {
+    renderHeader()
+    expect(screen.queryByRole('tab')).not.toBeInTheDocument()
+  })
+
+  it('changes tab through the callback it was given', () => {
+    const onChange = vi.fn()
+    renderWithMantine(
+      <LanguageProvider>
+        <AppHeader onHome={() => {}} homeTabs={{ value: 'stacks', onChange }} />
+      </LanguageProvider>,
+    )
+
+    fireEvent.click(screen.getByRole('tab', { name: nb['nav.tabCompare'] }))
+    expect(onChange).toHaveBeenCalledWith('compare')
   })
 })
