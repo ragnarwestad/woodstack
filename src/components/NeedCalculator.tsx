@@ -163,10 +163,11 @@ export function NeedCalculator({ stacks }: Props) {
 
       {mode === 'energy' ? (
         // The same two-column grid as the volume mode's pair of fields, so a
-        // single field does not stretch across a width two fields share —
-        // the empty second cell costs nothing on a phone, where `cols` folds
-        // back to one anyway.
-        <SimpleGrid cols={{ base: 1, xs: 2 }} spacing="sm">
+        // single field does not stretch across a width two fields share — the
+        // empty second cell is deliberate at every width, not just a fold that
+        // happens to hide it below 576px (see FieldRow.tsx for why `cols` here
+        // stays a fixed 2, never a responsive `{ base: 1, xs: 2 }`).
+        <SimpleGrid cols={2} spacing="sm">
           <TextInput
             type="number"
             min={0}
@@ -177,7 +178,7 @@ export function NeedCalculator({ stacks }: Props) {
           />
         </SimpleGrid>
       ) : (
-        <SimpleGrid cols={{ base: 1, xs: 2 }} spacing="sm">
+        <SimpleGrid cols={2} spacing="sm">
           <TextInput
             type="number"
             min={0}
@@ -201,7 +202,7 @@ export function NeedCalculator({ stacks }: Props) {
           shown (see acceptance criterion 7 in the spec — every result here
           includes a volume unit, so species is never skippable), stove
           because delivered heat depends on it whichever way the numbers run. */}
-      <SimpleGrid cols={{ base: 1, xs: 2 }} spacing="sm">
+      <SimpleGrid cols={2} spacing="sm">
         <NativeSelect
           id={speciesId}
           label={t('need.speciesLabel')}
@@ -224,7 +225,7 @@ export function NeedCalculator({ stacks }: Props) {
           unit-independent, so a result already on screen changes unit here
           without «Beregn» being pressed again. The same half-width grid as
           the fields above it, rather than a lone field spanning both. */}
-      <SimpleGrid cols={{ base: 1, xs: 2 }} spacing="sm">
+      <SimpleGrid cols={2} spacing="sm">
         <NativeSelect
           id={resultUnitId}
           label={t('compare.resultUnitLabel')}

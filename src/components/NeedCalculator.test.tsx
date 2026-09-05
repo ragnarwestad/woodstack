@@ -206,4 +206,32 @@ describe('NeedCalculator', () => {
 
     expect(readResultUnitPreference()).toBe('losKubikk')
   })
+
+  /** REQ-1/REQ-2: the reported bug folded every field row to one full-width
+   *  column below 576px. Mantine's `SimpleGrid` renders its `cols` value into
+   *  a `<style data-mantine-styles="inline">` tag as `--sg-cols`, with a
+   *  `@media` override only when `cols` is a responsive object — a fixed
+   *  `cols={2}` holds `--sg-cols:2` at every width with no such override.
+   *  Only three of the four grids render at once — energy and volume mode
+   *  share the species/stove and result-unit grids but not the amount one —
+   *  so both tabs are checked to cover all four. */
+  function assertFixedTwoColumnGrids(container: HTMLElement, expectedCount: number) {
+    const gridStyles = Array.from(
+      container.querySelectorAll('[data-mantine-styles="inline"]'),
+    ).filter((style) => style.textContent?.includes('--sg-cols'))
+
+    expect(gridStyles).toHaveLength(expectedCount)
+    for (const style of gridStyles) {
+      expect(style.textContent).toContain('--sg-cols:2')
+      expect(style.textContent).not.toContain('@media')
+    }
+  }
+
+  it('lays out every field row as a fixed two-column grid, not a per-breakpoint one', () => {
+    const { container } = renderWithMantine(<NeedCalculator stacks={[]} />)
+    assertFixedTwoColumnGrids(container, 3)
+
+    fireEvent.click(screen.getByRole('radio', { name: /får tilbud om/i }))
+    assertFixedTwoColumnGrids(container, 3)
+  })
 })
