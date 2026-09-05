@@ -4,6 +4,10 @@
 name: woodstack
 description: Estimates when a firewood stack is dry enough to burn — browser-local, installable, no account
 generated: 2026-08-22
+# The code branch stays open for review instead of being merged at
+# archive; every step runs with --push pr. The specs root keeps
+# auto-merging.
+codeLanding: pr
 stack:
   frontend: TypeScript/Vite + React 19 + Mantine, installable PWA (vite-plugin-pwa)
   backend: none — static build, everything runs in the browser
